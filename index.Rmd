@@ -1,0 +1,158 @@
+---
+title: "EDA Donux truculus 2023"
+subtitle: "Complementary analysis to advice and management report FEMP_AND_04"
+author: "Mardones, M; Delgado, M"
+date:  "`r format(Sys.time(), '%d %B, %Y')`"
+linkcolor: blue
+output:
+  html_document:
+    keep_md: true
+    toc: true
+    toc_deep: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    theme: cosmo
+    fontsize: 0.9em
+    linestretch: 1.7
+    html-math-method: katex
+    self-contained: true
+    code-tools: true
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup1}
+rm(list = ls())
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.align = 'center',
+                      dev = 'jpeg',
+                      dpi = 300)
+#XQuartz is a mess, put this in your onload to default to cairo instead
+options(bitmapType = "cairo") 
+# (https://github.com/tidyverse/ggplot2/issues/2655)
+# Lo mapas se hacen mas rapido
+```
+
+
+```{r}
+library(tidyverse)
+library(ggridges)
+library(readxl)
+library(here)
+library(lubridate)
+library(readr)
+library(ggthemes)
+```
+
+## Background
+
+
+The following document and code intends to carry out a complementary
+methodological Exploratory Data Analysis from survey data in coquina (*Donux truculus*), in this case, with a biological component like lengths structure.
+
+
+Set path
+
+```{r}
+data <- here("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data")
+```
+
+## Read Data Base
+
+```{r}
+size2017 <- read.csv("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Anterior a 2020/data_ieo_2017_def.csv", sep = ";")
+size2018 <- read.csv("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Anterior a 2020/data_ieo_2018_def.csv", sep = ";")
+size2019 <- read.csv("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Anterior a 2020/data_ieo_2019_def.csv", sep = ";")
+size2020 <- read.csv("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Anterior a 2020/data_ieo_2020_def.csv", sep = ";")
+
+size2021 <- read_excel("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Posterior 2020/Data_size_Coquina_2021.xlsx", sheet = "Coquina_donax")
+size2022 <- read_excel("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Posterior 2020/Data_size_Coquina_2022.xlsx",  sheet = "Coquina_donax")
+size2023 <- read_excel("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Posterior 2020/Data_size_Coquina_2023.xlsx",  sheet = "Coquina_Donax")
+```
+
+Test dimension and names columns and diferences
+
+```{r}
+dim(size2017)
+dim(size2018)
+dim(size2019)
+dim(size2020)
+dim(size2021)
+
+```
+
+
+```{r}
+names(size2017)
+names(size2018)
+names(size2019)
+names(size2020)
+names(size2021)
+
+```
+
+Same names. Could merge the DF
+```{r}
+size_17_20 <- rbind(size2017,
+                    size2018,
+                    size2019,
+                    size2020)
+# new dimension
+dim(size_17_20)
+names(size_17_20)
+```
+
+```{r}
+glimpse(size_17_20)
+```
+# Change `Date` columns from `character`to `Date` format
+
+```{r}
+size_17_20$Date <- dmy(size_17_20$Date)
+# separo los meses , dias y años
+# Separar en columnas de día, mes y año
+realdate <- as.Date(size_17_20$Date, format="%Y-%M-%D")
+
+dfdate <- data.frame(Date=realdate)
+ANO=as.numeric (format(realdate,"%Y"))
+MES=as.numeric (format(realdate,"%m"))
+DIA=as.numeric (format(realdate,"%d"))
+
+size2<-cbind(dfdate,ANO,MES,DIA,size_17_20)
+colnames(size2)
+table(size2$ANO)
+
+```
+
+Now we test.
+```{r}
+table(size2$ANO)
+```
+
+first glimpse. Red line is SL50 (10.8 cm to female (Delgado & Silva, 2016)
+```{r}
+nreg <- ggplot(size2 %>% 
+                 select(-1), 
+               aes(x=Size, 
+                   y = as.factor(MES),
+                  fill= as.factor(rastro)))+
+  geom_density_ridges(stat = "binline", 
+                      bins = 50, 
+                      scale = 1.2,
+                      alpha=0.7)+
+  facet_wrap(.~ANO, ncol=4) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_manual(values = c("#636363", "#2c7fb8", "#de2d26", "#756bb1", "#2ca25f"),
+                       name="Rastro")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,50)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+nreg
+```
