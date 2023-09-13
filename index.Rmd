@@ -55,7 +55,7 @@ The following document and code intends to carry out a complementary
 methodological Exploratory Data Analysis from survey data in coquina (*Donux truculus*), in this case, with a biological component like lengths structure.
 
 
-Set path
+## Set path
 
 ```{r}
 data <- here("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data")
@@ -74,7 +74,7 @@ size2022 <- read_excel("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Posterior 2020
 size2023 <- read_excel("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Posterior 2020/Data_size_Coquina_2023.xlsx",  sheet = "Coquina_Donax")
 ```
 
-Test dimension and names columns and diferences
+## Test dimension and names columns and diferences
 
 ```{r}
 dim(size2017)
@@ -109,7 +109,7 @@ names(size_17_20)
 ```{r}
 glimpse(size_17_20)
 ```
-# Change `Date` columns from `character`to `Date` format
+## Change `Date` columns from `character`to `Date` format
 
 ```{r}
 size_17_20$Date <- dmy(size_17_20$Date)
@@ -132,6 +132,7 @@ Now we test.
 ```{r}
 table(size2$ANO)
 ```
+## Viz
 
 first glimpse. Red line is SL50 (10.8 cm to female (Delgado & Silva, 2016)
 ```{r}
@@ -152,7 +153,33 @@ nreg <- ggplot(size2 %>%
   theme_few()+
   xlab("Longitud (cm.)")+
   ylab("")+
-  xlim(0,50)
+  xlim(0,40)
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
 nreg
 ```
+by beach
+
+
+```{r}
+nbeach <- ggplot(size2 %>% 
+                 select(-1), 
+               aes(x=Size, 
+                   y = as.factor(MES),
+                  fill= as.factor(Beach)))+
+  geom_density_ridges(stat = "binline", 
+                      bins = 50, 
+                      scale = 1.2,
+                      alpha=0.7)+
+  facet_wrap(.~ANO, ncol=4) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_viridis_d(option="F",
+                       name="Beach")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,40)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+nbeach
+```
+
