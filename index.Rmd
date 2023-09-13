@@ -1,5 +1,5 @@
 ---
-title: "EDA Donux truculus 2023"
+title: "EDA Donux trunculus 2023"
 subtitle: "Complementary analysis to advice and management report FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
 date:  "`r format(Sys.time(), '%d %B, %Y')`"
@@ -48,7 +48,7 @@ library(readr)
 library(ggthemes)
 ```
 
-## Background
+# Objective
 
 
 The following document and code intends to carry out a complementary
@@ -60,6 +60,8 @@ methodological Exploratory Data Analysis from survey data in coquina (*Donux tru
 ```{r}
 data <- here("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data")
 ```
+# Length Frecuency Data Base
+
 
 ## Read Data Base
 
@@ -79,10 +81,9 @@ size2023 <- read_excel("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Posterior 2020
 ```{r}
 dim(size2017)
 dim(size2018)
-dim(size2019)
+dim(size2019)       
 dim(size2020)
 dim(size2021)
-
 ```
 
 
@@ -94,6 +95,7 @@ names(size2020)
 names(size2021)
 
 ```
+
 
 Same names. Could merge the DF
 ```{r}
@@ -182,4 +184,7 @@ nbeach <- ggplot(size2 %>%
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
 nbeach
 ```
+# Density Data Base
 
+
+# Yield
