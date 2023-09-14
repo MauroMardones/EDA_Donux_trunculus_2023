@@ -185,7 +185,7 @@ nbeach <- ggplot(size2 %>%
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
 nbeach
 ```
-Now, we handling data 2021-2023 
+Now, we handling data 2021-2023. Same columns data 2017-2020
 
 ```{r}
 size2021b <- size2021 %>% 
@@ -348,6 +348,89 @@ combeach <- ggplot(sizeall %>%
 combeach
 ```
 
+another way to viz
+
+scatter plot
+
+```{r warning=FALSE, message=FALSE}
+coutlength <-sizeall %>% 
+  dplyr::group_by(ANO, MES, rastro, Beach) %>%
+  dplyr::summarise(avg=mean(Size))
+#kableExtra::kable(coutlength, format = "html")
+```
+
+Mean length in time series by Subarea.
+
+```{r, fig.align="center", warning=FALSE}
+pmea <- ggplot(coutlength, 
+               aes(MES,avg))+
+    geom_point(show.legend = T) +
+    stat_smooth(method= "glm", colour='#253494')+
+    theme_few()+ 
+    facet_grid(rastro~ANO)+
+    scale_x_continuous(breaks = seq(from = 1, to = 12, by = 3))+
+    #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
+    theme(axis.text.x = element_text(angle = 90))+
+    guides(fill = guide_legend(reverse=F))+
+    scale_fill_viridis_c(option="E")+
+    ylim(3,6)+
+    ylab("") +
+    xlab("") +
+    ggtitle("Lenght Mean Krill fishery")
+pmea
+```
+
+
+Calculate a recruit index
+
+## Calculate Index Recruit
+
+```{r eval=FALSE}
+inderec <- sizeall %>% 
+  filter(rastro=="POBLACIONAL") %>% 
+  drop_na(Size) %>% 
+  dplyr::group_by(ANO, MES) %>% 
+  dplyr::mutate(prolen = Size - 15) %>% 
+  dplyr::mutate(prolen2 = prolen*-1 ) %>% 
+  dplyr::summarize(prolen3 =mean(prolen2))
+
+
+limite_superior <- round(mean(inderec$prolen3) + 
+  1.96 * sd(inderec$prolen3) / sqrt(inderec$prolen3),3)
+limite_inferior <- round(mean(inderec$prolen3) - 
+  1.96 * sd(inderec$prolen3) / sqrt(inderec$prolen3),3)
+```
+
+
+```{r}
+inderec$colour <- ifelse(inderec$prolen3 < 0, "negative","positive")
+
+indexplot <- ggplot(inderec,
+                    aes(rev(MES),prolen3))+
+  geom_bar(stat="identity",
+           position="identity",
+           aes(fill = colour))+
+  scale_fill_manual(values=c(positive="firebrick1",
+                             negative="black"),
+                    name="")+
+  facet_wrap(.~ANO)+
+  theme_few()+
+  scale_x_continuous(breaks = seq(from = 1, 
+                                to = 12, by = 4))+
+  labs(y="IRK",
+       x="",
+       title = "Index Recruit Krill 48.1")+
+  coord_flip()
+indexplot
+```
+
+
+
+quiestions about LFD DB
+
+- What is `CAT`
+- Difference between `size` and `sizeE`
+-what variable we can see by `MES`?
 
 
 # DENSITY DB
