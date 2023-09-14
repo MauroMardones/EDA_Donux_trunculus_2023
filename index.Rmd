@@ -52,7 +52,9 @@ library(ggthemes)
 
 
 The following document and code intends to carry out a complementary
-methodological Exploratory Data Analysis from survey data in coquina (*Donux truculus*), in this case, with a biological component like lengths structure, density  indicator and fishery yield in CPUE type.
+methodological Exploratory Data Analysis from survey data in coquina (*Donux truculus*) in a historic context review of FEMP_AND_04 proyect.
+
+In this case, we analised biological component like lengths structure, density indicator and fishery yield in CPUE type.
 
 
 ## Set path
