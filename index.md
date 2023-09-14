@@ -1,8 +1,8 @@
 ---
-title: "EDA Donux truculus 2023"
+title: "Historical survey EDA Donux trunculus 2023"
 subtitle: "Complementary analysis to advice and management report FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "13 September, 2023"
+date:  "14 September, 2023"
 linkcolor: blue
 output:
   html_document:
@@ -50,11 +50,11 @@ library(readr)
 library(ggthemes)
 ```
 
-## Background
+# Objective
 
 
 The following document and code intends to carry out a complementary
-methodological Exploratory Data Analysis from survey data in coquina (*Donux truculus*), in this case, with a biological component like lengths structure.
+methodological Exploratory Data Analysis from survey data in coquina (*Donux truculus*), in this case, with a biological component like lengths structure, density  indicator and fishery yield in CPUE type.
 
 
 ## Set path
@@ -63,6 +63,8 @@ methodological Exploratory Data Analysis from survey data in coquina (*Donux tru
 ```r
 data <- here("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data")
 ```
+# Length Frecuency Data Base
+
 
 ## Read Data Base
 
@@ -98,7 +100,7 @@ dim(size2018)
 ```
 
 ```r
-dim(size2019)
+dim(size2019)       
 ```
 
 ```
@@ -217,6 +219,7 @@ names(size2021)
 ##  [7] "Categoria"              "size"                   "sizeE"                 
 ## [10] "ID"                     "ID_codificado_punto"    "ID_codificado_muestreo"
 ```
+
 
 Same names. Could merge the DF
 
@@ -405,4 +408,283 @@ nbeach
 ```
 
 <img src="index_files/figure-html/unnamed-chunk-11-1.jpeg" style="display: block; margin: auto;" />
+Now, we handling data 2021-2023 
 
+
+```r
+size2021b <- size2021 %>% 
+  select(2, 3, 4, 5, 6, 7, 8, 9, 12)
+names(size2021b)
+```
+
+```
+## [1] "Date"                   "Beach"                  "Sampling.point"        
+## [4] "rastro"                 "CAT"                    "Categoria"             
+## [7] "size"                   "sizeE"                  "ID_codificado_muestreo"
+```
+
+```r
+size2022b <- size2022 %>% 
+  select(-c(1, 2))
+size2023b <- size2023 %>% 
+  select(-c(1, 2))
+
+size_21_23 <- rbind(size2021b,
+                    size2022b,
+                    size2023b)
+```
+## Separate `Date` column
+
+
+```r
+# separo los meses , dias y años
+# Separar en columnas de día, mes y año
+realdate2 <- as.Date(size_21_23$Date, format="%Y-%M-%D")
+
+dfdate2 <- data.frame(Date=realdate2)
+ANO=as.numeric (format(realdate2,"%Y"))
+MES=as.numeric (format(realdate2,"%m"))
+DIA=as.numeric (format(realdate2,"%d"))
+
+size3<-cbind(dfdate2,ANO,MES,DIA,size_21_23)
+colnames(size3)
+```
+
+```
+##  [1] "Date"                   "ANO"                    "MES"                   
+##  [4] "DIA"                    "Date"                   "Beach"                 
+##  [7] "Sampling.point"         "rastro"                 "CAT"                   
+## [10] "Categoria"              "size"                   "sizeE"                 
+## [13] "ID_codificado_muestreo"
+```
+
+```r
+table(size3$ANO)
+```
+
+```
+## 
+##  2021  2022  2023 
+## 21971 17426  6751
+```
+Now join all years
+
+
+
+```r
+names(size2) # 2017-2020
+```
+
+```
+##  [1] "Date"                        "ANO"                        
+##  [3] "MES"                         "DIA"                        
+##  [5] "months"                      "Date"                       
+##  [7] "Beach"                       "Sampling.point"             
+##  [9] "track_activelog"             "lat_1"                      
+## [11] "long_1"                      "lat_2"                      
+## [13] "long_2"                      "plus_m"                     
+## [15] "tow_time"                    "rastro"                     
+## [17] "zaranda"                     "mariscador"                 
+## [19] "sample"                      "Sample_weight"              
+## [21] "Clam_sample_weigth"          "Measured_clam_sample_weigth"
+## [23] "CAT"                         "Categoria"                  
+## [25] "Size"                        "SizeE"                      
+## [27] "Tide_coef"                   "Low_tide_hour"              
+## [29] "Sampling_hour"               "number_fisherman"           
+## [31] "veda"                        "dists"
+```
+
+```r
+names(size3)# 2021-2023
+```
+
+```
+##  [1] "Date"                   "ANO"                    "MES"                   
+##  [4] "DIA"                    "Date"                   "Beach"                 
+##  [7] "Sampling.point"         "rastro"                 "CAT"                   
+## [10] "Categoria"              "size"                   "sizeE"                 
+## [13] "ID_codificado_muestreo"
+```
+
+```r
+size2fil <- size2 %>% 
+  select(1, 2, 3, 4, 7, 8, 16, 23, 24, 25, 26)
+size3fil <- size3 %>% 
+  select(-c(13,5)) %>% 
+  rename(Size = size,
+         SizeE = sizeE)
+
+names(size2fil) # 2017-2020
+```
+
+```
+##  [1] "Date"           "ANO"            "MES"            "DIA"           
+##  [5] "Beach"          "Sampling.point" "rastro"         "CAT"           
+##  [9] "Categoria"      "Size"           "SizeE"
+```
+
+```r
+names(size3fil)# 2021-2023
+```
+
+```
+##  [1] "Date"           "ANO"            "MES"            "DIA"           
+##  [5] "Beach"          "Sampling.point" "rastro"         "CAT"           
+##  [9] "Categoria"      "Size"           "SizeE"
+```
+
+```r
+# join data
+
+sizeall <- rbind(size2fil, size3fil)
+```
+
+
+check
+
+
+```r
+dim(sizeall)
+```
+
+```
+## [1] 108231     11
+```
+
+```r
+table(sizeall$ANO)
+```
+
+```
+## 
+##  2017  2018  2019  2020  2021  2022  2023 
+## 10121 20418 18109 13435 21971 17426  6751
+```
+
+
+some plots
+
+
+```r
+nall <- ggplot(sizeall, 
+               aes(x=Size, 
+                   y = as.factor(MES),
+                  fill= as.factor(rastro)))+
+  geom_density_ridges(stat = "binline", 
+                      bins = 50, 
+                      scale = 1.2,
+                      alpha=0.7)+
+  facet_wrap(.~ANO, ncol=7) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_viridis_d(option="B",
+                       name="Rastro")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  theme(legend.position = "bottom")+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,40)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+nall
+```
+
+<img src="index_files/figure-html/unnamed-chunk-16-1.jpeg" style="display: block; margin: auto;" />
+
+
+
+
+```r
+nallbeach <- ggplot(sizeall, 
+               aes(x=Size, 
+                   y = as.factor(MES),
+                  fill= as.factor(Beach)))+
+  geom_density_ridges(stat = "binline", 
+                      bins = 50, 
+                      scale = 1.2,
+                      alpha=0.7)+
+  facet_wrap(.~ANO, ncol=7) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_viridis_d(option="F",
+                       name="Beach")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,40)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+nallbeach
+```
+
+<img src="index_files/figure-html/unnamed-chunk-17-1.jpeg" style="display: block; margin: auto;" />
+just POBLACIONAL  sample
+
+
+```r
+pobeach <- ggplot(sizeall %>% 
+                      filter(rastro!="COMERCIAL"), 
+               aes(x=Size, 
+                   y = as.factor(MES),
+                  fill= as.factor(Beach)))+
+  geom_density_ridges(stat = "binline", 
+                      bins = 50, 
+                      scale = 1.2,
+                      alpha=0.7)+
+  facet_wrap(.~ANO, ncol=7) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_viridis_d(option="G",
+                       name="Beach")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,40)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+pobeach
+```
+
+<img src="index_files/figure-html/unnamed-chunk-18-1.jpeg" style="display: block; margin: auto;" />
+justm COMERCIAL sample
+
+
+```r
+combeach <- ggplot(sizeall %>% 
+                      filter(rastro!="POBLACIONAL"), 
+               aes(x=Size, 
+                   y = as.factor(MES),
+                  fill= as.factor(Beach)))+
+  geom_density_ridges(stat = "binline", 
+                      bins = 50, 
+                      scale = 1.2,
+                      alpha=0.7)+
+  facet_wrap(.~ANO, ncol=7) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_viridis_d(option="F",
+                       name="Beach")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,40)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+combeach
+```
+
+<img src="index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
+
+
+
+# Density Data Base
+
+
+```r
+ggplot () + 
+  aes (wt, mpg) +
+  geom_point ()+
+  geom_smooth () +
+  stat_smooth(geom = "point",
+            color = "blue",
+            xseg = mtcars$wt)
+```
+
+
+# Yield

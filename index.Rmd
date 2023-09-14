@@ -1,5 +1,5 @@
 ---
-title: "EDA Donux trunculus 2023"
+title: "Historical survey EDA Donux trunculus 2023"
 subtitle: "Complementary analysis to advice and management report FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
 date:  "`r format(Sys.time(), '%d %B, %Y')`"
@@ -38,7 +38,7 @@ options(bitmapType = "cairo")
 ```
 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(ggridges)
 library(readxl)
@@ -52,7 +52,7 @@ library(ggthemes)
 
 
 The following document and code intends to carry out a complementary
-methodological Exploratory Data Analysis from survey data in coquina (*Donux truculus*), in this case, with a biological component like lengths structure.
+methodological Exploratory Data Analysis from survey data in coquina (*Donux truculus*), in this case, with a biological component like lengths structure, density  indicator and fishery yield in CPUE type.
 
 
 ## Set path
@@ -93,7 +93,6 @@ names(size2018)
 names(size2019)
 names(size2020)
 names(size2021)
-
 ```
 
 
@@ -184,7 +183,179 @@ nbeach <- ggplot(size2 %>%
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
 nbeach
 ```
+Now, we handling data 2021-2023 
+
+```{r}
+size2021b <- size2021 %>% 
+  select(2, 3, 4, 5, 6, 7, 8, 9, 12)
+names(size2021b)
+size2022b <- size2022 %>% 
+  select(-c(1, 2))
+size2023b <- size2023 %>% 
+  select(-c(1, 2))
+
+size_21_23 <- rbind(size2021b,
+                    size2022b,
+                    size2023b)
+```
+## Separate `Date` column
+
+```{r}
+# separo los meses , dias y años
+# Separar en columnas de día, mes y año
+realdate2 <- as.Date(size_21_23$Date, format="%Y-%M-%D")
+
+dfdate2 <- data.frame(Date=realdate2)
+ANO=as.numeric (format(realdate2,"%Y"))
+MES=as.numeric (format(realdate2,"%m"))
+DIA=as.numeric (format(realdate2,"%d"))
+
+size3<-cbind(dfdate2,ANO,MES,DIA,size_21_23)
+colnames(size3)
+table(size3$ANO)
+```
+Now join all years
+
+
+```{r}
+names(size2) # 2017-2020
+names(size3)# 2021-2023
+
+
+size2fil <- size2 %>% 
+  select(1, 2, 3, 4, 7, 8, 16, 23, 24, 25, 26)
+size3fil <- size3 %>% 
+  select(-c(13,5)) %>% 
+  rename(Size = size,
+         SizeE = sizeE)
+
+names(size2fil) # 2017-2020
+names(size3fil)# 2021-2023
+
+# join data
+
+sizeall <- rbind(size2fil, size3fil)
+```
+
+
+check
+
+```{r}
+dim(sizeall)
+table(sizeall$ANO)
+```
+
+
+some plots
+
+```{r}
+nall <- ggplot(sizeall, 
+               aes(x=Size, 
+                   y = as.factor(MES),
+                  fill= as.factor(rastro)))+
+  geom_density_ridges(stat = "binline", 
+                      bins = 50, 
+                      scale = 1.2,
+                      alpha=0.7)+
+  facet_wrap(.~ANO, ncol=7) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_viridis_d(option="B",
+                       name="Rastro")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  theme(legend.position = "bottom")+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,40)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+nall
+```
+
+
+
+```{r}
+nallbeach <- ggplot(sizeall, 
+               aes(x=Size, 
+                   y = as.factor(MES),
+                  fill= as.factor(Beach)))+
+  geom_density_ridges(stat = "binline", 
+                      bins = 50, 
+                      scale = 1.2,
+                      alpha=0.7)+
+  facet_wrap(.~ANO, ncol=7) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_viridis_d(option="F",
+                       name="Beach")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,40)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+nallbeach
+```
+just POBLACIONAL  sample
+
+```{r}
+pobeach <- ggplot(sizeall %>% 
+                      filter(rastro!="COMERCIAL"), 
+               aes(x=Size, 
+                   y = as.factor(MES),
+                  fill= as.factor(Beach)))+
+  geom_density_ridges(stat = "binline", 
+                      bins = 50, 
+                      scale = 1.2,
+                      alpha=0.7)+
+  facet_wrap(.~ANO, ncol=7) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_viridis_d(option="G",
+                       name="Beach")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,40)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+pobeach
+```
+justm COMERCIAL sample
+
+```{r}
+combeach <- ggplot(sizeall %>% 
+                      filter(rastro!="POBLACIONAL"), 
+               aes(x=Size, 
+                   y = as.factor(MES),
+                  fill= as.factor(Beach)))+
+  geom_density_ridges(stat = "binline", 
+                      bins = 50, 
+                      scale = 1.2,
+                      alpha=0.7)+
+  facet_wrap(.~ANO, ncol=7) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_viridis_d(option="F",
+                       name="Beach")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,40)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+combeach
+```
+
+
+
 # Density Data Base
+
+```{r eval=FALSE}
+ggplot () + 
+  aes (wt, mpg) +
+  geom_point ()+
+  geom_smooth () +
+  stat_smooth(geom = "point",
+            color = "blue",
+            xseg = mtcars$wt)
+```
 
 
 # Yield
