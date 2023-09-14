@@ -48,7 +48,7 @@ library(readr)
 library(ggthemes)
 ```
 
-# Objective
+# OBJECTIVE
 
 
 The following document and code intends to carry out a complementary
@@ -60,7 +60,7 @@ methodological Exploratory Data Analysis from survey data in coquina (*Donux tru
 ```{r}
 data <- here("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data")
 ```
-# Length Frecuency Data Base
+# LENGTH FRECUENCY DB
 
 
 ## Read Data Base
@@ -288,6 +288,7 @@ nallbeach <- ggplot(sizeall,
                        name="Beach")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   theme_few()+
+  theme(legend.position = "bottom")+
   xlab("Longitud (cm.)")+
   ylab("")+
   xlim(0,40)
@@ -312,6 +313,7 @@ pobeach <- ggplot(sizeall %>%
                        name="Beach")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   theme_few()+
+  theme(legend.position = "bottom")+
   xlab("Longitud (cm.)")+
   ylab("")+
   xlim(0,40)
@@ -336,6 +338,7 @@ combeach <- ggplot(sizeall %>%
                        name="Beach")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   theme_few()+
+  theme(legend.position = "bottom")+
   xlab("Longitud (cm.)")+
   ylab("")+
   xlim(0,40)
@@ -345,7 +348,7 @@ combeach
 
 
 
-# Density Data Base
+# DENSITY DB
 
 ```{r eval=FALSE}
 ggplot () + 
@@ -358,4 +361,4 @@ ggplot () +
 ```
 
 
-# Yield
+# YIELD (CPUE) ANALYSIS

@@ -608,6 +608,7 @@ nallbeach <- ggplot(sizeall,
                        name="Beach")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   theme_few()+
+  theme(legend.position = "bottom")+
   xlab("Longitud (cm.)")+
   ylab("")+
   xlim(0,40)
@@ -635,6 +636,7 @@ pobeach <- ggplot(sizeall %>%
                        name="Beach")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   theme_few()+
+  theme(legend.position = "bottom")+
   xlab("Longitud (cm.)")+
   ylab("")+
   xlim(0,40)
@@ -662,6 +664,7 @@ combeach <- ggplot(sizeall %>%
                        name="Beach")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   theme_few()+
+  theme(legend.position = "bottom")+
   xlab("Longitud (cm.)")+
   ylab("")+
   xlim(0,40)
