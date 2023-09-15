@@ -2,7 +2,7 @@
 title: "Historical survey EDA Donux trunculus 2023"
 subtitle: "Complementary analysis to advice and management report FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "14 September, 2023"
+date:  "15 September, 2023"
 linkcolor: blue
 output:
   html_document:
@@ -50,11 +50,13 @@ library(readr)
 library(ggthemes)
 ```
 
-# Objective
+# OBJECTIVE
 
 
 The following document and code intends to carry out a complementary
-methodological Exploratory Data Analysis from survey data in coquina (*Donux truculus*), in this case, with a biological component like lengths structure, density  indicator and fishery yield in CPUE type.
+methodological Exploratory Data Analysis from survey data in coquina (*Donux truculus*) in a historic context review of FEMP_AND_04 proyect.
+
+In this case, we analised biological component like lengths structure, density indicator and fishery yield in CPUE type.
 
 
 ## Set path
@@ -63,7 +65,7 @@ methodological Exploratory Data Analysis from survey data in coquina (*Donux tru
 ```r
 data <- here("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data")
 ```
-# Length Frecuency Data Base
+# LENGTH FRECUENCY DB
 
 
 ## Read Data Base
@@ -352,6 +354,9 @@ table(size2$ANO)
 ##  2017  2018  2019  2020 
 ## 10121 20418 18109 13435
 ```
+
+
+
 ## Viz
 
 first glimpse. Red line is SL50 (10.8 cm to female (Delgado & Silva, 2016)
@@ -408,7 +413,7 @@ nbeach
 ```
 
 <img src="index_files/figure-html/unnamed-chunk-11-1.jpeg" style="display: block; margin: auto;" />
-Now, we handling data 2021-2023 
+Now, we handling data 2021-2023. Same columns data 2017-2020
 
 
 ```r
@@ -561,12 +566,24 @@ table(sizeall$ANO)
 ## 10121 20418 18109 13435 21971 17426  6751
 ```
 
+Rename values
+
+
+```r
+sizeall2 <- sizeall %>% 
+  mutate(rastro = str_replace_all(rastro, " ", ""))
+unique(sizeall2$rastro)
+```
+
+```
+## [1] "COMERCIAL"    "POBLACIONAL"  "COMERCIALNEW"
+```
 
 some plots
 
 
 ```r
-nall <- ggplot(sizeall, 
+nall <- ggplot(sizeall2, 
                aes(x=Size, 
                    y = as.factor(MES),
                   fill= as.factor(rastro)))+
@@ -588,13 +605,13 @@ nall <- ggplot(sizeall,
 nall
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-16-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-17-1.jpeg" style="display: block; margin: auto;" />
 
 
 
 
 ```r
-nallbeach <- ggplot(sizeall, 
+nallbeach <- ggplot(sizeall2, 
                aes(x=Size, 
                    y = as.factor(MES),
                   fill= as.factor(Beach)))+
@@ -616,12 +633,12 @@ nallbeach <- ggplot(sizeall,
 nallbeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-17-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-18-1.jpeg" style="display: block; margin: auto;" />
 just POBLACIONAL  sample
 
 
 ```r
-pobeach <- ggplot(sizeall %>% 
+pobeach <- ggplot(sizeall2 %>% 
                       filter(rastro!="COMERCIAL"), 
                aes(x=Size, 
                    y = as.factor(MES),
@@ -644,7 +661,7 @@ pobeach <- ggplot(sizeall %>%
 pobeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-18-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
 justm COMERCIAL sample
 
 
@@ -672,11 +689,129 @@ combeach <- ggplot(sizeall %>%
 combeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
+last month of 2023 (august) by beach 
 
 
 
-# Density Data Base
+```r
+combeachago23 <- ggplot(sizeall2 %>% 
+                      filter(ANO==2023), 
+               aes(x=Size, fill=rastro))+
+  geom_histogram(bins = 80,
+                      alpha=0.7)+
+  scale_fill_viridis_d(option="D")+
+  facet_grid(MES~Beach) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  theme_few()+
+  theme(legend.position = "bottom")+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,40)+
+  labs(title= "Survey 2023")
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+combeachago23
+```
+
+<img src="index_files/figure-html/unnamed-chunk-21-1.jpeg" style="display: block; margin: auto;" />
+
+another way to viz is 
+
+scatter plot
+
+
+```r
+sizemean <-sizeall2 %>% 
+  dplyr::group_by(ANO, MES, rastro, Beach) %>%
+  dplyr::summarise(avg=mean(SizeE))
+#kableExtra::kable(coutlength, format = "html")
+```
+
+Mean length in time series by Subarea.
+
+
+```r
+pmea <- ggplot(sizemean, 
+               aes(MES,avg,
+               color = factor(Beach)))+
+    geom_point(show.legend = T,
+               alpha=.7) +
+    geom_smooth(method= "lm", 
+                colour='#253494')+
+    theme_few()+ 
+    facet_grid(rastro~ANO)+
+    scale_x_continuous(breaks = seq(from = 1, to = 12, by = 3))+
+    #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
+    theme(axis.text.x = element_text(angle = 90))+
+    guides(fill = guide_legend(reverse=F))+
+    scale_color_viridis_d(option="H",
+                          name="Beach")+
+    ylim(15,30)+
+    ylab("") +
+    xlab("") +
+    ggtitle("Lenght Mean Krill fishery")
+pmea
+```
+
+<img src="index_files/figure-html/unnamed-chunk-23-1.jpeg" style="display: block; margin: auto;" />
+
+Calculate a recruit index
+
+## Calculate Index Recruit
+
+
+```r
+inderec <- sizeall %>% 
+  filter(rastro=="POBLACIONAL") %>% 
+  drop_na(Size) %>% 
+  dplyr::group_by(ANO, MES) %>% 
+  dplyr::mutate(prolen = Size - 10) %>% 
+  dplyr::mutate(prolen2 = prolen*-1 ) %>% 
+  dplyr::summarize(prolen3 =mean(prolen2))
+
+
+limite_superior <- round(mean(inderec$prolen3) + 
+  1.96 * sd(inderec$prolen3) / sqrt(inderec$prolen3),3)
+limite_inferior <- round(mean(inderec$prolen3) - 
+  1.96 * sd(inderec$prolen3) / sqrt(inderec$prolen3),3)
+```
+
+
+
+```r
+inderec$colour <- ifelse(inderec$prolen3 < 0, "negative","positive")
+
+indexplot <- ggplot(inderec,
+                    aes(rev(MES),prolen3))+
+  geom_bar(stat="identity",
+           position="identity",
+           aes(fill = colour))+
+  scale_fill_manual(values=c(positive="firebrick1",
+                             negative="black"),
+                    name="")+
+  facet_wrap(.~ANO)+
+  theme_few()+
+  scale_x_continuous(breaks = seq(from = 1, 
+                                to = 12, by = 4))+
+  labs(y="IRK",
+       x="",
+       title = "Index Recruit Krill 48.1")+
+  coord_flip()
+indexplot
+```
+
+
+
+quiestions about LFD DB
+
+- What is `CAT`
+- Difference between `size` and `sizeE`
+- what variable we can see by `MES`?
+- data about maturity and reproductive indicator?
+- Waypoint by beach?
+
+
+# DENSITY DB
 
 
 ```r
@@ -690,4 +825,7 @@ ggplot () +
 ```
 
 
-# Yield
+# YIELD (CPUE) ANALYSIS
+
+
+# REFERENCES

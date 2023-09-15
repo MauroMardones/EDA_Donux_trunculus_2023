@@ -135,6 +135,9 @@ Now we test.
 ```{r}
 table(size2$ANO)
 ```
+
+
+
 ## Viz
 
 first glimpse. Red line is SL50 (10.8 cm to female (Delgado & Silva, 2016)
@@ -247,11 +250,18 @@ dim(sizeall)
 table(sizeall$ANO)
 ```
 
+Rename values
+
+```{r}
+sizeall2 <- sizeall %>% 
+  mutate(rastro = str_replace_all(rastro, " ", ""))
+unique(sizeall2$rastro)
+```
 
 some plots
 
 ```{r}
-nall <- ggplot(sizeall, 
+nall <- ggplot(sizeall2, 
                aes(x=Size, 
                    y = as.factor(MES),
                   fill= as.factor(rastro)))+
@@ -276,7 +286,7 @@ nall
 
 
 ```{r}
-nallbeach <- ggplot(sizeall, 
+nallbeach <- ggplot(sizeall2, 
                aes(x=Size, 
                    y = as.factor(MES),
                   fill= as.factor(Beach)))+
@@ -300,7 +310,7 @@ nallbeach
 just POBLACIONAL  sample
 
 ```{r}
-pobeach <- ggplot(sizeall %>% 
+pobeach <- ggplot(sizeall2 %>% 
                       filter(rastro!="COMERCIAL"), 
                aes(x=Size, 
                    y = as.factor(MES),
@@ -351,22 +361,20 @@ last month of 2023 (august) by beach
 
 
 ```{r}
-combeachago23 <- ggplot(sizeall %>% 
-                      filter(ANO==2023,
-                             MES==8), 
+combeachago23 <- ggplot(sizeall2 %>% 
+                      filter(ANO==2023), 
                aes(x=Size, fill=rastro))+
   geom_histogram(bins = 80,
-                      alpha=0.9,
-                 col="black")+
-  scale_fill_brewer(palette=2)+
-  facet_wrap(.~Beach, ncol=1) +
+                      alpha=0.7)+
+  scale_fill_viridis_d(option="D")+
+  facet_grid(MES~Beach) +
   geom_vline(xintercept = 10.8, color = "red")+
   theme_few()+
   theme(legend.position = "bottom")+
   xlab("Longitud (cm.)")+
   ylab("")+
   xlim(0,40)+
-  labs(title= "August 2023")
+  labs(title= "Survey 2023")
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
 combeachago23
 ```
@@ -376,33 +384,36 @@ another way to viz is
 scatter plot
 
 ```{r warning=FALSE, message=FALSE}
-coutlength <-sizeall %>% 
+sizemean <-sizeall2 %>% 
   dplyr::group_by(ANO, MES, rastro, Beach) %>%
-  dplyr::summarise(avg=mean(Size))
+  dplyr::summarise(avg=mean(SizeE))
 #kableExtra::kable(coutlength, format = "html")
 ```
 
 Mean length in time series by Subarea.
 
 ```{r, fig.align="center", warning=FALSE}
-pmea <- ggplot(coutlength, 
-               aes(MES,avg))+
-    geom_point(show.legend = T) +
-    stat_smooth(method= "glm", colour='#253494')+
+pmea <- ggplot(sizemean, 
+               aes(MES,avg,
+               color = factor(Beach)))+
+    geom_point(show.legend = T,
+               alpha=.7) +
+    geom_smooth(method= "lm", 
+                colour='#253494')+
     theme_few()+ 
     facet_grid(rastro~ANO)+
     scale_x_continuous(breaks = seq(from = 1, to = 12, by = 3))+
     #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
     theme(axis.text.x = element_text(angle = 90))+
     guides(fill = guide_legend(reverse=F))+
-    scale_fill_viridis_c(option="E")+
-    ylim(3,6)+
+    scale_color_viridis_d(option="H",
+                          name="Beach")+
+    ylim(15,30)+
     ylab("") +
     xlab("") +
     ggtitle("Lenght Mean Krill fishery")
 pmea
 ```
-
 
 Calculate a recruit index
 
@@ -413,7 +424,7 @@ inderec <- sizeall %>%
   filter(rastro=="POBLACIONAL") %>% 
   drop_na(Size) %>% 
   dplyr::group_by(ANO, MES) %>% 
-  dplyr::mutate(prolen = Size - 15) %>% 
+  dplyr::mutate(prolen = Size - 10) %>% 
   dplyr::mutate(prolen2 = prolen*-1 ) %>% 
   dplyr::summarize(prolen3 =mean(prolen2))
 
@@ -425,7 +436,7 @@ limite_inferior <- round(mean(inderec$prolen3) -
 ```
 
 
-```{r}
+```{r eval=FALSE}
 inderec$colour <- ifelse(inderec$prolen3 < 0, "negative","positive")
 
 indexplot <- ggplot(inderec,
@@ -453,7 +464,9 @@ quiestions about LFD DB
 
 - What is `CAT`
 - Difference between `size` and `sizeE`
--what variable we can see by `MES`?
+- what variable we can see by `MES`?
+- data about maturity and reproductive indicator?
+- Waypoint by beach?
 
 
 # DENSITY DB
@@ -470,3 +483,6 @@ ggplot () +
 
 
 # YIELD (CPUE) ANALYSIS
+
+
+# REFERENCES
