@@ -347,8 +347,31 @@ combeach <- ggplot(sizeall %>%
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
 combeach
 ```
+last month of 2023 (august) by beach 
 
-another way to viz
+
+```{r}
+combeachago23 <- ggplot(sizeall %>% 
+                      filter(ANO==2023,
+                             MES==8), 
+               aes(x=Size, fill=rastro))+
+  geom_histogram(bins = 80,
+                      alpha=0.9,
+                 col="black")+
+  scale_fill_brewer(palette=2)+
+  facet_wrap(.~Beach, ncol=1) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  theme_few()+
+  theme(legend.position = "bottom")+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,40)+
+  labs(title= "August 2023")
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+combeachago23
+```
+
+another way to viz is 
 
 scatter plot
 
