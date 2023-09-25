@@ -365,8 +365,8 @@ combeachago23 <- ggplot(sizeall2 %>%
                       filter(ANO==2023), 
                aes(x=Size, fill=rastro))+
   geom_histogram(bins = 80,
-                      alpha=0.7)+
-  scale_fill_viridis_d(option="D")+
+                      alpha=0.8)+
+  scale_fill_manual(values = c("red", "blue"))+
   facet_grid(MES~Beach) +
   geom_vline(xintercept = 10.8, color = "red")+
   theme_few()+
@@ -460,13 +460,16 @@ indexplot
 
 
 
-quiestions about LFD DB
+# Quesstions 
+
+## LFD DB
 
 - What is `CAT`
 - Difference between `size` and `sizeE`
-- what variable we can see by `MES`?
+- what variable we can see binside `MES`?
 - data about maturity and reproductive indicator?
-- Waypoint by beach?
+- Waypoint by beach?.
+- How calculate recruit index and another way.
 
 
 # DENSITY DB
