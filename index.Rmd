@@ -54,13 +54,28 @@ library(ggthemes)
 The following document and code intends to carry out a complementary
 methodological Exploratory Data Analysis from survey data in coquina (*Donux truculus*) in a historic context review of FEMP_AND_04 proyect.
 
-In this case, we analised biological component like lengths structure, density indicator and fishery yield in CPUE type.
+In this case, we analysed biological component like lengths structure, density indicator and fishery yield in CPUE type.
+
+
+## APPROACH EDA
+
+These data, spetially length frecuencies, must be weighted to the sampling estimates, because they are just a subsample. This approach has a logic used like Figure 1;
+
+```{r echo=FALSE, out.width = "130%", fig.align='center', fig.cap= "Zona de Estudio Reineta Assessment"}
+knitr::include_graphics("Fig/Fig1.png")
+```
+
+```{r echo=FALSE, out.width = "130%", fig.align='center', fig.cap= "Zona de Estudio Reineta Assessment"}
+knitr::include_graphics("Fig/Fig2.png")
+```
+
+
 
 
 ## Set path
 
 ```{r}
-data <- here("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data")
+data <- here("EDA_Donux_trunculus_2023")
 ```
 # LENGTH FRECUENCY DB
 
@@ -393,7 +408,8 @@ sizemean <-sizeall2 %>%
 Mean length in time series by Subarea.
 
 ```{r, fig.align="center", warning=FALSE}
-pmea <- ggplot(sizemean, 
+pmea <- ggplot(sizemean %>% 
+                rastro=!"COMERCIALNEW", 
                aes(MES,avg,
                color = factor(Beach)))+
     geom_point(show.legend = T,
@@ -470,9 +486,12 @@ indexplot
 - data about maturity and reproductive indicator?
 - Waypoint by beach?.
 - How calculate recruit index and another way.
+- Weigthing LF sensu MD.
 
 
 # DENSITY DB
+
+
 
 ```{r eval=FALSE}
 ggplot () + 

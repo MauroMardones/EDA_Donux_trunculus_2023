@@ -6,13 +6,46 @@
 
 ##DATOS
 
-dataP<-merge(Data_sample_POBL,Data_size_POBL,by="ID_codificado_punto")#Creados a partir de Data_sample y Data_size, y seleccionando poblacional solo
+dataP<-merge(Data_sample_POBL,
+             Data_size_POBL,
+             by="ID_codificado_punto")#Creados a partir de Data_sample y Data_size, y seleccionando poblacional solo
 
 dataP<-dataP[-c(8,9,10,11,22,36,37,38,39,40,44,45,46,47,48,49,50,51,54)]
 
-names(dataP)<-c("ID","month","Date","Beach","Sampling.point","m_track","tow_time","Lat","Long","rastro","mariscador",
-                "SW","SWsub","CSWsub","MCSWsub","fps","CSW","MSCW","DCSWsub","DCSW","TCSW","Btotal","Categoria","CAT","Nmedida","fpn",
-                "NtotalCSW","Ndanossub","Ndanos","Ntotal","area","bio","dens","size","sizeE")
+names(dataP)<-c("ID",
+                "month",
+                "Date",
+                "Beach",
+                "Sampling.point",
+                "m_track",
+                "tow_time",
+                "Lat","Long",
+                "rastro",
+                "mariscador",
+                "SW",
+                "SWsub",
+                "CSWsub",
+                "MCSWsub",
+                "fps",
+                "CSW",
+                "MSCW",
+                "DCSWsub",
+                "DCSW",
+                "TCSW",
+                "Btotal",
+                "Categoria",
+                "CAT",
+                "Nmedida",
+                "fpn",
+                "NtotalCSW", 
+                "Ndanossub",
+                 "Ndanos",
+                "Ntotal",
+                "area",
+                "bio",
+                "dens",
+                "size",
+                "sizeE")
 
 #Herramienta ayuda para Manejo datos
 unique(Data_sample_POBL$ID)
@@ -49,7 +82,7 @@ head(resultN15)
 
 #months<-10#Para hacer solo un mes concreto en bucle
 #months<-c(1:12)#Para 2021, puntos 2, 4 y 6
-months<-c(1,2,3,4,5,6,7,8,10,11,12)#Falta mes septiembre 2022
+months<-c(1,2,3,4,5,6,7,8,10,11,12) #Falta mes septiembre 2022
 months<-c(3,7,11)#Espacial en 2022
 #months<-c(1,4,7,10,12)#Para 2021, puntos 9, 10 y 11
 
