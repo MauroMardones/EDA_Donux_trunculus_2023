@@ -2,7 +2,10 @@
 title: "Historical survey EDA Donux trunculus 2023"
 subtitle: "Complementary analysis to advice and management report FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "15 September, 2023"
+date:  "27 September, 2023"
+bibliography: EDA_donux.bib
+csl: apa.csl
+link-citations: yes
 linkcolor: blue
 output:
   html_document:
@@ -31,7 +34,8 @@ knitr::opts_chunk$set(echo = TRUE,
                       warning = FALSE,
                       fig.align = 'center',
                       dev = 'jpeg',
-                      dpi = 300)
+                      dpi = 300, 
+                      fig.align='center')
 #XQuartz is a mess, put this in your onload to default to cairo instead
 options(bitmapType = "cairo") 
 # (https://github.com/tidyverse/ggplot2/issues/2655)
@@ -54,16 +58,35 @@ library(ggthemes)
 
 
 The following document and code intends to carry out a complementary
-methodological Exploratory Data Analysis from survey data in coquina (*Donux truculus*) in a historic context review of FEMP_AND_04 proyect.
+methodological Exploratory Data Analysis from survey data in coquina (*Donux truculus*) in a historic context review of FEMP_AND_04 project.
 
-In this case, we analised biological component like lengths structure, density indicator and fishery yield in CPUE type.
+In this case, we analysed biological component like lengths structure, density indicator and fishery yield in CPUE type.
 
+This analysis are essential to give advice to Junta de Andaluacía through management plan to D. trunculus [@BOJA2023].
+
+## APPROACH EDA
+
+These data, spetially length frecuencies, must be weighted to the sampling estimates, because they are just a subsample. This approach has a logic used like  \@ref(fig:edaplot1) and Figure\@ref(fig:edaplot2).;
+
+<div class="figure" style="text-align: center">
+<img src="index_files/figure-html/edaplot1-1.jpeg" alt="Poblacional sample scheme EDA"  />
+<p class="caption">Poblacional sample scheme EDA</p>
+</div>
+
+<div class="figure" style="text-align: center">
+<img src="Fig/Fig2.png" alt="Comercial sample scheme EDA" width="332" />
+<p class="caption">Comercial sample scheme EDA</p>
+</div>
 
 ## Set path
 
 
 ```r
-data <- here("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data")
+here::here()
+```
+
+```
+## [1] "/Users/mauriciomardones/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/EDA_Donux_truculus_2023"
 ```
 # LENGTH FRECUENCY DB
 
@@ -72,14 +95,86 @@ data <- here("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data")
 
 
 ```r
-size2017 <- read.csv("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Anterior a 2020/data_ieo_2017_def.csv", sep = ";")
-size2018 <- read.csv("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Anterior a 2020/data_ieo_2018_def.csv", sep = ";")
-size2019 <- read.csv("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Anterior a 2020/data_ieo_2019_def.csv", sep = ";")
-size2020 <- read.csv("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Anterior a 2020/data_ieo_2020_def.csv", sep = ";")
+# Datos 2020 pre chave size and dens and abundance
+size2017 <- read_csv2(here("Data", "Anterior a 2020", "data_ieo_2017_def.csv"))
+size2018 <- read_csv2(here("Data", "Anterior a 2020", "data_ieo_2018_def.csv"))
+size2019 <- read_csv2(here("Data", "Anterior a 2020", "data_ieo_2019_def.csv"))
+size2020 <- read_csv2(here("Data", "Anterior a 2020", "data_ieo_2020_def.csv"))
 
-size2021 <- read_excel("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Posterior 2020/Data_size_Coquina_2021.xlsx", sheet = "Coquina_donax")
-size2022 <- read_excel("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Posterior 2020/Data_size_Coquina_2022.xlsx",  sheet = "Coquina_donax")
-size2023 <- read_excel("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Posterior 2020/Data_size_Coquina_2023.xlsx",  sheet = "Coquina_Donax")
+# datos post 2020 separate files sizes and dens
+
+# Lenght 
+size2021 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2021.xlsx"), 
+                       sheet = "Coquina_donax")
+size2022 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2022.xlsx"),  
+                       sheet = "Coquina_donax")
+size2023 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2023.xlsx"),  
+                       sheet = "Coquina_Donax")
+# Dens 
+size2021 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2021.xlsx"), 
+                       sheet = "Coquina_donax")
+size2022 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2022.xlsx"),  
+                       sheet = "Coquina_donax")
+size2023 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2023.xlsx"),  
+                       sheet = "Coquina_Donax")
+
+dens2021pob <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2021.xlsx"),
+                       sheet = "Data_POBL")
+dens2021com <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2021.xlsx"),
+                       sheet = "DATA_COM")
+
+dens2022pob <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2022.xlsx"),
+                       sheet = "Data_POBL")
+dens2022com <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2022.xlsx"),
+                       sheet = "DATA_COM")
+
+dens2023pob <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2023.xlsx"),
+                       sheet = "Data_POBL")
+dens2023com <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2023.xlsx"),
+                       sheet = "DATA_COM")
+
+head(dens2023pob)
+```
+
+```
+## # A tibble: 6 × 44
+##   Month Date                Beach     Sampl…¹ m_track tow_t…²  Latº Latmin Longº
+##   <dbl> <dttm>              <chr>       <dbl>   <dbl>   <dbl> <dbl>  <dbl> <dbl>
+## 1     1 2023-01-24 00:00:00 Donana_n…       6      52       5    36   56.8     6
+## 2     1 2023-01-24 00:00:00 Donana_n…       6      52       5    36   56.8     6
+## 3     1 2023-01-24 00:00:00 Donana_n…       4      57       5    36   53.4     6
+## 4     1 2023-01-24 00:00:00 Donana_n…       4      57       5    36   53.4     6
+## 5     1 2023-01-24 00:00:00 Donana_s…       2      61       5    36   50.2     6
+## 6     1 2023-01-24 00:00:00 Donana_s…       2      61       5    36   50.2     6
+## # … with 35 more variables: Longmin <dbl>, Lat <lgl>, Long <lgl>, rastro <chr>,
+## #   mariscador <chr>, SW <dbl>, SWsub <dbl>, CSWsub <dbl>, MCSWsub <dbl>,
+## #   fps <dbl>, CSW <dbl>, fpm <dbl>, MCSW <dbl>, DCSWsub <dbl>, DCSW <dbl>,
+## #   TCSW <dbl>, Btotal <dbl>, Categoria <chr>, CAT <dbl>, Nmedida <dbl>,
+## #   fpn <dbl>, NtotalCSW <dbl>, Ndañossub <dbl>, Ndaños <dbl>, Ntotal <dbl>,
+## #   Tide_coef <dbl>, Low_tide_hour <dttm>, Catch_hour <dttm>, species <chr>,
+## #   Temp <lgl>, area <dbl>, bio <dbl>, dens <dbl>, ID <chr>, …
+```
+
+```r
+names(dens2021com)
+```
+
+```
+##  [1] "month"                  "Date"                   "Beach"                 
+##  [4] "Sampling.point"         "m_track"                "tow_time"              
+##  [7] "Latº"                   "Latmin"                 "Longº"                 
+## [10] "Longmin"                "Lat"                    "Long"                  
+## [13] "rastro"                 "mariscador"             "SW"                    
+## [16] "SWsub"                  "CSWsub"                 "CMSWsub"               
+## [19] "MCSWsub"                "fps"                    "CSW"                   
+## [22] "CMSW"                   "MCSW"                   "DCSWsub"               
+## [25] "DCSW"                   "TCSW"                   "Rend"                  
+## [28] "Categoria"              "CAT"                    "Nmedida"               
+## [31] "fpn"                    "NtotalCSW"              "Ndañossub"             
+## [34] "Ndaños"                 "Ntotal"                 "Tide_coef"             
+## [37] "Low_tide_hour"          "Catch_hour"             "species"               
+## [40] "Temp"                   "ID"                     "ID_codificado_punto"   
+## [43] "ID_codificado_muestreo"
 ```
 
 ## Test dimension and names columns and diferences
@@ -267,7 +362,7 @@ glimpse(size_17_20)
 ```
 ## Rows: 62,083
 ## Columns: 28
-## $ months                      <int> 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, …
+## $ months                      <dbl> 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, …
 ## $ Date                        <chr> "13/07/2017", "13/07/2017", "13/07/2017", …
 ## $ Beach                       <chr> "Donana", "Donana", "Donana", "Donana", "D…
 ## $ Sampling.point              <chr> "2", "2", "2", "2", "2", "2", "2", "2", "2…
@@ -276,7 +371,7 @@ glimpse(size_17_20)
 ## $ long_1                      <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
 ## $ lat_2                       <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
 ## $ long_2                      <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
-## $ plus_m                      <int> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ plus_m                      <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
 ## $ tow_time                    <dbl> 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, …
 ## $ rastro                      <chr> "COMERCIAL", "COMERCIAL", "COMERCIAL", "CO…
 ## $ zaranda                     <chr> "R", "R", "R", "R", "R", "R", "R", "R", "R…
@@ -285,13 +380,13 @@ glimpse(size_17_20)
 ## $ Sample_weight               <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
 ## $ Clam_sample_weigth          <dbl> 195, 195, 195, 195, 195, 195, 195, 195, 19…
 ## $ Measured_clam_sample_weigth <dbl> 195, 195, 195, 195, 195, 195, 195, 195, 19…
-## $ CAT                         <int> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
-## $ Categoria                   <chr> "", "", "", "", "", "", "", "", "", "", ""…
-## $ Size                        <dbl> 27.21, 26.65, 26.65, 25.07, 27.49, 26.15, …
-## $ SizeE                       <int> 27, 26, 26, 25, 27, 26, 26, 28, 25, 28, 26…
-## $ Tide_coef                   <int> 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72…
-## $ Low_tide_hour               <chr> "12:30 AM", "12:30 AM", "12:30 AM", "12:30…
-## $ Sampling_hour               <chr> "", "", "", "", "", "", "", "", "", "", ""…
+## $ CAT                         <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+## $ Categoria                   <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ Size                        <dbl> 2721, 2665, 2665, 2507, 2749, 2615, 2647, …
+## $ SizeE                       <dbl> 27, 26, 26, 25, 27, 26, 26, 28, 25, 28, 26…
+## $ Tide_coef                   <dbl> 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72…
+## $ Low_tide_hour               <time> 00:30:00, 00:30:00, 00:30:00, 00:30:00, 0…
+## $ Sampling_hour               <time> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, N…
 ## $ number_fisherman            <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
 ## $ veda                        <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
 ## $ dists                       <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
@@ -699,8 +794,8 @@ combeachago23 <- ggplot(sizeall2 %>%
                       filter(ANO==2023), 
                aes(x=Size, fill=rastro))+
   geom_histogram(bins = 80,
-                      alpha=0.7)+
-  scale_fill_viridis_d(option="D")+
+                      alpha=0.8)+
+  scale_fill_manual(values = c("red", "blue"))+
   facet_grid(MES~Beach) +
   geom_vline(xintercept = 10.8, color = "red")+
   theme_few()+
@@ -802,16 +897,22 @@ indexplot
 
 
 
-quiestions about LFD DB
+# Quesstions 
+
+## LFD DB
 
 - What is `CAT`
 - Difference between `size` and `sizeE`
-- what variable we can see by `MES`?
+- what variable we can see binside `MES`?
 - data about maturity and reproductive indicator?
-- Waypoint by beach?
+- Waypoint by beach?.
+- How calculate recruit index and another way.
+- Weigthing LF sensu MD.
 
 
 # DENSITY DB
+
+
 
 
 ```r

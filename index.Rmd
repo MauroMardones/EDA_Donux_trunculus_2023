@@ -3,6 +3,9 @@ title: "Historical survey EDA Donux trunculus 2023"
 subtitle: "Complementary analysis to advice and management report FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
 date:  "`r format(Sys.time(), '%d %B, %Y')`"
+bibliography: EDA_donux.bib
+csl: apa.csl
+link-citations: yes
 linkcolor: blue
 output:
   html_document:
@@ -30,7 +33,8 @@ knitr::opts_chunk$set(echo = TRUE,
                       warning = FALSE,
                       fig.align = 'center',
                       dev = 'jpeg',
-                      dpi = 300)
+                      dpi = 300, 
+                      fig.align='center')
 #XQuartz is a mess, put this in your onload to default to cairo instead
 options(bitmapType = "cairo") 
 # (https://github.com/tidyverse/ggplot2/issues/2655)
@@ -52,30 +56,28 @@ library(ggthemes)
 
 
 The following document and code intends to carry out a complementary
-methodological Exploratory Data Analysis from survey data in coquina (*Donux truculus*) in a historic context review of FEMP_AND_04 proyect.
+methodological Exploratory Data Analysis from survey data in coquina (*Donux truculus*) in a historic context review of FEMP_AND_04 project.
 
 In this case, we analysed biological component like lengths structure, density indicator and fishery yield in CPUE type.
 
+This analysis are essential to give advice to Junta de Andaluacía through management plan to D. trunculus [@BOJA2023].
 
 ## APPROACH EDA
 
-These data, spetially length frecuencies, must be weighted to the sampling estimates, because they are just a subsample. This approach has a logic used like Figure 1;
+These data, spetially length frecuencies, must be weighted to the sampling estimates, because they are just a subsample. This approach has a logic used like  \@ref(fig:edaplot1) and Figure\@ref(fig:edaplot2).;
 
-```{r echo=FALSE, out.width = "130%", fig.align='center', fig.cap= "Zona de Estudio Reineta Assessment"}
+```{r edaplot1, echo=FALSE, fig.cap= 'Poblacional sample scheme EDA"}
 knitr::include_graphics("Fig/Fig1.png")
 ```
 
-```{r echo=FALSE, out.width = "130%", fig.align='center', fig.cap= "Zona de Estudio Reineta Assessment"}
+```{r edaplot2, echo=FALSE, fig.cap= "Comercial sample scheme EDA"}
 knitr::include_graphics("Fig/Fig2.png")
 ```
-
-
-
 
 ## Set path
 
 ```{r}
-data <- here("EDA_Donux_trunculus_2023")
+here::here()
 ```
 # LENGTH FRECUENCY DB
 
@@ -83,14 +85,48 @@ data <- here("EDA_Donux_trunculus_2023")
 ## Read Data Base
 
 ```{r}
-size2017 <- read.csv("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Anterior a 2020/data_ieo_2017_def.csv", sep = ";")
-size2018 <- read.csv("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Anterior a 2020/data_ieo_2018_def.csv", sep = ";")
-size2019 <- read.csv("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Anterior a 2020/data_ieo_2019_def.csv", sep = ";")
-size2020 <- read.csv("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Anterior a 2020/data_ieo_2020_def.csv", sep = ";")
+# Datos 2020 pre chave size and dens and abundance
+size2017 <- read_csv2(here("Data", "Anterior a 2020", "data_ieo_2017_def.csv"))
+size2018 <- read_csv2(here("Data", "Anterior a 2020", "data_ieo_2018_def.csv"))
+size2019 <- read_csv2(here("Data", "Anterior a 2020", "data_ieo_2019_def.csv"))
+size2020 <- read_csv2(here("Data", "Anterior a 2020", "data_ieo_2020_def.csv"))
 
-size2021 <- read_excel("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Posterior 2020/Data_size_Coquina_2021.xlsx", sheet = "Coquina_donax")
-size2022 <- read_excel("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Posterior 2020/Data_size_Coquina_2022.xlsx",  sheet = "Coquina_donax")
-size2023 <- read_excel("~/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/Posterior 2020/Data_size_Coquina_2023.xlsx",  sheet = "Coquina_Donax")
+# datos post 2020 separate files sizes and dens
+
+# Lenght 
+size2021 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2021.xlsx"), 
+                       sheet = "Coquina_donax")
+size2022 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2022.xlsx"),  
+                       sheet = "Coquina_donax")
+size2023 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2023.xlsx"),  
+                       sheet = "Coquina_Donax")
+# Dens 
+size2021 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2021.xlsx"), 
+                       sheet = "Coquina_donax")
+size2022 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2022.xlsx"),  
+                       sheet = "Coquina_donax")
+size2023 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2023.xlsx"),  
+                       sheet = "Coquina_Donax")
+
+dens2021pob <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2021.xlsx"),
+                       sheet = "Data_POBL")
+dens2021com <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2021.xlsx"),
+                       sheet = "DATA_COM")
+
+dens2022pob <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2022.xlsx"),
+                       sheet = "Data_POBL")
+dens2022com <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2022.xlsx"),
+                       sheet = "DATA_COM")
+
+dens2023pob <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2023.xlsx"),
+                       sheet = "Data_POBL")
+dens2023com <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2023.xlsx"),
+                       sheet = "DATA_COM")
+
+head(dens2023pob)
+names(dens2021com)
+
+
 ```
 
 ## Test dimension and names columns and diferences
@@ -408,8 +444,7 @@ sizemean <-sizeall2 %>%
 Mean length in time series by Subarea.
 
 ```{r, fig.align="center", warning=FALSE}
-pmea <- ggplot(sizemean %>% 
-                rastro=!"COMERCIALNEW", 
+pmea <- ggplot(sizemean, 
                aes(MES,avg,
                color = factor(Beach)))+
     geom_point(show.legend = T,
