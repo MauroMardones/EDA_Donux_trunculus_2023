@@ -6,8 +6,8 @@
 
 ##DATOS
 
-dataP<-merge(Data_sample_POBL,
-             Data_size_POBL,
+dataP<-merge(dens2021pob,
+             size2021,
              by="ID_codificado_punto")#Creados a partir de Data_sample y Data_size, y seleccionando poblacional solo
 
 dataP<-dataP[-c(8,9,10,11,22,36,37,38,39,40,44,45,46,47,48,49,50,51,54)]

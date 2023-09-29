@@ -42,7 +42,6 @@ options(bitmapType = "cairo")
 # Lo mapas se hacen mas rapido
 ```
 
-
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(ggridges)
@@ -57,22 +56,35 @@ library(ggthemes)
 ## Set path
 here::here()
 ```
+
 # OBJETIVO
 
-
 The following document and code intends to carry out a complementary
-methodological Exploratory Data Analysis from survey data in coquina (*Donux truculus*) in a historic context review of FEMP_AND_04 project.
+methodological Exploratory Data Analysis from survey data in coquina
+(*Donux truculus*) in a historic context review of FEMP_AND_04 project.
 
-In this case, we analysed biological component like lengths structure, density indicator and fishery yield in CPUE type.
+In this case, we analysed biological component like lengths structure,
+density indicator and fishery yield in CPUE type.
 
-This analysis are essential to give advice to Junta de Andaluacía through management plan to D. trunculus [@BOJA2023].
+This analysis are essential to give advice to Junta de Andaluacía
+through management plan to D. trunculus [@BOJA2023].
 
 # AREA DE ESTUDIO
 
-La zona de distribución de la coquina objeto de este análisis es en base a la aplicación de la regulación marisquera española, relacionado con la producción. Para ello, el litoral andaluz se dividió en diferentes **zonas de producción** (ZZPP) las cuales se encuentran definidas en la Orden de 15 de julio de 1993 (BOJA nº 85 de 5/8/1993).
+La zona de distribución de la coquina objeto de este análisis es en base
+a la aplicación de la regulación marisquera española, relacionado con la
+producción. Para ello, el litoral andaluz se dividió en diferentes
+**zonas de producción** (ZZPP) las cuales se encuentran definidas en la
+Orden de 15 de julio de 1993 (BOJA nº 85 de 5/8/1993).
 
-En esta Orden se declaran las zonas de producción y protección o mejora de moluscos bivalvos, moluscos gasterópodos, tunicados y equinodermos marinos de la Comunidad Autónoma de Andalucía, fuera de las cuales quedará prohibida la su recolección. Esta norma delimita zonas de producción de moluscos bivalvos a lo largo del litoral andaluz en los cuales se encuentran los puntos de muestreo establecidos en el seguimiento temporal de *D. trunculus* en el litoral de Huelva llevado a cabo por el IEO [@Marco2022] (Figura \@ref(fig:map1)).
-
+En esta Orden se declaran las zonas de producción y protección o mejora
+de moluscos bivalvos, moluscos gasterópodos, tunicados y equinodermos
+marinos de la Comunidad Autónoma de Andalucía, fuera de las cuales
+quedará prohibida la su recolección. Esta norma delimita zonas de
+producción de moluscos bivalvos a lo largo del litoral andaluz en los
+cuales se encuentran los puntos de muestreo establecidos en el
+seguimiento temporal de *D. trunculus* en el litoral de Huelva llevado a
+cabo por el IEO [@Marco2022] (Figura \@ref(fig:map1)).
 
 ```{r map1, echo=FALSE, out.width="60%", fig.cap= "Mapa con los puntos de muestreo establecidos en el seguimiento temporal de D. trunculus en el litoral de Huelva llevado a cabo por el IEO."}
 knitr::include_graphics("Fig/Map1.jpg") 
@@ -80,7 +92,10 @@ knitr::include_graphics("Fig/Map1.jpg")
 
 # ENFOQUE DE AED
 
-These data, spetially length frecuencies, must be weighted to the sampling estimates, because they are just a subsample. This approach has a logic used to `POBLACIONAL` (Figura \@ref(fig:edaplot1)) and `COMERCIAL` samples (Figura \@ref(fig:edaplot2));
+These data, spetially length frecuencies, must be weighted to the
+sampling estimates, because they are just a subsample. This approach has
+a logic used to `POBLACIONAL` (Figura \@ref(fig:edaplot1)) and
+`COMERCIAL` samples (Figura \@ref(fig:edaplot2));
 
 ```{r edaplot1, echo=FALSE, out.width="80%", fig.cap= "Poblacional sample scheme"}
 knitr::include_graphics("Fig/Fig1.png")
@@ -89,7 +104,10 @@ knitr::include_graphics("Fig/Fig1.png")
 ```{r edaplot2, echo=FALSE, out.width="80%",fig.cap= "Comercial sample scheme"}
 knitr::include_graphics("Fig/Fig2.png")
 ```
-En este codigo autocontenido, analizaremos tres componentes de interés. Estructuras de tallas, densidades poblacionales e Indice de reclutamiento.
+
+En este codigo autocontenido, analizaremos tres componentes de interés.
+Estructuras de tallas, densidades poblacionales e Indice de
+reclutamiento.
 
 # BASES DATOS
 
@@ -117,38 +135,44 @@ size2023 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2023.xl
 
 ### Bases de Densidades
 
-Se deben leer las dos hojas `POBLACIONAL` y `COMERCIAL` por separado y luego unir. 
+Se deben leer las dos hojas `POBLACIONAL` y `COMERCIAL` por separado y
+luego unir.
 
-Recordar wque las bases de densidades previas al 2020 estan en la misma base que las longitudes
+Recordar wque las bases de densidades previas al 2020 estan en la misma
+base que las longitudes
+
+```{r}
+dens2021pob <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2021.xlsx"),
+                       sheet = "Data_POBL")
+dens2021com <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2021.xlsx"),
+                       sheet = "DATA_COM")
+dens2022pob <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2022.xlsx"),
+                       sheet = "Data_POBL")
+dens2022com <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2022.xlsx"),
+                       sheet = "DATA_COM")
+dens2023pob <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2023.xlsx"),
+                       sheet = "Data_POBL")
+dens2023com <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2023.xlsx"),
+                       sheet = "DATA_COM")
+```
+
+Identifico las columnas necesarias para el analisis, que en este caso,
+serían las columnas condato crudo.
 
 ```{r}
 
-dens2021pob <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2021.xlsx"),
-                       sheet = "Data_POBL")
-dens2021com <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2021.xlsx"),
-                       sheet = "DATA_COM")
-
-dens2022pob <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2022.xlsx"),
-                       sheet = "Data_POBL")
-dens2022com <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2022.xlsx"),
-                       sheet = "DATA_COM")
-
-dens2023pob <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2023.xlsx"),
-                       sheet = "Data_POBL")
-dens2023com <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2023.xlsx"),
-                       sheet = "DATA_COM")
-
-head(dens2023pob)
-names(dens2021com)
-
-
 ```
+
 # COMPOSICIONES DE TALLAS
 
-Este aspecto se trabaja de forma de ponderación ad-hoc descrita en la Figure \@ref(fig:edaplot1)
-
-
-
+Este aspecto se trabaja de forma de ponderación ad-hoc descrita en la
+Figure \@ref(fig:edaplot1)
 
 ## Test dimension and names columns and diferences
 
@@ -160,7 +184,6 @@ dim(size2020)
 dim(size2021)
 ```
 
-
 ```{r}
 names(size2017)
 names(size2018)
@@ -169,8 +192,8 @@ names(size2020)
 names(size2021)
 ```
 
-
 Same names. Could merge the DF
+
 ```{r}
 size_17_20 <- rbind(size2017,
                     size2018,
@@ -184,6 +207,7 @@ names(size_17_20)
 ```{r}
 glimpse(size_17_20)
 ```
+
 ## Change `Date` columns from `character`to `Date` format
 
 ```{r}
@@ -204,15 +228,18 @@ table(size2$ANO)
 ```
 
 Now we test.
+
 ```{r}
 table(size2$ANO)
 ```
 
-
-
 ## Viz
 
-Primera vizulación de las tallas de coquina diferenciasdas por tipo de muestreo. Línea roja es SL50 (10.8 mm para hembras [@Delgado2017] y línea amarilla es la talla mínima de extracción legal en 25 mm. [@Delgado2018].
+Primera vizulación de las tallas de coquina diferenciasdas por tipo de
+muestreo. Línea roja es SL50 (10.8 mm para hembras [@Delgado2017] y
+línea amarilla es la talla mínima de extracción legal en 25 mm.
+[@Delgado2018].
+
 ```{r}
 nreg <- ggplot(size2 %>% 
                  select(-1), 
@@ -236,8 +263,8 @@ nreg <- ggplot(size2 %>%
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
 nreg
 ```
-by beach
 
+by beach
 
 ```{r}
 nbeach <- ggplot(size2 %>% 
@@ -261,6 +288,7 @@ nbeach <- ggplot(size2 %>%
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
 nbeach
 ```
+
 Now, we handling data 2021-2023. Same columns data 2017-2020
 
 ```{r}
@@ -276,6 +304,7 @@ size_21_23 <- rbind(size2021b,
                     size2022b,
                     size2023b)
 ```
+
 ## Separate `Date` column
 
 ```{r}
@@ -292,8 +321,8 @@ size3<-cbind(dfdate2,ANO,MES,DIA,size_21_23)
 colnames(size3)
 table(size3$ANO)
 ```
-Now join all years
 
+Now join all years
 
 ```{r}
 names(size2) # 2017-2020
@@ -314,7 +343,6 @@ names(size3fil)# 2021-2023
 
 sizeall <- rbind(size2fil, size3fil)
 ```
-
 
 check
 
@@ -355,8 +383,8 @@ nall <- ggplot(sizeall2,
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
 nall
 ```
-La 
 
+La
 
 ```{r}
 nallbeach <- ggplot(sizeall2, 
@@ -380,7 +408,8 @@ nallbeach <- ggplot(sizeall2,
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
 nallbeach
 ```
-just POBLACIONAL  sample
+
+just POBLACIONAL sample
 
 ```{r}
 pobeach <- ggplot(sizeall2 %>% 
@@ -405,6 +434,7 @@ pobeach <- ggplot(sizeall2 %>%
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
 pobeach
 ```
+
 justm COMERCIAL sample
 
 ```{r}
@@ -430,8 +460,8 @@ combeach <- ggplot(sizeall %>%
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
 combeach
 ```
-last month of 2023 (august) by beach 
 
+last month of 2023 (august) by beach
 
 ```{r}
 combeachago23 <- ggplot(sizeall2 %>% 
@@ -452,7 +482,7 @@ combeachago23 <- ggplot(sizeall2 %>%
 combeachago23
 ```
 
-another way to viz is 
+another way to viz is
 
 scatter plot
 
@@ -508,7 +538,6 @@ limite_inferior <- round(mean(inderec$prolen3) -
   1.96 * sd(inderec$prolen3) / sqrt(inderec$prolen3),3)
 ```
 
-
 ```{r eval=FALSE}
 inderec$colour <- ifelse(inderec$prolen3 < 0, "negative","positive")
 
@@ -531,14 +560,7 @@ indexplot <- ggplot(inderec,
 indexplot
 ```
 
-
-
-
-
-
 # DENSIDAD DB
-
-
 
 ```{r eval=FALSE}
 ggplot () + 
@@ -558,13 +580,13 @@ ggplot () +
 
 ## LFD DB
 
-- What is `CAT`
-- Difference between `size` and `sizeE`
-- what variable we can see binside `MES`?
-- data about maturity and reproductive indicator?
-- Waypoint by beach?.
-- How calculate recruit index and another way.
-- Weigthing LF sensu MD.
-- como se consigue la estructura luego de ser ponderada?
+-   What is `CAT`
+-   Difference between `size` and `sizeE`
+-   what variable we can see binside `MES`?
+-   data about maturity and reproductive indicator?
+-   Waypoint by beach?.
+-   How calculate recruit index and another way.
+-   Weigthing LF sensu MD.
+-   como se consigue la estructura luego de ser ponderada?
 
 # REFERENCES
