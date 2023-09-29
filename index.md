@@ -56,7 +56,7 @@ library(ggthemes)
 ```
 
 
-# OBJECTIVO
+# OBJETIVO
 
 
 The following document and code intends to carry out a complementary
@@ -469,7 +469,7 @@ table(size2$ANO)
 
 ## Viz
 
-first glimpse. Red line is SL50 (10.8 cm to female (Delgado & Silva, 2016)
+Primera vizulación de las tallas de coquina diferenciasdas por tipo de muestreo. Línea roja es SL50 (10.8 mm para hembras [@Delgado2017] y línea amarilla es la talla mínima de extracción legal en 25 mm. [@Delgado2018].
 
 ```r
 nreg <- ggplot(size2 %>% 
@@ -483,6 +483,7 @@ nreg <- ggplot(size2 %>%
                       alpha=0.7)+
   facet_wrap(.~ANO, ncol=4) +
   geom_vline(xintercept = 10.8, color = "red")+
+  geom_vline(xintercept = 25, color = "yellow")+
   scale_fill_manual(values = c("#636363", "#2c7fb8", "#de2d26", "#756bb1", "#2ca25f"),
                        name="Rastro")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
@@ -716,7 +717,7 @@ nall
 ```
 
 <img src="index_files/figure-html/unnamed-chunk-18-1.jpeg" style="display: block; margin: auto;" />
-
+La 
 
 
 
@@ -912,20 +913,10 @@ indexplot
 
 
 
-# Quesstions 
-
-## LFD DB
-
-- What is `CAT`
-- Difference between `size` and `sizeE`
-- what variable we can see binside `MES`?
-- data about maturity and reproductive indicator?
-- Waypoint by beach?.
-- How calculate recruit index and another way.
-- Weigthing LF sensu MD.
 
 
-# DENSITY DB
+
+# DENSIDAD DB
 
 
 
@@ -940,8 +931,21 @@ ggplot () +
             xseg = mtcars$wt)
 ```
 
+# INDICE DE RECLUTAMIENTO DB
 
 # YIELD (CPUE) ANALYSIS
 
+# DUDAS
+
+## LFD DB
+
+- What is `CAT`
+- Difference between `size` and `sizeE`
+- what variable we can see binside `MES`?
+- data about maturity and reproductive indicator?
+- Waypoint by beach?.
+- How calculate recruit index and another way.
+- Weigthing LF sensu MD.
+- como se consigue la estructura luego de ser ponderada?
 
 # REFERENCES

@@ -57,7 +57,7 @@ library(ggthemes)
 ## Set path
 here::here()
 ```
-# OBJECTIVO
+# OBJETIVO
 
 
 The following document and code intends to carry out a complementary
@@ -69,10 +69,9 @@ This analysis are essential to give advice to Junta de Andaluacía through manag
 
 # AREA DE ESTUDIO
 
-La zona de distribuci
+La zona de distribución de la coquina objeto de este análisis es en base a la aplicación de la regulación marisquera española, relacionado con la producción. Para ello, el litoral andaluz se dividió en diferentes **zonas de producción** (ZZPP) las cuales se encuentran definidas en la Orden de 15 de julio de 1993 (BOJA nº 85 de 5/8/1993).
 
-
-Para la aplicación de la regulación marisquera, relacionado con la producción, el litoral andaluz se dividió en diferentes “zonas de producción” (ZZPP) las cuales se encuentran definidas en la Orden de 15 de julio de 1993 (BOJA nº 85 de 5/8/1993)- En esta Orden se declaran las zonas de producción y protección o mejora de moluscos bivalvos, moluscos gasterópodos, tunicados y equinodermos marinos de la Comunidad Autónoma de Andalucía, fuera de las cuales quedará prohibida la su recolección. Esta norma delimita zonas de producción de moluscos bivalvos a lo largo del litoral andaluz en los cuales se encuentran los puntos de muestreo establecidos en el seguimiento temporal de *D. trunculus* en el litoral de Huelva llevado a cabo por el IEO  (Figura \@ref(fig:map1)).
+En esta Orden se declaran las zonas de producción y protección o mejora de moluscos bivalvos, moluscos gasterópodos, tunicados y equinodermos marinos de la Comunidad Autónoma de Andalucía, fuera de las cuales quedará prohibida la su recolección. Esta norma delimita zonas de producción de moluscos bivalvos a lo largo del litoral andaluz en los cuales se encuentran los puntos de muestreo establecidos en el seguimiento temporal de *D. trunculus* en el litoral de Huelva llevado a cabo por el IEO [@Marco2022] (Figura \@ref(fig:map1)).
 
 
 ```{r map1, echo=FALSE, out.width="60%", fig.cap= "Mapa con los puntos de muestreo establecidos en el seguimiento temporal de D. trunculus en el litoral de Huelva llevado a cabo por el IEO."}
@@ -213,7 +212,7 @@ table(size2$ANO)
 
 ## Viz
 
-first glimpse. Red line is SL50 (10.8 cm to female (Delgado & Silva, 2016)
+Primera vizulación de las tallas de coquina diferenciasdas por tipo de muestreo. Línea roja es SL50 (10.8 mm para hembras [@Delgado2017] y línea amarilla es la talla mínima de extracción legal en 25 mm. [@Delgado2018].
 ```{r}
 nreg <- ggplot(size2 %>% 
                  select(-1), 
@@ -226,6 +225,7 @@ nreg <- ggplot(size2 %>%
                       alpha=0.7)+
   facet_wrap(.~ANO, ncol=4) +
   geom_vline(xintercept = 10.8, color = "red")+
+  geom_vline(xintercept = 25, color = "yellow")+
   scale_fill_manual(values = c("#636363", "#2c7fb8", "#de2d26", "#756bb1", "#2ca25f"),
                        name="Rastro")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
@@ -355,7 +355,7 @@ nall <- ggplot(sizeall2,
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
 nall
 ```
-
+La 
 
 
 ```{r}
@@ -536,7 +536,7 @@ indexplot
 
 
 
-# DENSITY DB
+# DENSIDAD DB
 
 
 
@@ -550,6 +550,7 @@ ggplot () +
             xseg = mtcars$wt)
 ```
 
+# INDICE DE RECLUTAMIENTO DB
 
 # YIELD (CPUE) ANALYSIS
 
