@@ -2,13 +2,14 @@
 title: "Historical survey EDA Donux trunculus 2023"
 subtitle: "Complementary analysis to advice and management report FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "27 September, 2023"
+date:  "29 September, 2023"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
 linkcolor: blue
 output:
-  html_document:
+  bookdown::html_document2:
+    fig-caption: yes
     keep_md: true
     toc: true
     toc_deep: 3
@@ -54,7 +55,8 @@ library(readr)
 library(ggthemes)
 ```
 
-# OBJECTIVE
+
+# OBJECTIVO
 
 
 The following document and code intends to carry out a complementary
@@ -64,42 +66,47 @@ In this case, we analysed biological component like lengths structure, density i
 
 This analysis are essential to give advice to Junta de Andaluacía through management plan to D. trunculus [@BOJA2023].
 
-## APPROACH EDA
+# AREA DE ESTUDIO
 
-These data, spetially length frecuencies, must be weighted to the sampling estimates, because they are just a subsample. This approach has a logic used like  \@ref(fig:edaplot1) and Figure\@ref(fig:edaplot2).;
+La zona de distribuci
+
+
+Para la aplicación de la regulación marisquera, relacionado con la producción, el litoral andaluz se dividió en diferentes “zonas de producción” (ZZPP) las cuales se encuentran definidas en la Orden de 15 de julio de 1993 (BOJA nº 85 de 5/8/1993)- En esta Orden se declaran las zonas de producción y protección o mejora de moluscos bivalvos, moluscos gasterópodos, tunicados y equinodermos marinos de la Comunidad Autónoma de Andalucía, fuera de las cuales quedará prohibida la su recolección. Esta norma delimita zonas de producción de moluscos bivalvos a lo largo del litoral andaluz en los cuales se encuentran los puntos de muestreo establecidos en el seguimiento temporal de *D. trunculus* en el litoral de Huelva llevado a cabo por el IEO  (Figura \@ref(fig:map1)).
+
 
 <div class="figure" style="text-align: center">
-<img src="index_files/figure-html/edaplot1-1.jpeg" alt="Poblacional sample scheme EDA"  />
-<p class="caption">Poblacional sample scheme EDA</p>
+<img src="Fig/Map1.jpg" alt="Mapa con los puntos de muestreo establecidos en el seguimiento temporal de D. trunculus en el litoral de Huelva llevado a cabo por el IEO." width="60%" />
+<p class="caption">(\#fig:map1)Mapa con los puntos de muestreo establecidos en el seguimiento temporal de D. trunculus en el litoral de Huelva llevado a cabo por el IEO.</p>
+</div>
+
+# ENFOQUE DE AED
+
+These data, spetially length frecuencies, must be weighted to the sampling estimates, because they are just a subsample. This approach has a logic used to `POBLACIONAL` (Figura \@ref(fig:edaplot1)) and `COMERCIAL` samples (Figura \@ref(fig:edaplot2));
+
+<div class="figure" style="text-align: center">
+<img src="Fig/Fig1.png" alt="Poblacional sample scheme" width="80%" />
+<p class="caption">(\#fig:edaplot1)Poblacional sample scheme</p>
 </div>
 
 <div class="figure" style="text-align: center">
-<img src="Fig/Fig2.png" alt="Comercial sample scheme EDA" width="332" />
-<p class="caption">Comercial sample scheme EDA</p>
+<img src="Fig/Fig2.png" alt="Comercial sample scheme" width="80%" />
+<p class="caption">(\#fig:edaplot2)Comercial sample scheme</p>
 </div>
+En este codigo autocontenido, analizaremos tres componentes de interés. Estructuras de tallas, densidades poblacionales e Indice de reclutamiento.
 
-## Set path
+# BASES DATOS
 
+## Leer y juntar Data Base
 
-```r
-here::here()
-```
-
-```
-## [1] "/Users/mauriciomardones/IEO/DATA/Datos FEMP_AND_04/Coquina_Data/EDA_Donux_truculus_2023"
-```
-# LENGTH FRECUENCY DB
-
-
-## Read Data Base
+### Bases de Longitudes
 
 
 ```r
-# Datos 2020 pre chave size and dens and abundance
-size2017 <- read_csv2(here("Data", "Anterior a 2020", "data_ieo_2017_def.csv"))
-size2018 <- read_csv2(here("Data", "Anterior a 2020", "data_ieo_2018_def.csv"))
-size2019 <- read_csv2(here("Data", "Anterior a 2020", "data_ieo_2019_def.csv"))
-size2020 <- read_csv2(here("Data", "Anterior a 2020", "data_ieo_2020_def.csv"))
+# Datos 2020 size and dens and abundance join
+size2017 <- read.csv2(here("Data", "Anterior a 2020", "data_ieo_2017_def.csv"), dec=".")
+size2018 <- read.csv2(here("Data", "Anterior a 2020", "data_ieo_2018_def.csv"), dec=".")
+size2019 <- read.csv2(here("Data", "Anterior a 2020", "data_ieo_2019_def.csv"), dec=".")
+size2020 <- read.csv2(here("Data", "Anterior a 2020", "data_ieo_2020_def.csv"), dec=".")
 
 # datos post 2020 separate files sizes and dens
 
@@ -110,14 +117,16 @@ size2022 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2022.xl
                        sheet = "Coquina_donax")
 size2023 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2023.xlsx"),  
                        sheet = "Coquina_Donax")
-# Dens 
-size2021 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2021.xlsx"), 
-                       sheet = "Coquina_donax")
-size2022 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2022.xlsx"),  
-                       sheet = "Coquina_donax")
-size2023 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2023.xlsx"),  
-                       sheet = "Coquina_Donax")
+```
 
+### Bases de Densidades
+
+Se deben leer las dos hojas `POBLACIONAL` y `COMERCIAL` por separado y luego unir. 
+
+Recordar wque las bases de densidades previas al 2020 estan en la misma base que las longitudes
+
+
+```r
 dens2021pob <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2021.xlsx"),
                        sheet = "Data_POBL")
 dens2021com <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2021.xlsx"),
@@ -176,6 +185,12 @@ names(dens2021com)
 ## [40] "Temp"                   "ID"                     "ID_codificado_punto"   
 ## [43] "ID_codificado_muestreo"
 ```
+# COMPOSICIONES DE TALLAS
+
+Este aspecto se trabaja de forma de ponderación ad-hoc descrita en la Figure \@ref(fig:edaplot1)
+
+
+
 
 ## Test dimension and names columns and diferences
 
@@ -362,7 +377,7 @@ glimpse(size_17_20)
 ```
 ## Rows: 62,083
 ## Columns: 28
-## $ months                      <dbl> 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, …
+## $ months                      <int> 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, …
 ## $ Date                        <chr> "13/07/2017", "13/07/2017", "13/07/2017", …
 ## $ Beach                       <chr> "Donana", "Donana", "Donana", "Donana", "D…
 ## $ Sampling.point              <chr> "2", "2", "2", "2", "2", "2", "2", "2", "2…
@@ -371,7 +386,7 @@ glimpse(size_17_20)
 ## $ long_1                      <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
 ## $ lat_2                       <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
 ## $ long_2                      <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
-## $ plus_m                      <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ plus_m                      <int> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
 ## $ tow_time                    <dbl> 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, …
 ## $ rastro                      <chr> "COMERCIAL", "COMERCIAL", "COMERCIAL", "CO…
 ## $ zaranda                     <chr> "R", "R", "R", "R", "R", "R", "R", "R", "R…
@@ -380,13 +395,13 @@ glimpse(size_17_20)
 ## $ Sample_weight               <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
 ## $ Clam_sample_weigth          <dbl> 195, 195, 195, 195, 195, 195, 195, 195, 19…
 ## $ Measured_clam_sample_weigth <dbl> 195, 195, 195, 195, 195, 195, 195, 195, 19…
-## $ CAT                         <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
-## $ Categoria                   <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
-## $ Size                        <dbl> 2721, 2665, 2665, 2507, 2749, 2615, 2647, …
-## $ SizeE                       <dbl> 27, 26, 26, 25, 27, 26, 26, 28, 25, 28, 26…
-## $ Tide_coef                   <dbl> 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72…
-## $ Low_tide_hour               <time> 00:30:00, 00:30:00, 00:30:00, 00:30:00, 0…
-## $ Sampling_hour               <time> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, N…
+## $ CAT                         <int> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+## $ Categoria                   <chr> "", "", "", "", "", "", "", "", "", "", ""…
+## $ Size                        <dbl> 27.21, 26.65, 26.65, 25.07, 27.49, 26.15, …
+## $ SizeE                       <int> 27, 26, 26, 25, 27, 26, 26, 28, 25, 28, 26…
+## $ Tide_coef                   <int> 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72…
+## $ Low_tide_hour               <chr> "12:30 AM", "12:30 AM", "12:30 AM", "12:30…
+## $ Sampling_hour               <chr> "", "", "", "", "", "", "", "", "", "", ""…
 ## $ number_fisherman            <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
 ## $ veda                        <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
 ## $ dists                       <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
@@ -463,7 +478,7 @@ nreg <- ggplot(size2 %>%
                    y = as.factor(MES),
                   fill= as.factor(rastro)))+
   geom_density_ridges(stat = "binline", 
-                      bins = 50, 
+                      bins = 40, 
                       scale = 1.2,
                       alpha=0.7)+
   facet_wrap(.~ANO, ncol=4) +
@@ -479,7 +494,7 @@ nreg <- ggplot(size2 %>%
 nreg
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-10-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-11-1.jpeg" style="display: block; margin: auto;" />
 by beach
 
 
@@ -487,11 +502,11 @@ by beach
 ```r
 nbeach <- ggplot(size2 %>% 
                  select(-1), 
-               aes(x=Size, 
+               aes(x=SizeE, 
                    y = as.factor(MES),
                   fill= as.factor(Beach)))+
   geom_density_ridges(stat = "binline", 
-                      bins = 50, 
+                      bins = 40, 
                       scale = 1.2,
                       alpha=0.7)+
   facet_wrap(.~ANO, ncol=4) +
@@ -507,7 +522,7 @@ nbeach <- ggplot(size2 %>%
 nbeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-11-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-12-1.jpeg" style="display: block; margin: auto;" />
 Now, we handling data 2021-2023. Same columns data 2017-2020
 
 
@@ -700,7 +715,7 @@ nall <- ggplot(sizeall2,
 nall
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-17-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-18-1.jpeg" style="display: block; margin: auto;" />
 
 
 
@@ -728,7 +743,7 @@ nallbeach <- ggplot(sizeall2,
 nallbeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-18-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
 just POBLACIONAL  sample
 
 
@@ -756,7 +771,7 @@ pobeach <- ggplot(sizeall2 %>%
 pobeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
 justm COMERCIAL sample
 
 
@@ -784,7 +799,7 @@ combeach <- ggplot(sizeall %>%
 combeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-21-1.jpeg" style="display: block; margin: auto;" />
 last month of 2023 (august) by beach 
 
 
@@ -808,7 +823,7 @@ combeachago23 <- ggplot(sizeall2 %>%
 combeachago23
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-21-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-22-1.jpeg" style="display: block; margin: auto;" />
 
 another way to viz is 
 
@@ -848,7 +863,7 @@ pmea <- ggplot(sizemean,
 pmea
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-23-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-24-1.jpeg" style="display: block; margin: auto;" />
 
 Calculate a recruit index
 

@@ -8,7 +8,8 @@ csl: apa.csl
 link-citations: yes
 linkcolor: blue
 output:
-  html_document:
+  bookdown::html_document2:
+    fig-caption: yes
     keep_md: true
     toc: true
     toc_deep: 3
@@ -52,7 +53,11 @@ library(readr)
 library(ggthemes)
 ```
 
-# OBJECTIVE
+```{r, include=FALSE}
+## Set path
+here::here()
+```
+# OBJECTIVO
 
 
 The following document and code intends to carry out a complementary
@@ -62,34 +67,43 @@ In this case, we analysed biological component like lengths structure, density i
 
 This analysis are essential to give advice to Junta de Andaluacía through management plan to D. trunculus [@BOJA2023].
 
-## APPROACH EDA
+# AREA DE ESTUDIO
 
-These data, spetially length frecuencies, must be weighted to the sampling estimates, because they are just a subsample. This approach has a logic used like  \@ref(fig:edaplot1) and Figure\@ref(fig:edaplot2).;
+La zona de distribuci
 
-```{r edaplot1, echo=FALSE, fig.cap= 'Poblacional sample scheme EDA"}
+
+Para la aplicación de la regulación marisquera, relacionado con la producción, el litoral andaluz se dividió en diferentes “zonas de producción” (ZZPP) las cuales se encuentran definidas en la Orden de 15 de julio de 1993 (BOJA nº 85 de 5/8/1993)- En esta Orden se declaran las zonas de producción y protección o mejora de moluscos bivalvos, moluscos gasterópodos, tunicados y equinodermos marinos de la Comunidad Autónoma de Andalucía, fuera de las cuales quedará prohibida la su recolección. Esta norma delimita zonas de producción de moluscos bivalvos a lo largo del litoral andaluz en los cuales se encuentran los puntos de muestreo establecidos en el seguimiento temporal de *D. trunculus* en el litoral de Huelva llevado a cabo por el IEO  (Figura \@ref(fig:map1)).
+
+
+```{r map1, echo=FALSE, out.width="60%", fig.cap= "Mapa con los puntos de muestreo establecidos en el seguimiento temporal de D. trunculus en el litoral de Huelva llevado a cabo por el IEO."}
+knitr::include_graphics("Fig/Map1.jpg") 
+```
+
+# ENFOQUE DE AED
+
+These data, spetially length frecuencies, must be weighted to the sampling estimates, because they are just a subsample. This approach has a logic used to `POBLACIONAL` (Figura \@ref(fig:edaplot1)) and `COMERCIAL` samples (Figura \@ref(fig:edaplot2));
+
+```{r edaplot1, echo=FALSE, out.width="80%", fig.cap= "Poblacional sample scheme"}
 knitr::include_graphics("Fig/Fig1.png")
 ```
 
-```{r edaplot2, echo=FALSE, fig.cap= "Comercial sample scheme EDA"}
+```{r edaplot2, echo=FALSE, out.width="80%",fig.cap= "Comercial sample scheme"}
 knitr::include_graphics("Fig/Fig2.png")
 ```
+En este codigo autocontenido, analizaremos tres componentes de interés. Estructuras de tallas, densidades poblacionales e Indice de reclutamiento.
 
-## Set path
+# BASES DATOS
 
-```{r}
-here::here()
-```
-# LENGTH FRECUENCY DB
+## Leer y juntar Data Base
 
-
-## Read Data Base
+### Bases de Longitudes
 
 ```{r}
-# Datos 2020 pre chave size and dens and abundance
-size2017 <- read_csv2(here("Data", "Anterior a 2020", "data_ieo_2017_def.csv"))
-size2018 <- read_csv2(here("Data", "Anterior a 2020", "data_ieo_2018_def.csv"))
-size2019 <- read_csv2(here("Data", "Anterior a 2020", "data_ieo_2019_def.csv"))
-size2020 <- read_csv2(here("Data", "Anterior a 2020", "data_ieo_2020_def.csv"))
+# Datos 2020 size and dens and abundance join
+size2017 <- read.csv2(here("Data", "Anterior a 2020", "data_ieo_2017_def.csv"), dec=".")
+size2018 <- read.csv2(here("Data", "Anterior a 2020", "data_ieo_2018_def.csv"), dec=".")
+size2019 <- read.csv2(here("Data", "Anterior a 2020", "data_ieo_2019_def.csv"), dec=".")
+size2020 <- read.csv2(here("Data", "Anterior a 2020", "data_ieo_2020_def.csv"), dec=".")
 
 # datos post 2020 separate files sizes and dens
 
@@ -100,13 +114,15 @@ size2022 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2022.xl
                        sheet = "Coquina_donax")
 size2023 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2023.xlsx"),  
                        sheet = "Coquina_Donax")
-# Dens 
-size2021 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2021.xlsx"), 
-                       sheet = "Coquina_donax")
-size2022 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2022.xlsx"),  
-                       sheet = "Coquina_donax")
-size2023 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2023.xlsx"),  
-                       sheet = "Coquina_Donax")
+```
+
+### Bases de Densidades
+
+Se deben leer las dos hojas `POBLACIONAL` y `COMERCIAL` por separado y luego unir. 
+
+Recordar wque las bases de densidades previas al 2020 estan en la misma base que las longitudes
+
+```{r}
 
 dens2021pob <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2021.xlsx"),
                        sheet = "Data_POBL")
@@ -128,6 +144,12 @@ names(dens2021com)
 
 
 ```
+# COMPOSICIONES DE TALLAS
+
+Este aspecto se trabaja de forma de ponderación ad-hoc descrita en la Figure \@ref(fig:edaplot1)
+
+
+
 
 ## Test dimension and names columns and diferences
 
@@ -199,7 +221,7 @@ nreg <- ggplot(size2 %>%
                    y = as.factor(MES),
                   fill= as.factor(rastro)))+
   geom_density_ridges(stat = "binline", 
-                      bins = 50, 
+                      bins = 40, 
                       scale = 1.2,
                       alpha=0.7)+
   facet_wrap(.~ANO, ncol=4) +
@@ -220,11 +242,11 @@ by beach
 ```{r}
 nbeach <- ggplot(size2 %>% 
                  select(-1), 
-               aes(x=Size, 
+               aes(x=SizeE, 
                    y = as.factor(MES),
                   fill= as.factor(Beach)))+
   geom_density_ridges(stat = "binline", 
-                      bins = 50, 
+                      bins = 40, 
                       scale = 1.2,
                       alpha=0.7)+
   facet_wrap(.~ANO, ncol=4) +
@@ -511,17 +533,7 @@ indexplot
 
 
 
-# Quesstions 
 
-## LFD DB
-
-- What is `CAT`
-- Difference between `size` and `sizeE`
-- what variable we can see binside `MES`?
-- data about maturity and reproductive indicator?
-- Waypoint by beach?.
-- How calculate recruit index and another way.
-- Weigthing LF sensu MD.
 
 
 # DENSITY DB
@@ -541,5 +553,17 @@ ggplot () +
 
 # YIELD (CPUE) ANALYSIS
 
+# DUDAS
+
+## LFD DB
+
+- What is `CAT`
+- Difference between `size` and `sizeE`
+- what variable we can see binside `MES`?
+- data about maturity and reproductive indicator?
+- Waypoint by beach?.
+- How calculate recruit index and another way.
+- Weigthing LF sensu MD.
+- como se consigue la estructura luego de ser ponderada?
 
 # REFERENCES
