@@ -111,9 +111,29 @@ reclutamiento.
 
 # BASES DATOS
 
-## Leer y juntar Data Base
+En este trabajo se deben revisar todos los componentes que se tienen en cuenta, para ello, investigadores del IEO prepararon una descripción de cada fuente , caracteristicas y su escala temporal. La mayoría de estos dsatos son compuestos por el monitoreo y seguimiento científico de **Donax trunculus** en el Golfo de Cádiz lque lleva a cabo el IEO y AGAPA.
 
-### Bases de Longitudes
+
+| Item | Periodo | Observación | Agregación  |
+|:-------:|:------:|:-----------:|:---------:|
+| DESEMBARQUE | 2020-2022 | kg/mariscador o barco/mes | Por playa |
+| ESTRUCTURA TALLAS | 2017-2023 | Datos previos al 2020 deben ser revisados | Por playa, por tipo de rastro |
+| vB Linf | | 46 mm | Revisar |
+| M | | M=2k | Revisar | 
+| vB k || 0.48 | Revisar | 
+| EDAD MÁXIMA | | EM= log(0.01)/M | Revisar | 
+| Parámetros gravimetricos | | a | b | Revisar |
+| DENSIDAD | 2017-2023 | g/m2/  | Mes, Playa, Rastro |
+| RENDIMIENTO (CPUE) | 2018-2023 | 3 horas/mariscador/dia. (180min*peso coquina>25mm*5min) | Por Mes, playa, rastro |
+| INDICE RECLUTAMIENTO (D15) | 2017-2022 | ind/m2 < 15mm | Por Mes, playa, rastro |
+| TALLA PRIMERA MADUREZ |  | L50=10.8mm | L95= pendiente |
+
+
+En cuanto a aspectos reproductivos, la reproducción de coquina es entre los meses de Febrero – julio, con un maximo de desove entre mayo- julio, coincidiendo con la veda [@BOJA2023].
+
+## Leer y juntar Data Base {.tabset .tabset-pills}
+
+### Bases de Longitudes 
 
 ```{r}
 # Datos 2020 size and dens and abundance join
@@ -575,6 +595,8 @@ ggplot () +
 # INDICE DE RECLUTAMIENTO DB
 
 # YIELD (CPUE) ANALYSIS
+
+# DESEMBARQUES OFICIALES
 
 # DUDAS
 

@@ -2,7 +2,7 @@
 title: "Historical survey EDA Donux trunculus 2023"
 subtitle: "Complementary analysis to advice and management report FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "29 September, 2023"
+date:  "04 October, 2023"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -44,7 +44,6 @@ options(bitmapType = "cairo")
 ```
 
 
-
 ```r
 library(tidyverse)
 library(ggridges)
@@ -56,23 +55,35 @@ library(ggthemes)
 ```
 
 
+
 # OBJETIVO
 
-
 The following document and code intends to carry out a complementary
-methodological Exploratory Data Analysis from survey data in coquina (*Donux truculus*) in a historic context review of FEMP_AND_04 project.
+methodological Exploratory Data Analysis from survey data in coquina
+(*Donux truculus*) in a historic context review of FEMP_AND_04 project.
 
-In this case, we analysed biological component like lengths structure, density indicator and fishery yield in CPUE type.
+In this case, we analysed biological component like lengths structure,
+density indicator and fishery yield in CPUE type.
 
-This analysis are essential to give advice to Junta de Andaluacía through management plan to D. trunculus [@BOJA2023].
+This analysis are essential to give advice to Junta de Andaluacía
+through management plan to D. trunculus [@BOJA2023].
 
 # AREA DE ESTUDIO
 
-La zona de distribuci
+La zona de distribución de la coquina objeto de este análisis es en base
+a la aplicación de la regulación marisquera española, relacionado con la
+producción. Para ello, el litoral andaluz se dividió en diferentes
+**zonas de producción** (ZZPP) las cuales se encuentran definidas en la
+Orden de 15 de julio de 1993 (BOJA nº 85 de 5/8/1993).
 
-
-Para la aplicación de la regulación marisquera, relacionado con la producción, el litoral andaluz se dividió en diferentes “zonas de producción” (ZZPP) las cuales se encuentran definidas en la Orden de 15 de julio de 1993 (BOJA nº 85 de 5/8/1993)- En esta Orden se declaran las zonas de producción y protección o mejora de moluscos bivalvos, moluscos gasterópodos, tunicados y equinodermos marinos de la Comunidad Autónoma de Andalucía, fuera de las cuales quedará prohibida la su recolección. Esta norma delimita zonas de producción de moluscos bivalvos a lo largo del litoral andaluz en los cuales se encuentran los puntos de muestreo establecidos en el seguimiento temporal de *D. trunculus* en el litoral de Huelva llevado a cabo por el IEO  (Figura \@ref(fig:map1)).
-
+En esta Orden se declaran las zonas de producción y protección o mejora
+de moluscos bivalvos, moluscos gasterópodos, tunicados y equinodermos
+marinos de la Comunidad Autónoma de Andalucía, fuera de las cuales
+quedará prohibida la su recolección. Esta norma delimita zonas de
+producción de moluscos bivalvos a lo largo del litoral andaluz en los
+cuales se encuentran los puntos de muestreo establecidos en el
+seguimiento temporal de *D. trunculus* en el litoral de Huelva llevado a
+cabo por el IEO [@Marco2022] (Figura \@ref(fig:map1)).
 
 <div class="figure" style="text-align: center">
 <img src="Fig/Map1.jpg" alt="Mapa con los puntos de muestreo establecidos en el seguimiento temporal de D. trunculus en el litoral de Huelva llevado a cabo por el IEO." width="60%" />
@@ -81,7 +92,10 @@ Para la aplicación de la regulación marisquera, relacionado con la producción
 
 # ENFOQUE DE AED
 
-These data, spetially length frecuencies, must be weighted to the sampling estimates, because they are just a subsample. This approach has a logic used to `POBLACIONAL` (Figura \@ref(fig:edaplot1)) and `COMERCIAL` samples (Figura \@ref(fig:edaplot2));
+These data, spetially length frecuencies, must be weighted to the
+sampling estimates, because they are just a subsample. This approach has
+a logic used to `POBLACIONAL` (Figura \@ref(fig:edaplot1)) and
+`COMERCIAL` samples (Figura \@ref(fig:edaplot2));
 
 <div class="figure" style="text-align: center">
 <img src="Fig/Fig1.png" alt="Poblacional sample scheme" width="80%" />
@@ -92,13 +106,36 @@ These data, spetially length frecuencies, must be weighted to the sampling estim
 <img src="Fig/Fig2.png" alt="Comercial sample scheme" width="80%" />
 <p class="caption">(\#fig:edaplot2)Comercial sample scheme</p>
 </div>
-En este codigo autocontenido, analizaremos tres componentes de interés. Estructuras de tallas, densidades poblacionales e Indice de reclutamiento.
+
+En este codigo autocontenido, analizaremos tres componentes de interés.
+Estructuras de tallas, densidades poblacionales e Indice de
+reclutamiento.
 
 # BASES DATOS
 
-## Leer y juntar Data Base
+En este trabajo se deben revisar todos los componentes que se tienen en cuenta, para ello, investigadores del IEO prepararon una descripción de cada fuente , caracteristicas y su escala temporal. La mayoría de estos dsatos son compuestos por el monitoreo y seguimiento científico de **Donax trunculus** en el Golfo de Cádiz lque lleva a cabo el IEO y AGAPA.
 
-### Bases de Longitudes
+
+| Item | Periodo | Observación | Agregación  |
+|:-------:|:------:|:-----------:|:---------:|
+| DESEMBARQUE | 2020-2022 | kg/mariscador o barco/mes | Por playa |
+| ESTRUCTURA TALLAS | 2017-2023 | Datos previos al 2020 deben ser revisados | Por playa, por tipo de rastro |
+| vB Linf | | 46 mm | Revisar |
+| M | | M=2k | Revisar | 
+| vB k || 0.48 | Revisar | 
+| EDAD MÁXIMA | | EM= log(0.01)/M | Revisar | 
+| Parámetros gravimetricos | | a | b | Revisar |
+| DENSIDAD | 2017-2023 | g/m2/  | Mes, Playa, Rastro |
+| RENDIMIENTO (CPUE) | 2018-2023 | 3 horas/mariscador/dia. (180min*peso coquina>25mm*5min) | Por Mes, playa, rastro |
+| INDICE RECLUTAMIENTO (D15) | 2017-2022 | ind/m2 < 15mm | Por Mes, playa, rastro |
+| TALLA PRIMERA MADUREZ |  | L50=10.8mm | L95= pendiente |
+
+
+En cuanto a aspectos reproductivos, la reproducción de coquina es entre los meses de Febrero – julio, con un maximo de desove entre mayo- julio, coincidiendo con la veda [@BOJA2023].
+
+## Leer y juntar Data Base {.tabset .tabset-pills}
+
+### Bases de Longitudes 
 
 
 ```r
@@ -121,76 +158,43 @@ size2023 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2023.xl
 
 ### Bases de Densidades
 
-Se deben leer las dos hojas `POBLACIONAL` y `COMERCIAL` por separado y luego unir. 
+Se deben leer las dos hojas `POBLACIONAL` y `COMERCIAL` por separado y
+luego unir.
 
-Recordar wque las bases de densidades previas al 2020 estan en la misma base que las longitudes
+Recordar wque las bases de densidades previas al 2020 estan en la misma
+base que las longitudes
 
-
-```r
-dens2021pob <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2021.xlsx"),
-                       sheet = "Data_POBL")
-dens2021com <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2021.xlsx"),
-                       sheet = "DATA_COM")
-
-dens2022pob <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2022.xlsx"),
-                       sheet = "Data_POBL")
-dens2022com <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2022.xlsx"),
-                       sheet = "DATA_COM")
-
-dens2023pob <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2023.xlsx"),
-                       sheet = "Data_POBL")
-dens2023com <- read_excel(here("Data", "Posterior 2020", "Data_sample_FEMP_04_2023.xlsx"),
-                       sheet = "DATA_COM")
-
-head(dens2023pob)
-```
-
-```
-## # A tibble: 6 × 44
-##   Month Date                Beach     Sampl…¹ m_track tow_t…²  Latº Latmin Longº
-##   <dbl> <dttm>              <chr>       <dbl>   <dbl>   <dbl> <dbl>  <dbl> <dbl>
-## 1     1 2023-01-24 00:00:00 Donana_n…       6      52       5    36   56.8     6
-## 2     1 2023-01-24 00:00:00 Donana_n…       6      52       5    36   56.8     6
-## 3     1 2023-01-24 00:00:00 Donana_n…       4      57       5    36   53.4     6
-## 4     1 2023-01-24 00:00:00 Donana_n…       4      57       5    36   53.4     6
-## 5     1 2023-01-24 00:00:00 Donana_s…       2      61       5    36   50.2     6
-## 6     1 2023-01-24 00:00:00 Donana_s…       2      61       5    36   50.2     6
-## # … with 35 more variables: Longmin <dbl>, Lat <lgl>, Long <lgl>, rastro <chr>,
-## #   mariscador <chr>, SW <dbl>, SWsub <dbl>, CSWsub <dbl>, MCSWsub <dbl>,
-## #   fps <dbl>, CSW <dbl>, fpm <dbl>, MCSW <dbl>, DCSWsub <dbl>, DCSW <dbl>,
-## #   TCSW <dbl>, Btotal <dbl>, Categoria <chr>, CAT <dbl>, Nmedida <dbl>,
-## #   fpn <dbl>, NtotalCSW <dbl>, Ndañossub <dbl>, Ndaños <dbl>, Ntotal <dbl>,
-## #   Tide_coef <dbl>, Low_tide_hour <dttm>, Catch_hour <dttm>, species <chr>,
-## #   Temp <lgl>, area <dbl>, bio <dbl>, dens <dbl>, ID <chr>, …
-```
 
 ```r
-names(dens2021com)
+dens2021pob <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2021.xlsx"),
+                       sheet = "Data_POBL")
+dens2021com <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2021.xlsx"),
+                       sheet = "DATA_COM")
+dens2022pob <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2022.xlsx"),
+                       sheet = "Data_POBL")
+dens2022com <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2022.xlsx"),
+                       sheet = "DATA_COM")
+dens2023pob <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2023.xlsx"),
+                       sheet = "Data_POBL")
+dens2023com <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2023.xlsx"),
+                       sheet = "DATA_COM")
 ```
 
-```
-##  [1] "month"                  "Date"                   "Beach"                 
-##  [4] "Sampling.point"         "m_track"                "tow_time"              
-##  [7] "Latº"                   "Latmin"                 "Longº"                 
-## [10] "Longmin"                "Lat"                    "Long"                  
-## [13] "rastro"                 "mariscador"             "SW"                    
-## [16] "SWsub"                  "CSWsub"                 "CMSWsub"               
-## [19] "MCSWsub"                "fps"                    "CSW"                   
-## [22] "CMSW"                   "MCSW"                   "DCSWsub"               
-## [25] "DCSW"                   "TCSW"                   "Rend"                  
-## [28] "Categoria"              "CAT"                    "Nmedida"               
-## [31] "fpn"                    "NtotalCSW"              "Ndañossub"             
-## [34] "Ndaños"                 "Ntotal"                 "Tide_coef"             
-## [37] "Low_tide_hour"          "Catch_hour"             "species"               
-## [40] "Temp"                   "ID"                     "ID_codificado_punto"   
-## [43] "ID_codificado_muestreo"
-```
+Identifico las columnas necesarias para el analisis, que en este caso,
+serían las columnas condato crudo.
+
+
+
 # COMPOSICIONES DE TALLAS
 
-Este aspecto se trabaja de forma de ponderación ad-hoc descrita en la Figure \@ref(fig:edaplot1)
-
-
-
+Este aspecto se trabaja de forma de ponderación ad-hoc descrita en la
+Figure \@ref(fig:edaplot1)
 
 ## Test dimension and names columns and diferences
 
@@ -234,7 +238,6 @@ dim(size2021)
 ```
 ## [1] 21971    12
 ```
-
 
 
 ```r
@@ -332,8 +335,8 @@ names(size2021)
 ## [10] "ID"                     "ID_codificado_punto"    "ID_codificado_muestreo"
 ```
 
-
 Same names. Could merge the DF
+
 
 ```r
 size_17_20 <- rbind(size2017,
@@ -406,6 +409,7 @@ glimpse(size_17_20)
 ## $ veda                        <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
 ## $ dists                       <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
 ```
+
 ## Change `Date` columns from `character`to `Date` format
 
 
@@ -455,6 +459,7 @@ table(size2$ANO)
 
 Now we test.
 
+
 ```r
 table(size2$ANO)
 ```
@@ -465,11 +470,13 @@ table(size2$ANO)
 ## 10121 20418 18109 13435
 ```
 
-
-
 ## Viz
 
-Primera vizulación de las tallas de coquina diferenciasdas por tipo de muestreo. Línea roja es SL50 (10.8 mm para hembras [@Delgado2017] y línea amarilla es la talla mínima de extracción legal en 25 mm. [@Delgado2018].
+Primera vizulación de las tallas de coquina diferenciasdas por tipo de
+muestreo. Línea roja es SL50 (10.8 mm para hembras [@Delgado2017] y
+línea amarilla es la talla mínima de extracción legal en 25 mm.
+[@Delgado2018].
+
 
 ```r
 nreg <- ggplot(size2 %>% 
@@ -495,9 +502,9 @@ nreg <- ggplot(size2 %>%
 nreg
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-11-1.jpeg" style="display: block; margin: auto;" />
-by beach
+<img src="index_files/figure-html/unnamed-chunk-12-1.jpeg" style="display: block; margin: auto;" />
 
+by beach
 
 
 ```r
@@ -523,7 +530,8 @@ nbeach <- ggplot(size2 %>%
 nbeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-12-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-13-1.jpeg" style="display: block; margin: auto;" />
+
 Now, we handling data 2021-2023. Same columns data 2017-2020
 
 
@@ -549,6 +557,7 @@ size_21_23 <- rbind(size2021b,
                     size2022b,
                     size2023b)
 ```
+
 ## Separate `Date` column
 
 
@@ -583,8 +592,8 @@ table(size3$ANO)
 ##  2021  2022  2023 
 ## 21971 17426  6751
 ```
-Now join all years
 
+Now join all years
 
 
 ```r
@@ -655,7 +664,6 @@ names(size3fil)# 2021-2023
 sizeall <- rbind(size2fil, size3fil)
 ```
 
-
 check
 
 
@@ -716,9 +724,9 @@ nall <- ggplot(sizeall2,
 nall
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-18-1.jpeg" style="display: block; margin: auto;" />
-La 
+<img src="index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
 
+La
 
 
 ```r
@@ -744,8 +752,9 @@ nallbeach <- ggplot(sizeall2,
 nallbeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
-just POBLACIONAL  sample
+<img src="index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
+
+just POBLACIONAL sample
 
 
 ```r
@@ -772,7 +781,8 @@ pobeach <- ggplot(sizeall2 %>%
 pobeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-21-1.jpeg" style="display: block; margin: auto;" />
+
 justm COMERCIAL sample
 
 
@@ -800,9 +810,9 @@ combeach <- ggplot(sizeall %>%
 combeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-21-1.jpeg" style="display: block; margin: auto;" />
-last month of 2023 (august) by beach 
+<img src="index_files/figure-html/unnamed-chunk-22-1.jpeg" style="display: block; margin: auto;" />
 
+last month of 2023 (august) by beach
 
 
 ```r
@@ -824,9 +834,9 @@ combeachago23 <- ggplot(sizeall2 %>%
 combeachago23
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-22-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-23-1.jpeg" style="display: block; margin: auto;" />
 
-another way to viz is 
+another way to viz is
 
 scatter plot
 
@@ -864,7 +874,7 @@ pmea <- ggplot(sizemean,
 pmea
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-24-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-25-1.jpeg" style="display: block; margin: auto;" />
 
 Calculate a recruit index
 
@@ -886,7 +896,6 @@ limite_superior <- round(mean(inderec$prolen3) +
 limite_inferior <- round(mean(inderec$prolen3) - 
   1.96 * sd(inderec$prolen3) / sqrt(inderec$prolen3),3)
 ```
-
 
 
 ```r
@@ -911,14 +920,7 @@ indexplot <- ggplot(inderec,
 indexplot
 ```
 
-
-
-
-
-
 # DENSIDAD DB
-
-
 
 
 ```r
@@ -935,17 +937,19 @@ ggplot () +
 
 # YIELD (CPUE) ANALYSIS
 
+# DESEMBARQUES OFICIALES
+
 # DUDAS
 
 ## LFD DB
 
-- What is `CAT`
-- Difference between `size` and `sizeE`
-- what variable we can see binside `MES`?
-- data about maturity and reproductive indicator?
-- Waypoint by beach?.
-- How calculate recruit index and another way.
-- Weigthing LF sensu MD.
-- como se consigue la estructura luego de ser ponderada?
+-   What is `CAT`
+-   Difference between `size` and `sizeE`
+-   what variable we can see binside `MES`?
+-   data about maturity and reproductive indicator?
+-   Waypoint by beach?.
+-   How calculate recruit index and another way.
+-   Weigthing LF sensu MD.
+-   como se consigue la estructura luego de ser ponderada?
 
 # REFERENCES
