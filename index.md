@@ -124,7 +124,7 @@ En este trabajo se deben revisar todos los componentes que se tienen en cuenta, 
 | M | | M=2k | Revisar | 
 | vB k || 0.48 | Revisar | 
 | EDAD MÁXIMA | | EM= log(0.01)/M | Revisar | 
-| Parámetros gravimetricos | | a | b | Revisar |
+| Parámetros gravimetricos | | a;b |  Revisar | 
 | DENSIDAD | 2017-2023 | g/m2/  | Mes, Playa, Rastro |
 | RENDIMIENTO (CPUE) | 2018-2023 | 3 horas/mariscador/dia. (180min*peso coquina>25mm*5min) | Por Mes, playa, rastro |
 | INDICE RECLUTAMIENTO (D15) | 2017-2022 | ind/m2 < 15mm | Por Mes, playa, rastro |
@@ -185,6 +185,14 @@ dens2023com <- read_excel(here("Data", "Posterior 2020",
                                "Data_sample_FEMP_04_2023.xlsx"),
                        sheet = "DATA_COM")
 ```
+
+### Bases de Desembarque
+
+
+```r
+landings <- read_excel(here("Data", "Datos_venta_2017_14_02_22.xlsx"))
+```
+
 
 Identifico las columnas necesarias para el analisis, que en este caso,
 serían las columnas condato crudo.
@@ -502,7 +510,7 @@ nreg <- ggplot(size2 %>%
 nreg
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-12-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-13-1.jpeg" style="display: block; margin: auto;" />
 
 by beach
 
@@ -530,7 +538,7 @@ nbeach <- ggplot(size2 %>%
 nbeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-13-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-14-1.jpeg" style="display: block; margin: auto;" />
 
 Now, we handling data 2021-2023. Same columns data 2017-2020
 
@@ -724,7 +732,7 @@ nall <- ggplot(sizeall2,
 nall
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
 
 La
 
@@ -752,7 +760,7 @@ nallbeach <- ggplot(sizeall2,
 nallbeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-21-1.jpeg" style="display: block; margin: auto;" />
 
 just POBLACIONAL sample
 
@@ -781,7 +789,7 @@ pobeach <- ggplot(sizeall2 %>%
 pobeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-21-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-22-1.jpeg" style="display: block; margin: auto;" />
 
 justm COMERCIAL sample
 
@@ -810,7 +818,7 @@ combeach <- ggplot(sizeall %>%
 combeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-22-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-23-1.jpeg" style="display: block; margin: auto;" />
 
 last month of 2023 (august) by beach
 
@@ -834,7 +842,7 @@ combeachago23 <- ggplot(sizeall2 %>%
 combeachago23
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-23-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-24-1.jpeg" style="display: block; margin: auto;" />
 
 another way to viz is
 
@@ -874,7 +882,7 @@ pmea <- ggplot(sizemean,
 pmea
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-25-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-26-1.jpeg" style="display: block; margin: auto;" />
 
 Calculate a recruit index
 
@@ -938,6 +946,162 @@ ggplot () +
 # YIELD (CPUE) ANALYSIS
 
 # DESEMBARQUES OFICIALES
+
+
+```r
+table(landings$ZONA_PRODUCCION)
+```
+
+```
+## 
+##                                   Aguadulce 
+##                                           1 
+##                                   Almerimar 
+##                                           2 
+##                            BARBATE MARISMAS 
+##                                           1 
+##                            BARRA DEL TERRON 
+##                                        1443 
+##                            Barra del Terrón 
+##                                         143 
+##                          BENALMADENA-MALAGA 
+##                                          59 
+##                         CABOPINO-CALABURRAS 
+##                                         170 
+##                              Cala del Moral 
+##                                          35 
+##                   CALABURRAS-TORRE QUEBRADA 
+##                                         281 
+##                            Castell de Ferro 
+##                                           1 
+##                   Desembocadura del Piedras 
+##                                           5 
+##                   DESEMBOCADURA DEL PIEDRAS 
+##                                          84 
+##                                DOÑANA NORTE 
+##                                        1452 
+##                                  DOÑANA SUR 
+##                                        2175 
+##                                    ESTRECHO 
+##                                           1 
+##                            ESTUARIO DE SADO 
+##                                           7 
+##                 Estuario del Guadalquivir I 
+##                                           3 
+##                Estuario del Guadalquivir II 
+##                                           1 
+##                                  Fuengirola 
+##                                         156 
+##                        GUADALMANSA-MARBELLA 
+##                                          24 
+##                                  Guadalmaza 
+##                                          11 
+##                                 Isla Canela 
+##                                         172 
+##                                 ISLA CANELA 
+##                                        2525 
+##                      ISLA CRISTINA CULTIVOS 
+##                                           1 
+##                 LA ALCAIDESA-PUNTA CHULLERA 
+##                                         175 
+##                                  La Atunara 
+##                                          95 
+##                     LA ATUNARA-LA ALCAIDESA 
+##                                         284 
+##                              LA LINEA-BAHIA 
+##                                           9 
+##                         Litoral de Cádiz II 
+##                                           2 
+##                        Litoral Faro - Olhão 
+##                                          38 
+##               Litoral S. Vicente - Portimão 
+##                                          14 
+##                     Litoral Setúbal - Sines 
+##                                          24 
+## Litoral Tavira - Vila Real de Santo António 
+##                                        1596 
+##                            MALAGA-RIO VELEZ 
+##                                         341 
+##                                  Marbella I 
+##                                          20 
+##                                 Marbella II 
+##                                         247 
+##                           MARBELLA-CABOPINO 
+##                                         652 
+##                        MARISMAS DEL PIEDRAS 
+##                                          53 
+##                           MARISMAS GUADIANA 
+##                                         160 
+##              MARISMAS ISLA CRISTINA LEVANTE 
+##                                         335 
+##                                Matalascañas 
+##                                          23 
+##                                MATALASCAÑAS 
+##                                         874 
+##                                     Mazagón 
+##                                           7 
+##                                     MAZAGÓN 
+##                                          89 
+##                                    PALMONES 
+##                                           4 
+##                           PORTUGAL RIO FADO 
+##                                          11 
+##              PUNTA CHULLERA-TORRE DE LA SAL 
+##                                           8 
+##                                Punta Umbría 
+##                                           2 
+##                                PUNTA UMBRÍA 
+##                                        2035 
+##                       Rincón de la Victoria 
+##                                         191 
+##                                Río Guadiana 
+##                                           3 
+##                               RIO SAN PEDRO 
+##                                           4 
+##                     RIO VELEZ-TORRE DE MARO 
+##                                         176 
+##                                  Sabinillas 
+##                                          30 
+##                                   San Roque 
+##                                          46 
+##                                SANCTI PETRI 
+##                                           4 
+##                         SIN ZONA_PRODUCCION 
+##                                        1442 
+##                 TORRE DE LA SAL-GUADALMANSA 
+##                                           3 
+##                                Torremolinos 
+##                                          51 
+##                                Torrox-Nerja 
+##                                         116 
+##                     Zona marítima de Doñana 
+##                                          47
+```
+
+```r
+table(landings$CLAVE)
+```
+
+```
+## 
+##     AND01     AND04     AND05     AND07     AND08     AND09     AND10    AND101 
+##         3       172       143         5         2         7        23      2525 
+##    AND102    AND103    AND104    AND105    AND106    AND107    AND108    AND109 
+##      1443      2035        84        89       874      1452      2175       160 
+##     AND11    AND111    AND112    AND113     AND12     AND13    AND201    AND202 
+##        47       335        53         1         3         1         1         4 
+##    AND203    AND204    AND205    AND206    AND208    AND209   AND24/1   AND24/2 
+##         9       284       175         4         4         1        95        46 
+##     AND26     AND27     AND28     AND29     AND30    AND301    AND302    AND303 
+##         2        30        11        20       247         8         3        24 
+##    AND304    AND305    AND306    AND307    AND308    AND309     AND31     AND32 
+##       652       170       281        59       341       176        35       156 
+##     AND33     AND34     AND35     AND38     AND45     AND55     ESD-1     ESD-2 
+##        51       191       116         2         1         1         7        11 
+##        L6       L7c        L8        L9 SIN CLAVE 
+##        24        14        38      1596      1442
+```
+
 
 # DUDAS
 
