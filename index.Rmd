@@ -57,6 +57,8 @@ library(ggthemes)
 here::here()
 ```
 
+
+
 # OBJETIVO
 
 The following document and code intends to carry out a complementary
