@@ -50,14 +50,15 @@ library(here)
 library(lubridate)
 library(readr)
 library(ggthemes)
+library(hrbrthemes)
+library(viridis)
+library(kableExtra)
 ```
 
 ```{r, include=FALSE}
 ## Set path
 here::here()
 ```
-
-
 
 # OBJETIVO
 
@@ -182,20 +183,6 @@ dens2023pob <- read_excel(here("Data", "Posterior 2020",
 dens2023com <- read_excel(here("Data", "Posterior 2020", 
                                "Data_sample_FEMP_04_2023.xlsx"),
                        sheet = "DATA_COM")
-```
-
-### Bases de Desembarque
-
-```{r}
-landings <- read_excel(here("Data", "Datos_venta_2017_14_02_22.xlsx"))
-```
-
-
-Identifico las columnas necesarias para el analisis, que en este caso,
-serían las columnas condato crudo.
-
-```{r}
-
 ```
 
 # COMPOSICIONES DE TALLAS
@@ -591,15 +578,6 @@ indexplot
 
 # DENSIDAD DB
 
-```{r eval=FALSE}
-ggplot () + 
-  aes (wt, mpg) +
-  geom_point ()+
-  geom_smooth () +
-  stat_smooth(geom = "point",
-            color = "blue",
-            xseg = mtcars$wt)
-```
 
 # INDICE DE RECLUTAMIENTO DB
 
@@ -607,11 +585,108 @@ ggplot () +
 
 # DESEMBARQUES OFICIALES
 
-```{r}
-table(landings$ZONA_PRODUCCION)
-table(landings$CLAVE)
+Leo los datos entregados por E. Marco. Actualizar pedida con Junta Andalucia.
 
+```{r}
+landings <- read_excel(here("Data", 
+                            "Datos_venta_2017_14_02_22.xlsx"))
 ```
+
+Identifico las columnas necesarias para el analisis, que en este caso,
+serían las columnas condato crudo.
+
+```{r}
+# Fecha original en formato "año-mes-día"
+fecha_original <- ymd(landings$FECHA_VENTA)
+# Separar en año, mes y día
+ANO <- year(fecha_original)
+MES <- month(fecha_original)
+DIA <- day(fecha_original)
+# uno la base
+landings2 <-cbind(ANO,MES,DIA,landings)
+```
+
+
+Grafico general de los desembarques
+
+```{r}
+landings3 <- landings2 %>% 
+  group_by(ANO, MES, ESTABLECIMIENTO, ZONA_PRODUCCION) %>% 
+  summarise(LANDINGS = sum(TOTAL_KILOS)/1000)
+```
+
+```{r}
+hist(landings3$LANDINGS)
+quantile(landings3$LANDINGS)
+```
+Hay valores cercanos a las 14 t. Identificar si esto tiene sentido. Preguntar a MD.
+
+```{r}
+plotlam <- ggplot(landings3,aes(ANO, LANDINGS))+
+  geom_bar(stat = "identity")+
+  facet_wrap(.~ESTABLECIMIENTO)+
+  theme_few()
+plotlam
+```
+
+Otra viz
+
+```{r out.width='100%', message=FALSE}
+landpop <- ggplot(landings3 %>% 
+         group_by(ANO, ESTABLECIMIENTO) %>% 
+         summarise(LANDINGS1 =sum(LANDINGS))) +
+  geom_segment( aes(x=ANO, 
+                    xend=ANO, 
+                    y=0, 
+                    yend=LANDINGS1), color="grey") +
+  geom_point( aes(x=ANO, 
+                  y=LANDINGS1,
+                  colour=ESTABLECIMIENTO), 
+              size=3) +
+  scale_colour_viridis_d(option="G")+
+  theme_few() +
+  theme(
+    legend.position = "none",
+    panel.border = element_blank(),
+    panel.spacing = unit(0.1, "lines"),
+    strip.text.x = element_text(size = 5),
+    axis.text.x = element_text(size = 5),
+    axis.text.y = element_text(size = 5)) +
+  xlab("") +
+  ylab("Desembarque por Establecimiento") +
+  facet_wrap(.~ESTABLECIMIENTO, ncol=8, scale="free_y")
+landpop
+```
+Los datos fueron solicitados con información hasta Febrero del 2022, por lo mismo es necesario actualizar
+
+
+```{r fig.width=10, fig.height=5}
+orderland <-   ggplot(landings3 %>% 
+         group_by(ESTABLECIMIENTO) %>% 
+         summarise(LANDINGS1 =sum(LANDINGS)) %>% 
+           arrange(ESTABLECIMIENTO) %>% 
+           mutate(ESTABLECIMIENTO=factor(ESTABLECIMIENTO,
+                                         ESTABLECIMIENTO)), 
+         aes(x=ESTABLECIMIENTO, 
+             y=LANDINGS1) ) +
+    geom_bar(stat="identity", fill="#69b3a2") +
+    coord_flip() +
+    theme_ipsum() +
+    theme(
+      panel.grid.minor.y = element_blank(),
+      panel.grid.major.y = element_blank(),
+      legend.position="none"
+    ) +
+    xlab("") +
+    ylab("Desembarque total aculumado por Establecimiento")
+orderland
+```
+
+
+```{r}
+kbl(table(landings2$MES, landings2$ANO))
+```
+
 
 
 # DUDAS

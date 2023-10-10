@@ -2,7 +2,7 @@
 title: "Historical survey EDA Donux trunculus 2023"
 subtitle: "Complementary analysis to advice and management report FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "04 October, 2023"
+date:  "10 October, 2023"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -52,6 +52,9 @@ library(here)
 library(lubridate)
 library(readr)
 library(ggthemes)
+library(hrbrthemes)
+library(viridis)
+library(kableExtra)
 ```
 
 
@@ -185,19 +188,6 @@ dens2023com <- read_excel(here("Data", "Posterior 2020",
                                "Data_sample_FEMP_04_2023.xlsx"),
                        sheet = "DATA_COM")
 ```
-
-### Bases de Desembarque
-
-
-```r
-landings <- read_excel(here("Data", "Datos_venta_2017_14_02_22.xlsx"))
-```
-
-
-Identifico las columnas necesarias para el analisis, que en este caso,
-serían las columnas condato crudo.
-
-
 
 # COMPOSICIONES DE TALLAS
 
@@ -510,7 +500,7 @@ nreg <- ggplot(size2 %>%
 nreg
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-13-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-11-1.jpeg" style="display: block; margin: auto;" />
 
 by beach
 
@@ -538,7 +528,7 @@ nbeach <- ggplot(size2 %>%
 nbeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-14-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-12-1.jpeg" style="display: block; margin: auto;" />
 
 Now, we handling data 2021-2023. Same columns data 2017-2020
 
@@ -732,7 +722,7 @@ nall <- ggplot(sizeall2,
 nall
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-18-1.jpeg" style="display: block; margin: auto;" />
 
 La
 
@@ -760,7 +750,7 @@ nallbeach <- ggplot(sizeall2,
 nallbeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-21-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
 
 just POBLACIONAL sample
 
@@ -789,7 +779,7 @@ pobeach <- ggplot(sizeall2 %>%
 pobeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-22-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
 
 justm COMERCIAL sample
 
@@ -818,7 +808,7 @@ combeach <- ggplot(sizeall %>%
 combeach
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-23-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-21-1.jpeg" style="display: block; margin: auto;" />
 
 last month of 2023 (august) by beach
 
@@ -842,7 +832,7 @@ combeachago23 <- ggplot(sizeall2 %>%
 combeachago23
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-24-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-22-1.jpeg" style="display: block; margin: auto;" />
 
 another way to viz is
 
@@ -882,7 +872,7 @@ pmea <- ggplot(sizemean,
 pmea
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-26-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-24-1.jpeg" style="display: block; margin: auto;" />
 
 Calculate a recruit index
 
@@ -931,176 +921,249 @@ indexplot
 # DENSIDAD DB
 
 
-```r
-ggplot () + 
-  aes (wt, mpg) +
-  geom_point ()+
-  geom_smooth () +
-  stat_smooth(geom = "point",
-            color = "blue",
-            xseg = mtcars$wt)
-```
-
 # INDICE DE RECLUTAMIENTO DB
 
 # YIELD (CPUE) ANALYSIS
 
 # DESEMBARQUES OFICIALES
 
+Leo los datos entregados por E. Marco. Actualizar pedida con Junta Andalucia.
+
 
 ```r
-table(landings$ZONA_PRODUCCION)
+landings <- read_excel(here("Data", 
+                            "Datos_venta_2017_14_02_22.xlsx"))
 ```
 
-```
-## 
-##                                   Aguadulce 
-##                                           1 
-##                                   Almerimar 
-##                                           2 
-##                            BARBATE MARISMAS 
-##                                           1 
-##                            BARRA DEL TERRON 
-##                                        1443 
-##                            Barra del Terrón 
-##                                         143 
-##                          BENALMADENA-MALAGA 
-##                                          59 
-##                         CABOPINO-CALABURRAS 
-##                                         170 
-##                              Cala del Moral 
-##                                          35 
-##                   CALABURRAS-TORRE QUEBRADA 
-##                                         281 
-##                            Castell de Ferro 
-##                                           1 
-##                   Desembocadura del Piedras 
-##                                           5 
-##                   DESEMBOCADURA DEL PIEDRAS 
-##                                          84 
-##                                DOÑANA NORTE 
-##                                        1452 
-##                                  DOÑANA SUR 
-##                                        2175 
-##                                    ESTRECHO 
-##                                           1 
-##                            ESTUARIO DE SADO 
-##                                           7 
-##                 Estuario del Guadalquivir I 
-##                                           3 
-##                Estuario del Guadalquivir II 
-##                                           1 
-##                                  Fuengirola 
-##                                         156 
-##                        GUADALMANSA-MARBELLA 
-##                                          24 
-##                                  Guadalmaza 
-##                                          11 
-##                                 Isla Canela 
-##                                         172 
-##                                 ISLA CANELA 
-##                                        2525 
-##                      ISLA CRISTINA CULTIVOS 
-##                                           1 
-##                 LA ALCAIDESA-PUNTA CHULLERA 
-##                                         175 
-##                                  La Atunara 
-##                                          95 
-##                     LA ATUNARA-LA ALCAIDESA 
-##                                         284 
-##                              LA LINEA-BAHIA 
-##                                           9 
-##                         Litoral de Cádiz II 
-##                                           2 
-##                        Litoral Faro - Olhão 
-##                                          38 
-##               Litoral S. Vicente - Portimão 
-##                                          14 
-##                     Litoral Setúbal - Sines 
-##                                          24 
-## Litoral Tavira - Vila Real de Santo António 
-##                                        1596 
-##                            MALAGA-RIO VELEZ 
-##                                         341 
-##                                  Marbella I 
-##                                          20 
-##                                 Marbella II 
-##                                         247 
-##                           MARBELLA-CABOPINO 
-##                                         652 
-##                        MARISMAS DEL PIEDRAS 
-##                                          53 
-##                           MARISMAS GUADIANA 
-##                                         160 
-##              MARISMAS ISLA CRISTINA LEVANTE 
-##                                         335 
-##                                Matalascañas 
-##                                          23 
-##                                MATALASCAÑAS 
-##                                         874 
-##                                     Mazagón 
-##                                           7 
-##                                     MAZAGÓN 
-##                                          89 
-##                                    PALMONES 
-##                                           4 
-##                           PORTUGAL RIO FADO 
-##                                          11 
-##              PUNTA CHULLERA-TORRE DE LA SAL 
-##                                           8 
-##                                Punta Umbría 
-##                                           2 
-##                                PUNTA UMBRÍA 
-##                                        2035 
-##                       Rincón de la Victoria 
-##                                         191 
-##                                Río Guadiana 
-##                                           3 
-##                               RIO SAN PEDRO 
-##                                           4 
-##                     RIO VELEZ-TORRE DE MARO 
-##                                         176 
-##                                  Sabinillas 
-##                                          30 
-##                                   San Roque 
-##                                          46 
-##                                SANCTI PETRI 
-##                                           4 
-##                         SIN ZONA_PRODUCCION 
-##                                        1442 
-##                 TORRE DE LA SAL-GUADALMANSA 
-##                                           3 
-##                                Torremolinos 
-##                                          51 
-##                                Torrox-Nerja 
-##                                         116 
-##                     Zona marítima de Doñana 
-##                                          47
-```
+Identifico las columnas necesarias para el analisis, que en este caso,
+serían las columnas condato crudo.
+
 
 ```r
-table(landings$CLAVE)
+# Fecha original en formato "año-mes-día"
+fecha_original <- ymd(landings$FECHA_VENTA)
+# Separar en año, mes y día
+ANO <- year(fecha_original)
+MES <- month(fecha_original)
+DIA <- day(fecha_original)
+# uno la base
+landings2 <-cbind(ANO,MES,DIA,landings)
+```
+
+
+Grafico general de los desembarques
+
+
+```r
+landings3 <- landings2 %>% 
+  group_by(ANO, MES, ESTABLECIMIENTO, ZONA_PRODUCCION) %>% 
+  summarise(LANDINGS = sum(TOTAL_KILOS)/1000)
+```
+
+
+```r
+hist(landings3$LANDINGS)
+```
+
+<img src="index_files/figure-html/unnamed-chunk-30-1.jpeg" style="display: block; margin: auto;" />
+
+```r
+quantile(landings3$LANDINGS)
 ```
 
 ```
-## 
-##     AND01     AND04     AND05     AND07     AND08     AND09     AND10    AND101 
-##         3       172       143         5         2         7        23      2525 
-##    AND102    AND103    AND104    AND105    AND106    AND107    AND108    AND109 
-##      1443      2035        84        89       874      1452      2175       160 
-##     AND11    AND111    AND112    AND113     AND12     AND13    AND201    AND202 
-##        47       335        53         1         3         1         1         4 
-##    AND203    AND204    AND205    AND206    AND208    AND209   AND24/1   AND24/2 
-##         9       284       175         4         4         1        95        46 
-##     AND26     AND27     AND28     AND29     AND30    AND301    AND302    AND303 
-##         2        30        11        20       247         8         3        24 
-##    AND304    AND305    AND306    AND307    AND308    AND309     AND31     AND32 
-##       652       170       281        59       341       176        35       156 
-##     AND33     AND34     AND35     AND38     AND45     AND55     ESD-1     ESD-2 
-##        51       191       116         2         1         1         7        11 
-##        L6       L7c        L8        L9 SIN CLAVE 
-##        24        14        38      1596      1442
+##         0%        25%        50%        75%       100% 
+##  0.0010000  0.0500000  0.1908400  0.6449275 14.4210000
 ```
+Hay valores cercanos a las 14 t. Identificar si esto tiene sentido. Preguntar a MD.
+
+
+```r
+plotlam <- ggplot(landings3,aes(ANO, LANDINGS))+
+  geom_bar(stat = "identity")+
+  facet_wrap(.~ESTABLECIMIENTO)+
+  theme_few()
+plotlam
+```
+
+<img src="index_files/figure-html/unnamed-chunk-31-1.jpeg" style="display: block; margin: auto;" />
+
+Otra viz
+
+
+```r
+landpop <- ggplot(landings3 %>% 
+         group_by(ANO, ESTABLECIMIENTO) %>% 
+         summarise(LANDINGS1 =sum(LANDINGS))) +
+  geom_segment( aes(x=ANO, 
+                    xend=ANO, 
+                    y=0, 
+                    yend=LANDINGS1), color="grey") +
+  geom_point( aes(x=ANO, 
+                  y=LANDINGS1,
+                  colour=ESTABLECIMIENTO), 
+              size=3) +
+  scale_colour_viridis_d(option="G")+
+  theme_few() +
+  theme(
+    legend.position = "none",
+    panel.border = element_blank(),
+    panel.spacing = unit(0.1, "lines"),
+    strip.text.x = element_text(size = 5),
+    axis.text.x = element_text(size = 5),
+    axis.text.y = element_text(size = 5)) +
+  xlab("") +
+  ylab("Desembarque por Establecimiento") +
+  facet_wrap(.~ESTABLECIMIENTO, ncol=8, scale="free_y")
+landpop
+```
+
+<img src="index_files/figure-html/unnamed-chunk-32-1.jpeg" width="100%" style="display: block; margin: auto;" />
+Los datos fueron solicitados con información hasta Febrero del 2022, por lo mismo es necesario actualizar
+
+
+
+```r
+orderland <-   ggplot(landings3 %>% 
+         group_by(ESTABLECIMIENTO) %>% 
+         summarise(LANDINGS1 =sum(LANDINGS)) %>% 
+           arrange(ESTABLECIMIENTO) %>% 
+           mutate(ESTABLECIMIENTO=factor(ESTABLECIMIENTO,
+                                         ESTABLECIMIENTO)), 
+         aes(x=ESTABLECIMIENTO, 
+             y=LANDINGS1) ) +
+    geom_bar(stat="identity", fill="#69b3a2") +
+    coord_flip() +
+    theme_ipsum() +
+    theme(
+      panel.grid.minor.y = element_blank(),
+      panel.grid.major.y = element_blank(),
+      legend.position="none"
+    ) +
+    xlab("") +
+    ylab("Desembarque total aculumado por Establecimiento")
+orderland
+```
+
+<img src="index_files/figure-html/unnamed-chunk-33-1.jpeg" style="display: block; margin: auto;" />
+
+
+
+```r
+kbl(table(landings2$MES, landings2$ANO))
+```
+
+<table>
+ <thead>
+  <tr>
+   <th style="text-align:right;"> 2017 </th>
+   <th style="text-align:right;"> 2018 </th>
+   <th style="text-align:right;"> 2019 </th>
+   <th style="text-align:right;"> 2020 </th>
+   <th style="text-align:right;"> 2021 </th>
+   <th style="text-align:right;"> 2022 </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:right;"> 106 </td>
+   <td style="text-align:right;"> 323 </td>
+   <td style="text-align:right;"> 269 </td>
+   <td style="text-align:right;"> 427 </td>
+   <td style="text-align:right;"> 475 </td>
+   <td style="text-align:right;"> 463 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 66 </td>
+   <td style="text-align:right;"> 284 </td>
+   <td style="text-align:right;"> 302 </td>
+   <td style="text-align:right;"> 160 </td>
+   <td style="text-align:right;"> 524 </td>
+   <td style="text-align:right;"> 225 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 111 </td>
+   <td style="text-align:right;"> 256 </td>
+   <td style="text-align:right;"> 327 </td>
+   <td style="text-align:right;"> 382 </td>
+   <td style="text-align:right;"> 611 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 72 </td>
+   <td style="text-align:right;"> 369 </td>
+   <td style="text-align:right;"> 340 </td>
+   <td style="text-align:right;"> 221 </td>
+   <td style="text-align:right;"> 516 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 9 </td>
+   <td style="text-align:right;"> 6 </td>
+   <td style="text-align:right;"> 69 </td>
+   <td style="text-align:right;"> 64 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 44 </td>
+   <td style="text-align:right;"> 31 </td>
+   <td style="text-align:right;"> 299 </td>
+   <td style="text-align:right;"> 189 </td>
+   <td style="text-align:right;"> 202 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 140 </td>
+   <td style="text-align:right;"> 245 </td>
+   <td style="text-align:right;"> 472 </td>
+   <td style="text-align:right;"> 618 </td>
+   <td style="text-align:right;"> 665 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 117 </td>
+   <td style="text-align:right;"> 150 </td>
+   <td style="text-align:right;"> 301 </td>
+   <td style="text-align:right;"> 556 </td>
+   <td style="text-align:right;"> 606 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 76 </td>
+   <td style="text-align:right;"> 261 </td>
+   <td style="text-align:right;"> 144 </td>
+   <td style="text-align:right;"> 469 </td>
+   <td style="text-align:right;"> 486 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 88 </td>
+   <td style="text-align:right;"> 332 </td>
+   <td style="text-align:right;"> 330 </td>
+   <td style="text-align:right;"> 458 </td>
+   <td style="text-align:right;"> 474 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 211 </td>
+   <td style="text-align:right;"> 244 </td>
+   <td style="text-align:right;"> 226 </td>
+   <td style="text-align:right;"> 455 </td>
+   <td style="text-align:right;"> 458 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 191 </td>
+   <td style="text-align:right;"> 190 </td>
+   <td style="text-align:right;"> 292 </td>
+   <td style="text-align:right;"> 508 </td>
+   <td style="text-align:right;"> 459 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+</tbody>
+</table>
+
 
 
 # DUDAS
