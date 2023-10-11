@@ -173,34 +173,7 @@ size2023 <- read_excel(here("Data",
                        sheet = "Coquina_Donax")
 ```
 
-### Bases de Densidades
 
-Se deben leer las dos hojas `POBLACIONAL` y `COMERCIAL` por separado y
-luego unir.
-
-Recordar wque las bases de densidades previas al 2020 estan en la misma
-base que las longitudes
-
-```{r}
-dens2021pob <- read_excel(here("Data", "Posterior 2020", 
-                               "Data_sample_FEMP_04_2021.xlsx"),
-                       sheet = "Data_POBL")
-dens2021com <- read_excel(here("Data", "Posterior 2020", 
-                               "Data_sample_FEMP_04_2021.xlsx"),
-                       sheet = "DATA_COM")
-dens2022pob <- read_excel(here("Data", "Posterior 2020", 
-                               "Data_sample_FEMP_04_2022.xlsx"),
-                       sheet = "Data_POBL")
-dens2022com <- read_excel(here("Data", "Posterior 2020", 
-                               "Data_sample_FEMP_04_2022.xlsx"),
-                       sheet = "DATA_COM")
-dens2023pob <- read_excel(here("Data", "Posterior 2020", 
-                               "Data_sample_FEMP_04_2023.xlsx"),
-                       sheet = "Data_POBL")
-dens2023com <- read_excel(here("Data", "Posterior 2020", 
-                               "Data_sample_FEMP_04_2023.xlsx"),
-                       sheet = "DATA_COM")
-```
 
 # COMPOSICIONES DE TALLAS
 
@@ -584,59 +557,143 @@ pmea <- ggplot(sizemean,
 pmea
 ```
 
-Calculate a recruit index
-
-## Calculate Index Recruit
-
-
-
 # DENSIDAD POBLACIONAL
 
+### Bases de Densidades
 
-Visualizo los datos y su estructura. Para replicar los procesos de calculos en las hojas excel, usaremos solo las columnas con datos crudos. Es decir, desde `Date` hasta `MCSWsub`, y algunas columnas finales.
-
-La idea es hacer los cálculos en el codigo para tener la secuencia y replicar los resultados informados por @Delgado2023
-
-Primero comenzamos con los datos estandarizados del os años 2021 al 2023. Luego juntamos la data.
+Recordar que las bases de densidades previas al 2021 estan en la misma base que las longitudes
 
 ```{r}
-names(dens2021com)
+dens2021pob <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2021.xlsx"),
+                       sheet = "Data_POBL")
+dens2021com <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2021.xlsx"),
+                       sheet = "DATA_COM")
+dens2022pob <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2022.xlsx"),
+                       sheet = "Data_POBL")
+dens2022com <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2022.xlsx"),
+                       sheet = "DATA_COM")
+dens2023pob <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2023.xlsx"),
+                       sheet = "Data_POBL")
+dens2023com <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2023.xlsx"),
+                       sheet = "DATA_COM")
 ```
 
-Solo debo sacaer la columna `ID` en la base `dens2021com` 
-```{r}
-# Comercial
-dens2021com <- dens2021com %>% 
-  select(-c(1,41))
-dens2022com <- dens2022com %>% 
-  select(-1)
-dens2023com <- dens2023com %>% 
-  select(-1)
-#compruebo si hay columnas iguales
-nombres_iguales <- identical(names(dens2021com),
-                             names(dens2023com)) && identical(names(dens2021com), names(dens2022com))
+Visualizo los datos y su estructura. Para replicar los procesos de calculos en las hojas excel, usaremos solo las columnas con datos crudos. Es decir, desde `Date` hasta `MCSWsub`, y algunas columnas finales. La idea es hacer los cálculos en el codigo para tener la secuencia y replicar los resultados informados por @Delgado2023. 
 
-#junto la base
-dens2123 <- rbind(dens2021com, dens2022com, dens2023com)
+Primero comenzamos con los datos estandarizados del os años 2021 al 2023. Luego juntamos la data. En ambos muestreos `COMERCIAL`y `POBLACIONAL` dejo las siguientes columas;
+
+- `Date` = Fecha
+- `Beach` = Playa
+- `Sampling.point` =punto de Muestreo
+- `m_track` = distancia de arrastre (mts)
+- `tow_time` = tiempo de arrastre (minutos)
+- `Latº` 
+- `Latmin`                
+- `Longº` 
+- `Longmin`               
+- `Lat`  
+- `Long`                  
+- `rastro`
+- `mariscador`            
+- `SW` = Peso total de la muestra ( cascajo, coquina, fauna)  
+- `SWsub` = SubMuestra de `SW`                 
+- `CSWsub` = Peso coquina contenida en `SWsub`
+- `CMSWsub` = Peso de toda la coquina comercial sub (>25 mm) (Columna solo en base `COMERCIAL`)
+- `MCSWsub` = Peso de la coquina medida de `CSWsub` real*
+- `DCSWsub` = Peso de la coquina con daños en la muestra `SWsub`
+- `Categoria` = na
+- `CAT` = 2Poblacional, 1 Comercial
+- `Nmedida` =   Este dato son los individuos medidos provenientes de  los datos de Tallas. Preguntar a MD*             
+- `Ndañossub` =            
+- `Tide_coef`  =  Coef de Marea
+- `Low_tide_hour` = 
+- `Catch_hour`  = Hora de faena
+- `species`   = Especie
+- `Temp` = TSM
+- `ID_codificado_punto` = ID
+- `ID_codificado_muestreo` = ID
+
+
+Filtro las bases
+
+```{r}
 # poblacional
-dens2021pob <- dens2021pob %>% 
-  select(-c(1,41))
-dens2022pob <- dens2022pob %>% 
-  select(-1) %>% 
+dens2021pobf <- dens2021pob %>% 
+  select(2:18, 23, 27:29, 32, 35:39, 44, 45)
+dens2022pobf <- dens2022pob %>% 
+  select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
   rename(ID_codificado_punto=ID)
-dens2023pob <- dens2023pob %>% 
-  select(-1)%>% 
+dens2023pobf <- dens2023pob %>% 
+  select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
   rename(ID_codificado_punto=ID)
 
 #compruebo si hay columnas iguales
-nombres_iguales_pob <- identical(names(dens2021pob),
-                             names(dens2023pob)) && identical(names(dens2021pob), names(dens2022pob))
+nombres_iguales_pob <- identical(names(dens2021pobf),
+                             names(dens2023pobf)) && identical(names(dens2021pobf), 
+                                                               names(dens2022pobf))
 #junto la base
-denspob2123 <- rbind(dens2021pob, dens2022pob, dens2023pob)
+denspob2123f <- rbind(dens2021pobf, dens2022pobf, dens2023pobf)
+# Comercial
+dens2021comf <- dens2021com %>% 
+  select(2:19, 24, 28:30, 33, 36:43,
+         -41)
+dens2022comf <- dens2022com %>% 
+  select(2:19, 24, 28:30, 33, 36:42)
+dens2023comf <- dens2023com %>% 
+    select(2:19, 24, 28:30, 33, 36:42)
+#compruebo si hay columnas iguales
+nombres_iguales_com <- identical(names(dens2021comf),
+                             names(dens2023comf)) && identical(names(dens2021comf), 
+                                                               names(dens2022comf))
+#junto la base
+dens2123comf <- rbind(dens2021comf, dens2022comf, dens2023comf)
 ```
+
+
+De todas formas, hay una columna que difiere de ambos bases filtradas, en este caso `CMSWsub` definida previamente. por lo mismo, no puedo juntar las bases.
+
+
+Ahora calculamos las siguientes variables ;
+
+- `fps` =`SW`/ `SWsub`
+- `CSW` = `CSWsub` * `fps`
+- `fpm` =   `CSW` / `CSWsub` 
+- `MCSW` = `MCSWsub`* `fpm` (Peso de coquina medida de `CSW`  Hipotetico)
+- `DCSW` =  `DCSWsub` * `fps` (Peso de la coquina con daños en `SW`)
+- `TCSW`  = `CSW`+ `DCSW` (peso coquina en `SW` , incluidos daños)
+- `Btotal` = `TCSW (g)` + `TCSW (p)` (Grande y pequeña, Usar como referencia el `Sampling.point`)
+- `fpn` =   `MCSWsub`/ `CSW`
+- `NtotalCSW`  = `Nmedida` * `fpn`
+- `Ndaños`= `Ndañossub` * `fps`      
+- `Ntotal` = `NtotalCSW (g)`+`NtotalCSW (p)` + `Ndaños` * `fps` (Grande y pequeña, Usar como referencia el `Sampling.point`)
+- `area` = `m_track`* 0.445 (preguntar valor!)
+- `bio` = `Btotal`* `area`
+- `dens` =  `Ntotal` * `area` (ind/m2)
+
+
+pproceder a los calculos para calcular las variables poblacionales de interes, en este caso Densidad, Abundancia y Biomasa;
+
+```{r}
+denspobtot <- denspob2123f %>% 
+  mutate(fps = SW /SWsub,
+         CSW = CSWsub * fps,
+         fpm = CSW * CSWsub,
+         MCSW = MCSWsub * fpm,
+         DCSW = DCSWsub * fps,
+         TCSW = CSW + DCSW,
+         Btotal = )
+```
+
 
 
 # INDICE DE RECLUTAMIENTO POBLACIONAL
+Calculate a recruit index
 
 # YIELD (CPUE) ANALYSIS
 
