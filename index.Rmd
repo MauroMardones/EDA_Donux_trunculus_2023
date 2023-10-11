@@ -53,6 +53,7 @@ library(ggthemes)
 library(hrbrthemes)
 library(viridis)
 library(kableExtra)
+library(ggalt)
 ```
 
 ```{r, include=FALSE}
@@ -140,19 +141,35 @@ En cuanto a aspectos reproductivos, la reproducción de coquina es entre los mes
 
 ```{r}
 # Datos 2020 size and dens and abundance join
-size2017 <- read.csv2(here("Data", "Anterior a 2020", "data_ieo_2017_def.csv"), dec=".")
-size2018 <- read.csv2(here("Data", "Anterior a 2020", "data_ieo_2018_def.csv"), dec=".")
-size2019 <- read.csv2(here("Data", "Anterior a 2020", "data_ieo_2019_def.csv"), dec=".")
-size2020 <- read.csv2(here("Data", "Anterior a 2020", "data_ieo_2020_def.csv"), dec=".")
-
+size2017 <- read.csv2(here("Data", 
+                           "Anterior a 2020", 
+                           "data_ieo_2017_def.csv"),
+                      dec=".")
+size2018 <- read.csv2(here("Data", 
+                           "Anterior a 2020", 
+                           "data_ieo_2018_def.csv"), 
+                      dec=".")
+size2019 <- read.csv2(here("Data", 
+                           "Anterior a 2020",
+                           "data_ieo_2019_def.csv"), 
+                      dec=".")
+size2020 <- read.csv2(here("Data", 
+                           "Anterior a 2020", 
+                           "data_ieo_2020_def.csv"), 
+                      dec=".")
 # datos post 2020 separate files sizes and dens
-
 # Lenght 
-size2021 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2021.xlsx"), 
+size2021 <- read_excel(here("Data", 
+                            "Posterior 2020", 
+                            "Data_size_Coquina_2021.xlsx"), 
                        sheet = "Coquina_donax")
-size2022 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2022.xlsx"),  
+size2022 <- read_excel(here("Data",
+                            "Posterior 2020", 
+                            "Data_size_Coquina_2022.xlsx"),  
                        sheet = "Coquina_donax")
-size2023 <- read_excel(here("Data", "Posterior 2020", "Data_size_Coquina_2023.xlsx"),  
+size2023 <- read_excel(here("Data", 
+                            "Posterior 2020",
+                            "Data_size_Coquina_2023.xlsx"),  
                        sheet = "Coquina_Donax")
 ```
 
@@ -215,19 +232,18 @@ size_17_20 <- rbind(size2017,
                     size2018,
                     size2019,
                     size2020)
-# new dimension
-dim(size_17_20)
-names(size_17_20)
 ```
 
 ```{r}
+# new dimension
+dim(size_17_20)
 glimpse(size_17_20)
 ```
 
 ## Change `Date` columns from `character`to `Date` format
 
 ```{r}
-size_17_20$Date <- dmy(size_17_20$Date)
+size_17_20$Date <- ymd(size_17_20$Date)
 # separo los meses , dias y años
 # Separar en columnas de día, mes y año
 realdate <- as.Date(size_17_20$Date, format="%Y-%M-%D")
@@ -238,9 +254,9 @@ MES=as.numeric (format(realdate,"%m"))
 DIA=as.numeric (format(realdate,"%d"))
 
 size2<-cbind(dfdate,ANO,MES,DIA,size_17_20)
-colnames(size2)
-table(size2$ANO)
-
+head(size2)
+table(size2$MES)
+table(size2$months)
 ```
 
 Now we test.
@@ -269,7 +285,11 @@ nreg <- ggplot(size2 %>%
   facet_wrap(.~ANO, ncol=4) +
   geom_vline(xintercept = 10.8, color = "red")+
   geom_vline(xintercept = 25, color = "yellow")+
-  scale_fill_manual(values = c("#636363", "#2c7fb8", "#de2d26", "#756bb1", "#2ca25f"),
+  scale_fill_manual(values = c("#636363", 
+                               "#2c7fb8", 
+                               "#de2d26", 
+                               "#756bb1", 
+                               "#2ca25f"),
                        name="Rastro")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   theme_few()+
@@ -324,16 +344,16 @@ size_21_23 <- rbind(size2021b,
 ## Separate `Date` column
 
 ```{r}
+
+size_21_23$Date <- ymd(size_21_23$Date)
 # separo los meses , dias y años
 # Separar en columnas de día, mes y año
-realdate2 <- as.Date(size_21_23$Date, format="%Y-%M-%D")
-
-dfdate2 <- data.frame(Date=realdate2)
-ANO=as.numeric (format(realdate2,"%Y"))
-MES=as.numeric (format(realdate2,"%m"))
-DIA=as.numeric (format(realdate2,"%d"))
-
-size3<-cbind(dfdate2,ANO,MES,DIA,size_21_23)
+realdate <- as.Date(size_21_23$Date, format="%Y-%M-%D")
+dfdate <- data.frame(Date=realdate)
+ANO=as.numeric (format(realdate,"%Y"))
+MES=as.numeric (format(realdate,"%m"))
+DIA=as.numeric (format(realdate,"%d"))
+size3<-cbind(dfdate,ANO,MES,DIA,size_21_23)
 colnames(size3)
 table(size3$ANO)
 ```
@@ -343,20 +363,15 @@ Now join all years
 ```{r}
 names(size2) # 2017-2020
 names(size3)# 2021-2023
-
-
 size2fil <- size2 %>% 
   select(1, 2, 3, 4, 7, 8, 16, 23, 24, 25, 26)
 size3fil <- size3 %>% 
   select(-c(13,5)) %>% 
   rename(Size = size,
          SizeE = sizeE)
-
 names(size2fil) # 2017-2020
 names(size3fil)# 2021-2023
-
 # join data
-
 sizeall <- rbind(size2fil, size3fil)
 ```
 
@@ -371,8 +386,40 @@ Rename values
 
 ```{r}
 sizeall2 <- sizeall %>% 
-  mutate(rastro = str_replace_all(rastro, " ", ""))
+  mutate(rastro = str_replace_all(rastro, " ", ""),
+         rastro = str_replace_all(rastro, "COMERCIALNEW", "COMERCIAL"),
+         Beach = str_replace_all(Beach, "Donana", "Donaña"),
+         Beach = str_replace_all(Beach, " ", ""),
+         Beach = str_replace_all(Beach, "Matalascanas", "Matalascañas")) %>% 
+  mutate(MES = case_when(
+    MES == 1 ~ "January",
+    MES == 2 ~ "February",
+    MES == 3 ~ "March",
+    MES == 4 ~ "April",
+    MES == 5 ~ "May",
+    MES == 6 ~ "June",
+    MES == 7 ~ "July",
+    MES == 8 ~ "August",
+    MES == 9 ~ "September",
+    MES == 10 ~ "October",
+    MES == 11 ~ "November",
+    MES == 12 ~ "December")) %>% 
+  mutate(MES = factor(MES, levels = c("January", 
+                                          "February", 
+                                          "March",
+                                          "April",
+                                          "May",
+                                          "June",
+                                          "July",
+                                          "August",
+                                          "September",
+                                          "October",
+                                          "November", 
+                                          "December")))
+
+unique(sizeall2$Beach)
 unique(sizeall2$rastro)
+unique(sizeall2$MES)
 ```
 
 some plots
@@ -425,7 +472,7 @@ nallbeach <- ggplot(sizeall2,
 nallbeach
 ```
 
-just POBLACIONAL sample
+just Poblacional sample
 
 ```{r}
 pobeach <- ggplot(sizeall2 %>% 
@@ -451,11 +498,11 @@ pobeach <- ggplot(sizeall2 %>%
 pobeach
 ```
 
-justm COMERCIAL sample
+justm Comercial sample
 
 ```{r}
-combeach <- ggplot(sizeall %>% 
-                      filter(rastro!="POBLACIONAL"), 
+combeach <- ggplot(sizeall2 %>% 
+                      filter(rastro!="POBLACIONAL"), # saco poblacional
                aes(x=Size, 
                    y = as.factor(MES),
                   fill= as.factor(Beach)))+
@@ -482,11 +529,13 @@ last month of 2023 (august) by beach
 ```{r}
 combeachago23 <- ggplot(sizeall2 %>% 
                       filter(ANO==2023), 
-               aes(x=Size, fill=rastro))+
-  geom_histogram(bins = 80,
+               aes(x=Size, y=Beach, fill=rastro))+
+  geom_density_ridges(stat = "binline", 
+                      bins = 40, 
+                      scale = 1.2,
                       alpha=0.8)+
   scale_fill_manual(values = c("red", "blue"))+
-  facet_grid(MES~Beach) +
+  facet_wrap(.~MES, ncol=4) +
   geom_vline(xintercept = 10.8, color = "red")+
   theme_few()+
   theme(legend.position = "bottom")+
@@ -514,23 +563,24 @@ Mean length in time series by Subarea.
 ```{r, fig.align="center", warning=FALSE}
 pmea <- ggplot(sizemean, 
                aes(MES,avg,
-               color = factor(Beach)))+
+               color=rastro, group=rastro))+
     geom_point(show.legend = T,
                alpha=.7) +
-    geom_smooth(method= "lm", 
+    geom_smooth(method= "loess", 
                 colour='#253494')+
     theme_few()+ 
-    facet_grid(rastro~ANO)+
-    scale_x_continuous(breaks = seq(from = 1, to = 12, by = 3))+
+    facet_grid(Beach~ANO)+
     #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
-    theme(axis.text.x = element_text(angle = 90))+
+    theme(axis.text.x = element_text(angle = 90,
+                                     size = 8),
+          axis.text.y = element_text(size = 8),
+          legend.position = "bottom")+
     guides(fill = guide_legend(reverse=F))+
-    scale_color_viridis_d(option="H",
-                          name="Beach")+
-    ylim(15,30)+
-    ylab("") +
-    xlab("") +
-    ggtitle("Lenght Mean Krill fishery")
+    scale_color_viridis_d(name="Tipo de Rastro")+
+    ylim(10,30)+
+    ylab("Tallas Medias (mm)") +
+    xlab("MES") +
+    ggtitle("Tallas medias coquina por año, mes y tipo de rastro")
 pmea
 ```
 
@@ -538,48 +588,55 @@ Calculate a recruit index
 
 ## Calculate Index Recruit
 
-```{r eval=FALSE}
-inderec <- sizeall %>% 
-  filter(rastro=="POBLACIONAL") %>% 
-  drop_na(Size) %>% 
-  dplyr::group_by(ANO, MES) %>% 
-  dplyr::mutate(prolen = Size - 10) %>% 
-  dplyr::mutate(prolen2 = prolen*-1 ) %>% 
-  dplyr::summarize(prolen3 =mean(prolen2))
 
 
-limite_superior <- round(mean(inderec$prolen3) + 
-  1.96 * sd(inderec$prolen3) / sqrt(inderec$prolen3),3)
-limite_inferior <- round(mean(inderec$prolen3) - 
-  1.96 * sd(inderec$prolen3) / sqrt(inderec$prolen3),3)
+# DENSIDAD POBLACIONAL
+
+
+Visualizo los datos y su estructura. Para replicar los procesos de calculos en las hojas excel, usaremos solo las columnas con datos crudos. Es decir, desde `Date` hasta `MCSWsub`, y algunas columnas finales.
+
+La idea es hacer los cálculos en el codigo para tener la secuencia y replicar los resultados informados por @Delgado2023
+
+Primero comenzamos con los datos estandarizados del os años 2021 al 2023. Luego juntamos la data.
+
+```{r}
+names(dens2021com)
 ```
 
-```{r eval=FALSE}
-inderec$colour <- ifelse(inderec$prolen3 < 0, "negative","positive")
+Solo debo sacaer la columna `ID` en la base `dens2021com` 
+```{r}
+# Comercial
+dens2021com <- dens2021com %>% 
+  select(-c(1,41))
+dens2022com <- dens2022com %>% 
+  select(-1)
+dens2023com <- dens2023com %>% 
+  select(-1)
+#compruebo si hay columnas iguales
+nombres_iguales <- identical(names(dens2021com),
+                             names(dens2023com)) && identical(names(dens2021com), names(dens2022com))
 
-indexplot <- ggplot(inderec,
-                    aes(rev(MES),prolen3))+
-  geom_bar(stat="identity",
-           position="identity",
-           aes(fill = colour))+
-  scale_fill_manual(values=c(positive="firebrick1",
-                             negative="black"),
-                    name="")+
-  facet_wrap(.~ANO)+
-  theme_few()+
-  scale_x_continuous(breaks = seq(from = 1, 
-                                to = 12, by = 4))+
-  labs(y="IRK",
-       x="",
-       title = "Index Recruit Krill 48.1")+
-  coord_flip()
-indexplot
+#junto la base
+dens2123 <- rbind(dens2021com, dens2022com, dens2023com)
+# poblacional
+dens2021pob <- dens2021pob %>% 
+  select(-c(1,41))
+dens2022pob <- dens2022pob %>% 
+  select(-1) %>% 
+  rename(ID_codificado_punto=ID)
+dens2023pob <- dens2023pob %>% 
+  select(-1)%>% 
+  rename(ID_codificado_punto=ID)
+
+#compruebo si hay columnas iguales
+nombres_iguales_pob <- identical(names(dens2021pob),
+                             names(dens2023pob)) && identical(names(dens2021pob), names(dens2022pob))
+#junto la base
+denspob2123 <- rbind(dens2021pob, dens2022pob, dens2023pob)
 ```
 
-# DENSIDAD DB
 
-
-# INDICE DE RECLUTAMIENTO DB
+# INDICE DE RECLUTAMIENTO POBLACIONAL
 
 # YIELD (CPUE) ANALYSIS
 
@@ -635,26 +692,22 @@ Otra viz
 landpop <- ggplot(landings3 %>% 
          group_by(ANO, ESTABLECIMIENTO) %>% 
          summarise(LANDINGS1 =sum(LANDINGS))) +
-  geom_segment( aes(x=ANO, 
-                    xend=ANO, 
-                    y=0, 
-                    yend=LANDINGS1), color="grey") +
-  geom_point( aes(x=ANO, 
+  geom_lollipop(aes(x=ANO, 
                   y=LANDINGS1,
                   colour=ESTABLECIMIENTO), 
-              size=3) +
-  scale_colour_viridis_d(option="G")+
+              size=0.9)+
+  scale_colour_viridis_d(option="H")+
   theme_few() +
   theme(
     legend.position = "none",
     panel.border = element_blank(),
     panel.spacing = unit(0.1, "lines"),
-    strip.text.x = element_text(size = 5),
+    strip.text.x = element_text(size = 6),
     axis.text.x = element_text(size = 5),
     axis.text.y = element_text(size = 5)) +
   xlab("") +
-  ylab("Desembarque por Establecimiento") +
-  facet_wrap(.~ESTABLECIMIENTO, ncol=8, scale="free_y")
+  ylab("Desembarque (t) por Establecimiento") +
+  facet_wrap(.~ESTABLECIMIENTO, ncol=4, scale="free_y")
 landpop
 ```
 Los datos fueron solicitados con información hasta Febrero del 2022, por lo mismo es necesario actualizar
@@ -664,7 +717,7 @@ Los datos fueron solicitados con información hasta Febrero del 2022, por lo mis
 orderland <-   ggplot(landings3 %>% 
          group_by(ESTABLECIMIENTO) %>% 
          summarise(LANDINGS1 =sum(LANDINGS)) %>% 
-           arrange(ESTABLECIMIENTO) %>% 
+           arrange(LANDINGS1) %>% 
            mutate(ESTABLECIMIENTO=factor(ESTABLECIMIENTO,
                                          ESTABLECIMIENTO)), 
          aes(x=ESTABLECIMIENTO, 
@@ -675,7 +728,8 @@ orderland <-   ggplot(landings3 %>%
     theme(
       panel.grid.minor.y = element_blank(),
       panel.grid.major.y = element_blank(),
-      legend.position="none"
+      legend.position="none",
+      axis.text.y = element_text(size = 10)
     ) +
     xlab("") +
     ylab("Desembarque total aculumado por Establecimiento")
@@ -684,7 +738,11 @@ orderland
 
 
 ```{r}
-kbl(table(landings2$MES, landings2$ANO))
+kbl(table(landings2$MES, landings2$ANO), 
+    longtable = T, 
+    booktabs = T, 
+    caption = "Registros de Desembarque por año y mes") %>% 
+   kable_styling(latex_options = c("striped",  "hold_position"))
 ```
 
 

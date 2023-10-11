@@ -55,6 +55,7 @@ library(ggthemes)
 library(hrbrthemes)
 library(viridis)
 library(kableExtra)
+library(ggalt)
 ```
 
 
@@ -981,7 +982,7 @@ Hay valores cercanos a las 14 t. Identificar si esto tiene sentido. Preguntar a 
 ```r
 plotlam <- ggplot(landings3,aes(ANO, LANDINGS))+
   geom_bar(stat = "identity")+
-  facet_wrap(.~ESTABLECIMIENTO)+
+  #facet_wrap(.~ESTABLECIMIENTO)+
   theme_few()
 plotlam
 ```
@@ -995,26 +996,22 @@ Otra viz
 landpop <- ggplot(landings3 %>% 
          group_by(ANO, ESTABLECIMIENTO) %>% 
          summarise(LANDINGS1 =sum(LANDINGS))) +
-  geom_segment( aes(x=ANO, 
-                    xend=ANO, 
-                    y=0, 
-                    yend=LANDINGS1), color="grey") +
-  geom_point( aes(x=ANO, 
+  geom_lollipop(aes(x=ANO, 
                   y=LANDINGS1,
                   colour=ESTABLECIMIENTO), 
-              size=3) +
-  scale_colour_viridis_d(option="G")+
+              size=0.9)+
+  scale_colour_viridis_d(option="H")+
   theme_few() +
   theme(
     legend.position = "none",
     panel.border = element_blank(),
     panel.spacing = unit(0.1, "lines"),
-    strip.text.x = element_text(size = 5),
+    strip.text.x = element_text(size = 6),
     axis.text.x = element_text(size = 5),
     axis.text.y = element_text(size = 5)) +
   xlab("") +
-  ylab("Desembarque por Establecimiento") +
-  facet_wrap(.~ESTABLECIMIENTO, ncol=8, scale="free_y")
+  ylab("Desembarque (t) por Establecimiento") +
+  facet_wrap(.~ESTABLECIMIENTO, ncol=4, scale="free_y")
 landpop
 ```
 
@@ -1027,7 +1024,7 @@ Los datos fueron solicitados con información hasta Febrero del 2022, por lo mis
 orderland <-   ggplot(landings3 %>% 
          group_by(ESTABLECIMIENTO) %>% 
          summarise(LANDINGS1 =sum(LANDINGS)) %>% 
-           arrange(ESTABLECIMIENTO) %>% 
+           arrange(LANDINGS1) %>% 
            mutate(ESTABLECIMIENTO=factor(ESTABLECIMIENTO,
                                          ESTABLECIMIENTO)), 
          aes(x=ESTABLECIMIENTO, 
@@ -1038,7 +1035,8 @@ orderland <-   ggplot(landings3 %>%
     theme(
       panel.grid.minor.y = element_blank(),
       panel.grid.major.y = element_blank(),
-      legend.position="none"
+      legend.position="none",
+      axis.text.y = element_text(size = 10)
     ) +
     xlab("") +
     ylab("Desembarque total aculumado por Establecimiento")
@@ -1050,10 +1048,15 @@ orderland
 
 
 ```r
-kbl(table(landings2$MES, landings2$ANO))
+kbl(table(landings2$MES, landings2$ANO), 
+    longtable = F, 
+    booktabs = T, 
+    caption = "Desembarque (t) acumulado por Establecimiento") %>% 
+   kable_styling(latex_options = c("striped",  "hold_position"))
 ```
 
-<table>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<caption>(\#tab:unnamed-chunk-34)Desembarque (t) acumulado por Establecimiento</caption>
  <thead>
   <tr>
    <th style="text-align:right;"> 2017 </th>
