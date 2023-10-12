@@ -536,20 +536,20 @@ Mean length in time series by Subarea.
 ```{r, fig.align="center", warning=FALSE}
 pmea <- ggplot(sizemean, 
                aes(MES,avg,
-               color=rastro, group=rastro))+
+               color=Beach, group=Beach))+
     geom_point(show.legend = T,
                alpha=.7) +
-    geom_smooth(method= "loess", 
-                colour='#253494')+
+    geom_smooth(method= "lm")+
     theme_few()+ 
-    facet_grid(Beach~ANO)+
+    facet_grid(rastro~ANO)+
     #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
     theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
                                      size = 8),
           axis.text.y = element_text(size = 8),
           legend.position = "bottom")+
     guides(fill = guide_legend(reverse=F))+
-    scale_color_viridis_d(name="Tipo de Rastro")+
+    scale_color_viridis_d(name="Playa")+
     ylim(10,30)+
     ylab("Tallas Medias (mm)") +
     xlab("MES") +
