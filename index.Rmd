@@ -317,7 +317,6 @@ size_21_23 <- rbind(size2021b,
 ## Separate `Date` column
 
 ```{r}
-
 size_21_23$Date <- ymd(size_21_23$Date)
 # separo los meses , dias y años
 # Separar en columnas de día, mes y año
@@ -639,6 +638,21 @@ nombres_iguales_pob <- identical(names(dens2021pobf),
                                                                names(dens2022pobf))
 #junto la base
 denspob2123f <- rbind(dens2021pobf, dens2022pobf, dens2023pobf)
+```
+## Separate `Date` column
+
+```{r}
+realdate <- as.Date(denspob2123f$Date, format="%Y-%M-%D")
+dfdate <- data.frame(Date=realdate)
+ANO=as.numeric (format(realdate,"%Y"))
+MES=as.numeric (format(realdate,"%m"))
+DIA=as.numeric (format(realdate,"%d"))
+denspob2123f<-cbind(ANO,MES,DIA,denspob2123f)
+colnames(denspob2123f)
+table(denspob2123f$ANO)
+```
+
+```{r}
 # Comercial
 dens2021comf <- dens2021com %>% 
   select(2:19, 24, 28:30, 33, 36:43,
@@ -655,6 +669,18 @@ nombres_iguales_com <- identical(names(dens2021comf),
 dens2123comf <- rbind(dens2021comf, dens2022comf, dens2023comf)
 ```
 
+## Separate `Date` column
+
+```{r}
+realdate <- as.Date(dens2123comf$Date, format="%Y-%M-%D")
+dfdate <- data.frame(Date=realdate)
+ANO=as.numeric (format(realdate,"%Y"))
+MES=as.numeric (format(realdate,"%m"))
+DIA=as.numeric (format(realdate,"%d"))
+dens2123comf<-cbind(dfdate,ANO,MES,DIA,dens2123comf)
+colnames(dens2123comf)
+table(dens2123comf$ANO)
+```
 
 De todas formas, hay una columna que difiere de ambos bases filtradas, en este caso `CMSWsub` definida previamente. por lo mismo, no puedo juntar las bases.
 
@@ -686,8 +712,16 @@ denspobtot <- denspob2123f %>%
          fpm = CSW * CSWsub,
          MCSW = MCSWsub * fpm,
          DCSW = DCSWsub * fps,
-         TCSW = CSW + DCSW,
-         Btotal = )
+         TCSW = CSW + DCSW)
+
+denspobtot2 <- denspobtot %>% 
+  group_by(Beach, Sampling.point, ANO, MES, DIA) %>% 
+  mutate(Btotal=sum(TCSW),
+         fpn = MCSWsub/CSW,
+         NtotalCSW  = Nmedida * fpn,
+         )
+ View(denspobtot2)
+
 ```
 
 
