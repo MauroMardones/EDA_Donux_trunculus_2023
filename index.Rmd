@@ -703,6 +703,7 @@ Ahora calculamos las siguientes variables ;
 - `dens` =  `Ntotal` * `area` (ind/m2)
 
 
+
 pproceder a los calculos para calcular las variables poblacionales de interes, en este caso Densidad, Abundancia y Biomasa;
 
 ```{r}
