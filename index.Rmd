@@ -54,6 +54,8 @@ library(hrbrthemes)
 library(viridis)
 library(kableExtra)
 library(ggalt)
+library(rnaturalearth)
+library(sf)
 ```
 
 ```{r, include=FALSE}
@@ -238,7 +240,7 @@ Now we test.
 table(size2$ANO)
 ```
 
-## Viz
+### Viz
 
 Primera vizulación de las tallas de coquina diferenciasdas por tipo de
 muestreo. Línea roja es SL50 (10.8 mm para hembras [@Delgado2017] y
@@ -314,7 +316,7 @@ size_21_23 <- rbind(size2021b,
                     size2023b)
 ```
 
-## Separate `Date` column
+### Separate `Date` column
 
 ```{r}
 size_21_23$Date <- ymd(size_21_23$Date)
@@ -566,21 +568,12 @@ Recordar que las bases de densidades previas al 2021 estan en la misma base que 
 dens2021pob <- read_excel(here("Data", "Posterior 2020", 
                                "Data_sample_FEMP_04_2021.xlsx"),
                        sheet = "Data_POBL")
-dens2021com <- read_excel(here("Data", "Posterior 2020", 
-                               "Data_sample_FEMP_04_2021.xlsx"),
-                       sheet = "DATA_COM")
 dens2022pob <- read_excel(here("Data", "Posterior 2020", 
                                "Data_sample_FEMP_04_2022.xlsx"),
                        sheet = "Data_POBL")
-dens2022com <- read_excel(here("Data", "Posterior 2020", 
-                               "Data_sample_FEMP_04_2022.xlsx"),
-                       sheet = "DATA_COM")
 dens2023pob <- read_excel(here("Data", "Posterior 2020", 
                                "Data_sample_FEMP_04_2023.xlsx"),
                        sheet = "Data_POBL")
-dens2023com <- read_excel(here("Data", "Posterior 2020", 
-                               "Data_sample_FEMP_04_2023.xlsx"),
-                       sheet = "DATA_COM")
 ```
 
 Visualizo los datos y su estructura. Para replicar los procesos de calculos en las hojas excel, usaremos solo las columnas con datos crudos. Es decir, desde `Date` hasta `MCSWsub`, y algunas columnas finales. La idea es hacer los cálculos en el codigo para tener la secuencia y replicar los resultados informados por @Delgado2023. 
@@ -708,6 +701,24 @@ Calculate a recruit index
 
 Aca se trabaja con los datos del muestreo `COMERCIAL`
 
+Leo los datos
+
+```{r}
+dens2017com <- read_delim("Data/Anterior a 2020/data_ieo_2017_def.csv", 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE)
+
+
+dens2021com <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2021.xlsx"),
+                       sheet = "DATA_COM")
+dens2022com <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2022.xlsx"),
+                       sheet = "DATA_COM")
+dens2023com <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2023.xlsx"),
+                       sheet = "DATA_COM")
+```
+
 
 ```{r}
 # Comercial
@@ -717,7 +728,7 @@ dens2021comf <- dens2021com %>%
 dens2022comf <- dens2022com %>% 
   select(2:19, 24, 28:30, 33, 36:42)
 dens2023comf <- dens2023com %>% 
-    select(2:19, 24, 28:30, 33, 36:42)
+  select(2:19, 24, 29:31, 34, 37:43) 
 #compruebo si hay columnas iguales
 nombres_iguales_com <- identical(names(dens2021comf),
                              names(dens2023comf)) && identical(names(dens2021comf), 
@@ -734,12 +745,13 @@ dfdate <- data.frame(Date=realdate)
 ANO=as.numeric (format(realdate,"%Y"))
 MES=as.numeric (format(realdate,"%m"))
 DIA=as.numeric (format(realdate,"%d"))
-dens2123comf<-cbind(dfdate,ANO,MES,DIA,dens2123comf)
+dens2123comf<-cbind(ANO,MES,DIA,dens2123comf)
 colnames(dens2123comf)
 table(dens2123comf$ANO)
 ```
 
-Al uigual que para `POBLACIONAL`, calculamos algunas variables de acuerdo a la Figura 1;
+## Calculo variables
+Al igual que para `POBLACIONAL`, calculamos algunas variables de acuerdo a la Figura 1;
 
 
 - `fps` =`SW`/ `SWsub`
@@ -755,8 +767,6 @@ Al uigual que para `POBLACIONAL`, calculamos algunas variables de acuerdo a la F
 - `Ntotal` = `NtotalCSW` + `Ndaños`
 
 
-
-
 pproceder a los calculos para calcular las variables poblacionales de interes, en este caso Densidad, Abundancia y Biomasa;
 
 ```{r}
@@ -767,20 +777,96 @@ denscomtot <- dens2123comf %>%
          MCSW = MCSWsub * fps,
          DCSW = DCSWsub * fps,
          TCSW = CSW + DCSW,
-         TCSW  = CSW+ DCSW)
-
-denspobtot2 <- denspobtot %>% 
-  group_by(Beach, Sampling.point, ANO, MES, DIA) %>% 
-  mutate(Btotal=sum(TCSW),
-         fpn = MCSWsub/CSW,
-         NtotalCSW  = Nmedida * fpn, 
-         Ndaños = Ndañossub * fps, 
-         Ntotal = sum(NtotalCSW) + Ndaños * fps,
-         area = m_track * 0.445,
-         bio= Btotal * area,
-         dens = Ntotal * area)
- 
+         Rend= 180 *((CMSW/1000)/tow_time),
+         Rend1 = ((CMSW/1000)/5)*60,
+         fpn = CMSW * MCSW,
+         NtotalCSW = Nmedida * fpn,
+         Ndaños = Ndañossub * fps,
+         Ntotal = NtotalCSW + Ndaños,
+         MES = case_when(
+           MES == 1 ~ "January",
+           MES == 2 ~ "February",
+           MES == 3 ~ "March",
+           MES == 4 ~ "April",
+           MES == 5 ~ "May",
+           MES == 6 ~ "June",
+           MES == 7 ~ "July",
+           MES == 8 ~ "August",
+           MES == 9 ~ "September",
+           MES == 10 ~ "October",
+           MES == 11 ~ "November",
+           MES == 12 ~ "December")) %>% 
+  mutate(MES = factor(MES, levels = c("January", 
+                                          "February", 
+                                          "March",
+                                          "April",
+                                          "May",
+                                          "June",
+                                          "July",
+                                          "August",
+                                          "September",
+                                          "October",
+                                          "November", 
+                                          "December")))
 ```
+
+Ahora procedo a vizualizar el rendimiento
+
+
+```{r, fig.align="center", warning=FALSE}
+rend1 <- ggplot(denscomtot, 
+               aes(MES,Rend1,
+                color=Beach, group=Beach))+
+    geom_point(show.legend = T,
+               alpha=.7) +
+    geom_smooth(method= "loess")+
+    theme_few()+ 
+    facet_grid(ANO~Beach)+
+    #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
+   theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     size = 8),
+          axis.text.y = element_text(size = 8),
+          legend.position = "none")+
+    guides(fill = guide_legend(reverse=F))+
+    scale_color_viridis_d(option= "F", 
+                          name="Playa")+
+    geom_hline(yintercept=3.5, col=2)+
+    ylab("CPUE (Kg/3 hrs)") +
+    xlab("") +
+    ylim(0,10)+
+    ggtitle("Rendimiento coquina por año, mes y Playa")
+rend1
+```
+```{r, fig.align="center", warning=FALSE}
+rend2 <- ggplot(denscomtot, 
+               aes(MES,Rend1,
+                color=Sampling.point, 
+                group=Sampling.point))+
+    geom_point(show.legend = T,
+               alpha=.7) +
+    geom_smooth(method= "loess")+
+    theme_few()+ 
+    facet_grid(ANO~Sampling.point)+
+    #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
+   theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     size = 8),
+          axis.text.y = element_text(size = 8),
+          legend.position = "none")+
+    guides(fill = guide_legend(reverse=F))+
+    scale_color_viridis_d(option= "H", 
+                          name="Sampling Point")+
+    geom_hline(yintercept=3.5, col=2)+
+    ylab("CPUE (Kg/3 hrs)") +
+    xlab("") +
+    ylim(0,10)+
+    ggtitle("Rendimiento coquina por año, mes y punto de muestreo")
+rend2
+```
+
+
+
 # DESEMBARQUES OFICIALES
 
 Leo los datos entregados por E. Marco. Actualizar pedida con Junta Andalucia.
@@ -924,23 +1010,27 @@ portug1 <- st_transform(portug, "+init=epsg:4326")
 ```
 
 Un mapa de prueba
-
  
 ```{r}
 mas <- ggplot() +
   geom_sf(data = spain1) +
   geom_sf(data = portug1) +
   geom_sf(data = zonapro1, aes(fill=ZONA)) +
-  geom_sf(data = fisicomar1, alpha=0.1,
-          linetype=5) +
+  # geom_sf(data = fisicomar1, alpha=0.1,
+  #         linetype=5) +
   scale_fill_viridis_d(option="H")+
   coord_sf() +
   xlab(expression(paste(Longitude^o,~'O'))) +
   ylab(expression(paste(Latitude^o,~'S')))+
+  geom_sf_label(data=zonapro1, aes(label = ZONA),
+               check_overlap = FALSE,
+               nudge_x = 0.1,
+               nudge_y = 0.1,
+               stat = "sf_coordinates")+
   theme_few()+
   theme(legend.position = "none")+
-  xlim(-8,-5)+
-  ylim(35.8, 37.4)
+  xlim(-7.6,-6)+
+  ylim(36.6, 37.4)
 mas
 ```
 
