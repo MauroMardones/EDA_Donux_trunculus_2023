@@ -652,40 +652,11 @@ colnames(denspob2123f)
 table(denspob2123f$ANO)
 ```
 
-```{r}
-# Comercial
-dens2021comf <- dens2021com %>% 
-  select(2:19, 24, 28:30, 33, 36:43,
-         -41)
-dens2022comf <- dens2022com %>% 
-  select(2:19, 24, 28:30, 33, 36:42)
-dens2023comf <- dens2023com %>% 
-    select(2:19, 24, 28:30, 33, 36:42)
-#compruebo si hay columnas iguales
-nombres_iguales_com <- identical(names(dens2021comf),
-                             names(dens2023comf)) && identical(names(dens2021comf), 
-                                                               names(dens2022comf))
-#junto la base
-dens2123comf <- rbind(dens2021comf, dens2022comf, dens2023comf)
-```
 
-## Separate `Date` column
-
-```{r}
-realdate <- as.Date(dens2123comf$Date, format="%Y-%M-%D")
-dfdate <- data.frame(Date=realdate)
-ANO=as.numeric (format(realdate,"%Y"))
-MES=as.numeric (format(realdate,"%m"))
-DIA=as.numeric (format(realdate,"%d"))
-dens2123comf<-cbind(dfdate,ANO,MES,DIA,dens2123comf)
-colnames(dens2123comf)
-table(dens2123comf$ANO)
-```
-
-De todas formas, hay una columna que difiere de ambos bases filtradas, en este caso `CMSWsub` definida previamente. por lo mismo, no puedo juntar las bases.
+De todas formas, hay una columna que difiere de ambos bases filtradas `COMERCIAL`y `POBLACIONAL`, en este caso `CMSWsub` definida previamente. por lo mismo, no puedo juntar las bases.
 
 
-Ahora calculamos las siguientes variables ;
+Ahora calculamos las siguientes variables para `POBLACIONAL`;
 
 - `fps` =`SW`/ `SWsub`
 - `CSW` = `CSWsub` * `fps`
@@ -719,10 +690,13 @@ denspobtot2 <- denspobtot %>%
   group_by(Beach, Sampling.point, ANO, MES, DIA) %>% 
   mutate(Btotal=sum(TCSW),
          fpn = MCSWsub/CSW,
-         NtotalCSW  = Nmedida * fpn,
-         )
- View(denspobtot2)
-
+         NtotalCSW  = Nmedida * fpn, 
+         Ndaños = Ndañossub * fps, 
+         Ntotal = sum(NtotalCSW) + Ndaños * fps,
+         area = m_track * 0.445,
+         bio= Btotal * area,
+         dens = Ntotal * area)
+ 
 ```
 
 
@@ -730,8 +704,83 @@ denspobtot2 <- denspobtot %>%
 # INDICE DE RECLUTAMIENTO POBLACIONAL
 Calculate a recruit index
 
-# YIELD (CPUE) ANALYSIS
+# YIELD ANALYSIS (Rendimiento)
 
+Aca se trabaja con los datos del muestreo `COMERCIAL`
+
+
+```{r}
+# Comercial
+dens2021comf <- dens2021com %>% 
+  select(2:19, 24, 28:30, 33, 36:43,
+         -41)
+dens2022comf <- dens2022com %>% 
+  select(2:19, 24, 28:30, 33, 36:42)
+dens2023comf <- dens2023com %>% 
+    select(2:19, 24, 28:30, 33, 36:42)
+#compruebo si hay columnas iguales
+nombres_iguales_com <- identical(names(dens2021comf),
+                             names(dens2023comf)) && identical(names(dens2021comf), 
+                                                               names(dens2022comf))
+#junto la base
+dens2123comf <- rbind(dens2021comf, dens2022comf, dens2023comf)
+```
+
+## Separate `Date` column
+
+```{r}
+realdate <- as.Date(dens2123comf$Date, format="%Y-%M-%D")
+dfdate <- data.frame(Date=realdate)
+ANO=as.numeric (format(realdate,"%Y"))
+MES=as.numeric (format(realdate,"%m"))
+DIA=as.numeric (format(realdate,"%d"))
+dens2123comf<-cbind(dfdate,ANO,MES,DIA,dens2123comf)
+colnames(dens2123comf)
+table(dens2123comf$ANO)
+```
+
+Al uigual que para `POBLACIONAL`, calculamos algunas variables de acuerdo a la Figura 1;
+
+
+- `fps` =`SW`/ `SWsub`
+- `CSW` = `CSWsub` * `fps`
+- `CMSW`= `CMSWsub` * `fps` (Peso de la coquina retenida en zaranda > 25mm.)
+- `MCSW` = `MCSWsub`* `fps` (Peso de coquina < 25 mm.)
+- `DCSW` =  `DCSWsub` * `fps` 
+- `TCSW`  = `CSW`+ `DCSW` (peso coquina en `SW` , incluidos daños)
+- `Rend`= 180* ((`CMSW`/1000)/`tow_time`)
+- `fpn` = `CMSW` * `MCSW`
+- `NtotalCSW`= `Nmedida` * `fpn` 
+- `Ndaños` = `Ndañossub` * `fps`
+- `Ntotal` = `NtotalCSW` + `Ndaños`
+
+
+
+
+pproceder a los calculos para calcular las variables poblacionales de interes, en este caso Densidad, Abundancia y Biomasa;
+
+```{r}
+denscomtot <- dens2123comf %>% 
+  mutate(fps = SW /SWsub,
+         CSW = CSWsub * fps,
+         CMSW= CMSWsub * fps,
+         MCSW = MCSWsub * fps,
+         DCSW = DCSWsub * fps,
+         TCSW = CSW + DCSW,
+         TCSW  = CSW+ DCSW)
+
+denspobtot2 <- denspobtot %>% 
+  group_by(Beach, Sampling.point, ANO, MES, DIA) %>% 
+  mutate(Btotal=sum(TCSW),
+         fpn = MCSWsub/CSW,
+         NtotalCSW  = Nmedida * fpn, 
+         Ndaños = Ndañossub * fps, 
+         Ntotal = sum(NtotalCSW) + Ndaños * fps,
+         area = m_track * 0.445,
+         bio= Btotal * area,
+         dens = Ntotal * area)
+ 
+```
 # DESEMBARQUES OFICIALES
 
 Leo los datos entregados por E. Marco. Actualizar pedida con Junta Andalucia.
@@ -837,6 +886,63 @@ kbl(table(landings2$MES, landings2$ANO),
    kable_styling(latex_options = c("striped",  "hold_position"))
 ```
 
+
+# MAPAS
+
+Ahora produzco un mapa de las `Zonas De Producción`. Estos datos vectoriales fueron obtenidos desde la paina oficial de datos espaciales de la Junta de Andalucia [Shapesfile](https://portalrediam.cica.es/descargas?path=%2F08_AMBITOS_INTERES_AMBIENTAL%2F02_LITORAL_MARINO%2F04_SOCIOECONOMIA%2FZonasProduccionMoluscos)
+
+Para ello tengo una seré de `.shp` para ir explorando.
+
+Debo identificar clsaramete los poligonos utilizados en coquina.
+
+## Leo Shapes y transformo a la proyección correcta.
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+spain <- ne_countries(country = "spain",  
+                      scale="medium", 
+                      returnclass = 'sf')
+portug<- ne_countries(country = "portugal",  
+                      scale="medium", 
+                      returnclass = 'sf')
+costandalucia <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_10_Playa.shp')
+zonapro <- st_read('~/IEO/DATA/Shapefiles_Andalucia/ZonasProduccionMoluscos.shp')
+zonape <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_09_ZonaIdoneaPesca.shp')
+fisicomar <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_01_FisiograficoMarino.shp')
+playas <- st_read('~/IEO/DATA/Shapefiles_Andalucia/playas.shp')
+lito <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_02_Litologia.shp')
+```
+
+
+```{r message=FALSE, warning=FALSE}
+costandalucia1 <- st_transform(costandalucia, "+init=epsg:4326")
+zonapro1 <- st_transform(zonapro, "+init=epsg:4326")
+zonape1 <- st_transform(zonape, "+init=epsg:4326")
+fisicomar1 <- st_transform(fisicomar, "+init=epsg:4326")
+playas1 <- st_transform(playas, "+init=epsg:4326")
+lito1 <- st_transform(lito, "+init=epsg:4326")
+spain1 <- st_transform(spain, "+init=epsg:4326")
+portug1 <- st_transform(portug, "+init=epsg:4326")
+```
+
+Un mapa de prueba
+
+ 
+```{r}
+mas <- ggplot() +
+  geom_sf(data = spain1) +
+  geom_sf(data = portug1) +
+  geom_sf(data = zonapro1, aes(fill=ZONA)) +
+  geom_sf(data = fisicomar1, alpha=0.1,
+          linetype=5) +
+  scale_fill_viridis_d(option="H")+
+  coord_sf() +
+  xlab(expression(paste(Longitude^o,~'O'))) +
+  ylab(expression(paste(Latitude^o,~'S')))+
+  theme_few()+
+  theme(legend.position = "none")+
+  xlim(-8,-5)+
+  ylim(35.8, 37.4)
+mas
+```
 
 
 # DUDAS
