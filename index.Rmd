@@ -816,7 +816,7 @@ Ahora procedo a vizualizar el rendimiento
 ```{r, fig.align="center", warning=FALSE}
 rend1 <- ggplot(denscomtot, 
                aes(MES,Rend1,
-                color=Beach, group=Beach))+
+                group=Beach))+
     geom_point(show.legend = T,
                alpha=.7) +
     geom_smooth(method= "loess")+
@@ -825,6 +825,7 @@ rend1 <- ggplot(denscomtot,
     #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
    theme(axis.text.x = element_text(angle = 90,
                                      hjust = 1,
+                                    vjust = 0.5,
                                      size = 8),
           axis.text.y = element_text(size = 8),
           legend.position = "none")+
@@ -841,7 +842,7 @@ rend1
 ```{r, fig.align="center", warning=FALSE}
 rend2 <- ggplot(denscomtot, 
                aes(MES,Rend1,
-                color=Sampling.point, 
+                 
                 group=Sampling.point))+
     geom_point(show.legend = T,
                alpha=.7) +
@@ -851,6 +852,7 @@ rend2 <- ggplot(denscomtot,
     #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
    theme(axis.text.x = element_text(angle = 90,
                                      hjust = 1,
+                                     vjust = 0.5,
                                      size = 8),
           axis.text.y = element_text(size = 8),
           legend.position = "none")+
@@ -863,6 +865,35 @@ rend2 <- ggplot(denscomtot,
     ylim(0,10)+
     ggtitle("Rendimiento coquina por año, mes y punto de muestreo")
 rend2
+```
+solo el ultimo mes
+
+```{r}
+rend2023 <- ggplot(denscomtot %>% 
+                     filter(ANO==2023), 
+               aes(MES,Rend1,
+                group=Sampling.point))+
+    geom_point(alpha=.7) +
+    geom_smooth(method= "loess",
+                level=0.5,
+                span=3)+
+    theme_few()+ 
+    facet_grid(.~Sampling.point)+
+    scale_y_continuous(breaks = seq(from = 1, to = 6, by = 0.5))+
+   theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     vjust = 0.5,
+                                     size = 8),
+          axis.text.y = element_text(size = 8),
+          legend.position = "none")+
+    scale_color_viridis_d(option= "H", 
+                          name="Sampling Point")+
+    geom_hline(yintercept=3.5, col=2)+
+    ylab("CPUE (Kg/3 hrs)") +
+    xlab("") +
+  ylim(0,6)+
+  ggtitle("Rendimiento coquina 2023 por mes y punto de muestreo")
+rend2023
 ```
 
 
@@ -989,12 +1020,18 @@ spain <- ne_countries(country = "spain",
 portug<- ne_countries(country = "portugal",  
                       scale="medium", 
                       returnclass = 'sf')
+# chile<- ne_countries(country = "chile",  
+#                       scale="medium", 
+#                       returnclass = 'sf')
 costandalucia <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_10_Playa.shp')
 zonapro <- st_read('~/IEO/DATA/Shapefiles_Andalucia/ZonasProduccionMoluscos.shp')
 zonape <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_09_ZonaIdoneaPesca.shp')
 fisicomar <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_01_FisiograficoMarino.shp')
 playas <- st_read('~/IEO/DATA/Shapefiles_Andalucia/playas.shp')
 lito <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_02_Litologia.shp')
+hidro <- st_read('~/IEO/DATA/Shapefiles_Andalucia/red_hidrografica.shp')
+cuencas <- st_read('~/IEO/DATA/Shapefiles_Andalucia/cuencas.shp')
+lmarino <- st_read('~/IEO/DATA/Shapefiles_Andalucia/13_36_LimiteMarino.shp')
 ```
 
 
@@ -1007,6 +1044,10 @@ playas1 <- st_transform(playas, "+init=epsg:4326")
 lito1 <- st_transform(lito, "+init=epsg:4326")
 spain1 <- st_transform(spain, "+init=epsg:4326")
 portug1 <- st_transform(portug, "+init=epsg:4326")
+cuencas1 <- st_transform(cuencas, "+init=epsg:4326")
+lmarino1 <- st_transform(lmarino, "+init=epsg:4326")
+hidro1 <- st_transform(hidro, "+init=epsg:4326")
+#chile1 <- st_transform(chile, "+init=epsg:4326")
 ```
 
 Un mapa de prueba
@@ -1015,24 +1056,69 @@ Un mapa de prueba
 mas <- ggplot() +
   geom_sf(data = spain1) +
   geom_sf(data = portug1) +
-  geom_sf(data = zonapro1, aes(fill=ZONA)) +
+  geom_sf(data = cuencas1,
+          col="red",
+          alpha=0.1) +
+  geom_sf(data = zonapro1 , aes(fill=ZONA)) +
   # geom_sf(data = fisicomar1, alpha=0.1,
   #         linetype=5) +
   scale_fill_viridis_d(option="H")+
   coord_sf() +
   xlab(expression(paste(Longitude^o,~'O'))) +
   ylab(expression(paste(Latitude^o,~'S')))+
-  geom_sf_label(data=zonapro1, aes(label = ZONA),
-               check_overlap = FALSE,
-               nudge_x = 0.1,
-               nudge_y = 0.1,
-               stat = "sf_coordinates")+
+  ggrepel::geom_label_repel(
+    data = zonapro1,
+    aes(label = ZONA, geometry = geometry),
+    stat = "sf_coordinates",
+    min.segment.length = ,
+    colour = "red",
+    size = 1.6,
+    segment.colour = "red",
+    box.padding = 0.5,
+    max.overlaps = 50) +
   theme_few()+
   theme(legend.position = "none")+
   xlim(-7.6,-6)+
   ylim(36.6, 37.4)
 mas
 ```
+
+
+ 
+Agregar Data Frame con Puntos de Muestreo
+
+```{r}
+
+# Ejemplo de datos de entrada con coordenadas en formato "40° 42.767' N"
+data <- data.frame(coordenadas = c("40° 42.767' N", "34° 12.345' S", "28° 55.123' N"))
+
+# Función para convertir coordenadas DMS a decimales
+convertir_a_decimal <- function(coordenada) {
+  partes <- unlist(strsplit(coordenada, "[° ' N]"))
+  grados <- as.numeric(partes[1])
+  minutos <- as.numeric(partes[2])
+  decimales <- as.numeric(paste0("0.", partes[3]))
+  
+  # Determinar si la coordenada está en el hemisferio sur (negativo)
+  if (grepl("S", coordenada)) {
+    signo <- -1
+  } else {
+    signo <- 1
+  }
+  
+  # Calcular la coordenada en formato decimal
+  decimal <- signo * (grados + minutos / 60 + decimales / 3600)
+  return(decimal)
+}
+
+# Aplicar la función a la columna de coordenadas
+data$coordenadas_decimal <- sapply(data$coordenadas, convertir_a_decimal)
+
+# Imprimir el resultado
+print(data)
+
+```
+
 
 
 # DUDAS
