@@ -1024,7 +1024,8 @@ portug<- ne_countries(country = "portugal",
 #                       scale="medium", 
 #                       returnclass = 'sf')
 costandalucia <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_10_Playa.shp')
-zonapro <- st_read('~/IEO/DATA/Shapefiles_Andalucia/ZonasProduccionMoluscos.shp')
+#zonapro <- st_read('~/IEO/DATA/Shapefiles_Andalucia/ZonasProduccionMoluscos.shp')
+zonapro <- st_read('~/IEO/DATA/Shapefiles_Andalucia/zzpp_resolucion_2023_25830.shp')
 zonape <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_09_ZonaIdoneaPesca.shp')
 fisicomar <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_01_FisiograficoMarino.shp')
 playas <- st_read('~/IEO/DATA/Shapefiles_Andalucia/playas.shp')
@@ -1032,6 +1033,8 @@ lito <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_02_Litologia.shp')
 hidro <- st_read('~/IEO/DATA/Shapefiles_Andalucia/red_hidrografica.shp')
 cuencas <- st_read('~/IEO/DATA/Shapefiles_Andalucia/cuencas.shp')
 lmarino <- st_read('~/IEO/DATA/Shapefiles_Andalucia/13_36_LimiteMarino.shp')
+
+zzpp_resolucion_2023_25830
 ```
 
 
@@ -1052,29 +1055,27 @@ hidro1 <- st_transform(hidro, "+init=epsg:4326")
 
 Un mapa de prueba
  
-```{r}
+```{r warning=FALSE}
 mas <- ggplot() +
   geom_sf(data = spain1) +
   geom_sf(data = portug1) +
-  geom_sf(data = cuencas1,
-          col="red",
-          alpha=0.1) +
-  geom_sf(data = zonapro1 , aes(fill=ZONA)) +
+  geom_sf(data = zonapro1, aes(fill=NAME_1)) +
   # geom_sf(data = fisicomar1, alpha=0.1,
   #         linetype=5) +
-  scale_fill_viridis_d(option="H")+
+  scale_fill_viridis_d(option="H",
+                       alpha=.5)+
   coord_sf() +
   xlab(expression(paste(Longitude^o,~'O'))) +
   ylab(expression(paste(Latitude^o,~'S')))+
   ggrepel::geom_label_repel(
     data = zonapro1,
-    aes(label = ZONA, geometry = geometry),
+    aes(label = NAME_1, geometry = geometry),
     stat = "sf_coordinates",
     min.segment.length = ,
-    colour = "red",
-    size = 1.6,
-    segment.colour = "red",
-    box.padding = 0.5,
+    colour = "black",
+    size = 2,
+    segment.colour = "black",
+    box.padding = 0.7,
     max.overlaps = 50) +
   theme_few()+
   theme(legend.position = "none")+
@@ -1087,37 +1088,13 @@ mas
  
 Agregar Data Frame con Puntos de Muestreo
 
-```{r}
 
-# Ejemplo de datos de entrada con coordenadas en formato "40° 42.767' N"
-data <- data.frame(coordenadas = c("40° 42.767' N", "34° 12.345' S", "28° 55.123' N"))
+36.83339444	-6.40205556	Punto 2
+36.90075278	-6.43584444	Punto 3
+36.93598056	-6.48456944	Punto 4
+36.98449444	-6.53501944	Matalascañas
 
-# Función para convertir coordenadas DMS a decimales
-convertir_a_decimal <- function(coordenada) {
-  partes <- unlist(strsplit(coordenada, "[° ' N]"))
-  grados <- as.numeric(partes[1])
-  minutos <- as.numeric(partes[2])
-  decimales <- as.numeric(paste0("0.", partes[3]))
-  
-  # Determinar si la coordenada está en el hemisferio sur (negativo)
-  if (grepl("S", coordenada)) {
-    signo <- -1
-  } else {
-    signo <- 1
-  }
-  
-  # Calcular la coordenada en formato decimal
-  decimal <- signo * (grados + minutos / 60 + decimales / 3600)
-  return(decimal)
-}
 
-# Aplicar la función a la columna de coordenadas
-data$coordenadas_decimal <- sapply(data$coordenadas, convertir_a_decimal)
-
-# Imprimir el resultado
-print(data)
-
-```
 
 
 
