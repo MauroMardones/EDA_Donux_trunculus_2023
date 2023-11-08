@@ -6,9 +6,9 @@
 
 ##DATOS
 
-dataP<-merge(dens2021pob,
-             size2021,
-             by="ID_codificado_punto")#Creados a partir de Data_sample y Data_size, y seleccionando poblacional solo
+dataP<-merge(dens2023pob,
+             size2023,
+             by="ID_codificado_muestreo")#Creados a partir de Data_sample y Data_size, y seleccionando poblacional solo
 
 dataP<-dataP[-c(8,9,10,11,22,36,37,38,39,40,44,45,46,47,48,49,50,51,54)]
 
@@ -47,19 +47,21 @@ names(dataP)<-c("ID",
                 "size",
                 "sizeE")
 
+
+
 #Herramienta ayuda para Manejo datos
-unique(Data_sample_POBL$ID)
+unique(dens2023pob$ID)
 unique(Data_size_POBL$ID)
-unique(data$ID)
-a<-count(Data_size_POBL,"ID")
-b<-count(data,"ID")
+unique(dataP$CAT)
+a<-count(dens2023pob,"ID")
+b<-count(size2023,"ID")
 
 
 ##RESULTS: Distribuciones de frecuencia
 
 #SELECCION DATOS POBLACIONAL
 
-data_station<-dataP[dataP$Sampling.point==9,]
+data_station<-dataP
 
 #PLOTS TALLAS
 opar<-par()
@@ -160,7 +162,12 @@ for (i in months){
   }
 }
 
-write.table(resultN15,file=c("resultsD15_Pto10_2022.csv"),append=TRUE,quote=TRUE,sep=";",dec=".",col.names=TRUE)
+write.table(resultN15,file=c("resultsD15_Pto10_2022.csv"),
+            append=TRUE,
+            quote=TRUE,
+            sep=";",
+            dec=".",
+            col.names=TRUE)
 head(resultN15)
 
 

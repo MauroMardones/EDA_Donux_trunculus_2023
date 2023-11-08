@@ -218,7 +218,7 @@ glimpse(size_17_20)
 ## Change `Date` columns from `character`to `Date` format
 
 ```{r}
-size_17_20$Date <- ymd(size_17_20$Date)
+size_17_20$Date <- dmy(size_17_20$Date)
 # separo los meses , dias y años
 # Separar en columnas de día, mes y año
 realdate <- as.Date(size_17_20$Date, format="%Y-%M-%D")
@@ -328,8 +328,8 @@ ANO=as.numeric (format(realdate,"%Y"))
 MES=as.numeric (format(realdate,"%m"))
 DIA=as.numeric (format(realdate,"%d"))
 size3<-cbind(dfdate,ANO,MES,DIA,size_21_23)
-colnames(size3)
-table(size3$ANO)
+ colnames(size3)
+table(size3$ANO, size3$MES)
 ```
 
 Now join all years
@@ -414,7 +414,7 @@ nall <- ggplot(sizeall2,
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   theme_few()+
   theme(legend.position = "bottom")+
-  xlab("Longitud (cm.)")+
+  xlab("Longitud (mm.)")+
   ylab("")+
   xlim(0,40)
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
@@ -439,7 +439,7 @@ nallbeach <- ggplot(sizeall2,
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   theme_few()+
   theme(legend.position = "bottom")+
-  xlab("Longitud (cm.)")+
+  xlab("Longitud (mm.)")+
   ylab("")+
   xlim(0,40)
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
@@ -465,7 +465,7 @@ pobeach <- ggplot(sizeall2 %>%
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   theme_few()+
   theme(legend.position = "bottom")+
-  xlab("Longitud (cm.)")+
+  xlab("Longitud (mm.)")+
   ylab("")+
   xlim(0,40)
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
@@ -491,7 +491,7 @@ combeach <- ggplot(sizeall2 %>%
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   theme_few()+
   theme(legend.position = "bottom")+
-  xlab("Longitud (cm.)")+
+  xlab("Longitud (mm.)")+
   ylab("")+
   xlim(0,40)
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
@@ -503,13 +503,13 @@ last month of 2023 (august) by beach
 ```{r}
 combeachago23 <- ggplot(sizeall2 %>% 
                       filter(ANO==2023), 
-               aes(x=Size, y=Beach, fill=rastro))+
+               aes(x=Size, y=Beach, fill=as.character(rastro)))+
   geom_density_ridges(stat = "binline", 
                       bins = 40, 
                       scale = 1.2,
                       alpha=0.8)+
   scale_fill_manual(values = c("red", "blue"))+
-  facet_wrap(.~MES, ncol=4) +
+  facet_wrap(.~MES, ncol=5) +
   geom_vline(xintercept = 10.8, color = "red")+
   theme_few()+
   theme(legend.position = "bottom")+
@@ -557,6 +557,52 @@ pmea <- ggplot(sizemean,
     ggtitle("Tallas medias coquina por año, mes y tipo de rastro")
 pmea
 ```
+
+# INDICE DE RECLUTAMIENTO POBLACIONAL (D15)
+
+Aqui trataré de replicar los rresultados de los Informes de MD.
+
+Calcularemos la proporcion de ind bajo los 15 mm con `sizeall2`
+
+```{r}
+names(size3)
+names(denspob2123f)
+size4 <- size3 %>% 
+  select(-1)
+dataP<-full_join(denspob2123f,
+             size4,
+             by="ID_codificado_muestreo", "Sampling.point")#Creados a partir de Data_sample y Data_size, y seleccionando poblacional solo
+
+```
+
+
+```{r}
+FUN = function(x) (sum(x) / length(x)) * 100
+
+D15 <- sizeall2 %>%
+  filter(Sampling.point== c(2,4,6)) %>% 
+  group_by(ANO, MES, Sampling.point) %>%
+  summarize(d15 = FUN(Size<15)) 
+```
+representación con barPlot
+
+
+```{r}
+D15plot <- ggplot(D15, aes(d15, Sampling.point,
+                  fill=Sampling.point))+
+  geom_col(position = "dodge")+
+  scale_fill_viridis_d(option = "A",
+                       name= "Punto")+
+  facet_grid(MES~ANO)+
+  geom_vline(xintercept = 8,
+             col="red",
+             linetype=2)+
+  coord_flip()+
+  theme_few()+
+  xlim(0,60)
+D15plot
+```
+Ahora por m2
 
 # DENSIDAD POBLACIONAL
 
@@ -689,13 +735,12 @@ denspobtot2 <- denspobtot %>%
          area = m_track * 0.445,
          bio= Btotal * area,
          dens = Ntotal * area)
- 
+tail(denspobtot2)
 ```
 
 
 
-# INDICE DE RECLUTAMIENTO POBLACIONAL
-Calculate a recruit index
+
 
 # YIELD ANALYSIS (Rendimiento)
 
@@ -866,7 +911,7 @@ rend2 <- ggplot(denscomtot,
     ggtitle("Rendimiento coquina por año, mes y punto de muestreo")
 rend2
 ```
-solo el ultimo mes
+solo el ultimo Año
 
 ```{r}
 rend2023 <- ggplot(denscomtot %>% 
