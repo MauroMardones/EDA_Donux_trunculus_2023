@@ -527,7 +527,7 @@ scatter plot
 
 ```{r warning=FALSE, message=FALSE}
 sizemean <-sizeall2 %>% 
-  dplyr::group_by(ANO, MES, rastro, Beach) %>%
+  dplyr::group_by(ANO, MES, rastro, Sampling.point) %>%
   dplyr::summarise(avg=mean(SizeE))
 #kableExtra::kable(coutlength, format = "html")
 ```
@@ -535,22 +535,25 @@ sizemean <-sizeall2 %>%
 Mean length in time series by Subarea.
 
 ```{r, fig.align="center", warning=FALSE}
-pmea <- ggplot(sizemean, 
+pmea <- ggplot(sizemean %>% 
+                 filter(Sampling.point %in% c("2", "4", "6", "M")), 
                aes(MES,avg,
-               color=Beach, group=Beach))+
+               color=rastro, group=rastro))+
     geom_point(show.legend = T,
                alpha=.7) +
     geom_smooth(method= "lm")+
     theme_few()+ 
-    facet_grid(rastro~ANO)+
+    facet_grid(Sampling.point~ANO)+
     #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
     theme(axis.text.x = element_text(angle = 90,
                                      hjust = 1,
+                                     vjust= 0.5,
                                      size = 8),
           axis.text.y = element_text(size = 8),
           legend.position = "bottom")+
     guides(fill = guide_legend(reverse=F))+
-    scale_color_viridis_d(name="Playa")+
+    scale_color_viridis_d(option="H",
+                          name="Punto")+
     ylim(10,30)+
     ylab("Tallas Medias (mm)") +
     xlab("MES") +
@@ -574,10 +577,10 @@ dataP<-full_join(denspob2123f,
              by="ID_codificado_muestreo", "Sampling.point")#Creados a partir de Data_sample y Data_size, y seleccionando poblacional solo
 
 ```
-
+Creo la funciñon para estimar el `%`
 
 ```{r}
-FUN = function(x) (sum(x) / length(x)) * 100
+FUN <- function(x)  (sum(x) / length(x)) * 100
 
 D15 <- sizeall2 %>%
   filter(Sampling.point== c(2,4,6)) %>% 
@@ -601,6 +604,32 @@ D15plot <- ggplot(D15, aes(d15, Sampling.point,
   theme_few()+
   xlim(0,60)
 D15plot
+```
+
+
+```{r}
+landpop <- ggplot(D15) +
+  geom_lollipop(aes(y=d15, 
+                  x=Sampling.point,
+                  colour=Sampling.point), 
+              size=0.9)+
+  scale_colour_viridis_d(option = "D",
+                       name= "Punto")+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme_bw() +
+  theme(
+    legend.position = "none",
+    panel.border = element_blank(),
+    panel.spacing = unit(0.1, "lines"),
+    strip.text.x = element_text(size = 6),
+    axis.text.x = element_text(size = 5),
+    axis.text.y = element_text(size = 5)) +
+  xlab("") +
+  ylab("Desembarque (t) por Establecimiento") +
+  facet_grid(ANO~MES)
+landpop
 ```
 Ahora por m2
 
