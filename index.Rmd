@@ -565,18 +565,9 @@ pmea
 
 Aqui trataré de replicar los rresultados de los Informes de MD.
 
-Calcularemos la proporcion de ind bajo los 15 mm con `sizeall2`
+Primer calcularemos la proporcion de ind bajo los 15 mm con `sizeall2`
 
-```{r}
-names(size3)
-names(denspob2123f)
-size4 <- size3 %>% 
-  select(-1)
-dataP<-full_join(denspob2123f,
-             size4,
-             by="ID_codificado_muestreo", "Sampling.point")#Creados a partir de Data_sample y Data_size, y seleccionando poblacional solo
 
-```
 Creo la funciñon para estimar el `%`
 
 ```{r}
@@ -631,7 +622,88 @@ landpop <- ggplot(D15) +
   facet_grid(ANO~MES)
 landpop
 ```
-Ahora por m2
+Ahora por la cantidad de individuos bajo los 15 mm. Estoy usando los datos desde el 2017, pero previo al 2020, no se puede asignar un area a los datos.
+
+
+
+```{r}
+names(size3)
+names(denspob2123f)
+size4 <- size3 %>% 
+  select(-1)
+dataP<-full_join(denspob2123f,
+             size4,
+             by="ID_codificado_muestreo")#Creados a partir de Data_sample y Data_size, y seleccionando poblacional solo
+
+```
+
+
+```{r}
+D15n <- dataP %>%
+  filter(size < 15,
+         CAT.x==2,
+         MES==9,
+         ANO==2023) %>%
+  count(size) 
+
+%>%
+  summarize(num_individuos = n(), .groups = "drop") %>% 
+  ungroup() %>%
+  mutate(num_individuos_m2 = num_individuos / (m_track)) %>% 
+  mutate(logd =log(num_individuos_m2 )) %>% 
+  arrange(ANO, MES)
+D15n
+```
+
+
+Hago la table de resultados
+
+
+```{r}
+datos <- data.frame(
+  ID = c(1, 1, 2, 2),
+  variable = c("A", "B", "A", "B"),
+  valor = c(10, 20, 30, 40)
+)
+
+# Aplicar pivot_wider
+datos_pivote <- pivot_wider(D15n, names_from = Sampling.point.x, values_from = c(num_individuos_m2))
+
+# Ordenar el dataframe resultante por una columna específica
+datos_pivote_ordenado <- datos_pivote %>% arrange(ANO, MES)
+
+# Imprimir los resultados
+write_csv(datos_pivote_ordenado, "D15")
+```
+
+
+
+
+```{r}
+DN15plot <- ggplot(D15n %>% 
+                  filter(Sampling.point.x== c(2,4,6)), 
+               aes(MES,logd))+
+    geom_col(position = "dodge")+
+    theme_few()+ 
+    facet_grid(Sampling.point.x~ANO)+
+    #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
+    theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     vjust= 0.5,
+                                     size = 8),
+          axis.text.y = element_text(size = 8),
+          legend.position = "bottom")+
+    guides(fill = guide_legend(reverse=F))+
+    ylim(0,5)+
+    ylab("Tallas Medias (mm)") +
+    xlab("MES") +
+    ggtitle("Tallas medias coquina por año, mes y tipo de rastro")
+DN15plot
+```
+
+
+
+
 
 # DENSIDAD POBLACIONAL
 
