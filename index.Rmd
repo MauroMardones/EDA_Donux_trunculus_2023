@@ -563,150 +563,6 @@ pmea
 
 # INDICE DE RECLUTAMIENTO POBLACIONAL (D15)
 
-Aqui trataré de replicar los rresultados de los Informes de MD.
-
-Primer calcularemos la proporcion de ind bajo los 15 mm con `sizeall2`
-
-
-Creo la funciñon para estimar el `%`
-
-```{r}
-FUN <- function(x)  (sum(x) / length(x)) * 100
-
-D15 <- sizeall2 %>%
-  filter(Sampling.point== c(2,4,6)) %>% 
-  group_by(ANO, MES, Sampling.point) %>%
-  summarize(d15 = FUN(Size<15)) 
-```
-representación con barPlot
-
-
-```{r}
-D15plot <- ggplot(D15, aes(d15, Sampling.point,
-                  fill=Sampling.point))+
-  geom_col(position = "dodge")+
-  scale_fill_viridis_d(option = "A",
-                       name= "Punto")+
-  facet_grid(MES~ANO)+
-  geom_vline(xintercept = 8,
-             col="red",
-             linetype=2)+
-  coord_flip()+
-  theme_few()+
-  xlim(0,60)
-D15plot
-```
-
-
-```{r}
-landpop <- ggplot(D15) +
-  geom_lollipop(aes(y=d15, 
-                  x=Sampling.point,
-                  colour=Sampling.point), 
-              size=0.9)+
-  scale_colour_viridis_d(option = "D",
-                       name= "Punto")+
-  geom_hline(yintercept = 8,
-             col="red",
-             linetype=2)+
-  theme_bw() +
-  theme(
-    legend.position = "none",
-    panel.border = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text.x = element_text(size = 6),
-    axis.text.x = element_text(size = 5),
-    axis.text.y = element_text(size = 5)) +
-  xlab("") +
-  ylab("Desembarque (t) por Establecimiento") +
-  facet_grid(ANO~MES)
-landpop
-```
-Ahora por la cantidad de individuos bajo los 15 mm. Estoy usando los datos desde el 2017, pero previo al 2020, no se puede asignar un area a los datos.
-
-
-
-```{r}
-names(size3)
-names(denspob2123f)
-size4 <- size3 %>% 
-  select(-1)
-dataP<-full_join(denspob2123f,
-             size4,
-             by="ID_codificado_muestreo")#Creados a partir de Data_sample y Data_size, y seleccionando poblacional solo
-
-```
-
-
-```{r}
-D15n <- dataP %>%
-  filter(size < 15,
-         CAT.x==2,
-         MES==9,
-         ANO==2023) %>%
-  count(size) 
-
-%>%
-  summarize(num_individuos = n(), .groups = "drop") %>% 
-  ungroup() %>%
-  mutate(num_individuos_m2 = num_individuos / (m_track)) %>% 
-  mutate(logd =log(num_individuos_m2 )) %>% 
-  arrange(ANO, MES)
-D15n
-```
-
-
-Hago la table de resultados
-
-
-```{r}
-datos <- data.frame(
-  ID = c(1, 1, 2, 2),
-  variable = c("A", "B", "A", "B"),
-  valor = c(10, 20, 30, 40)
-)
-
-# Aplicar pivot_wider
-datos_pivote <- pivot_wider(D15n, names_from = Sampling.point.x, values_from = c(num_individuos_m2))
-
-# Ordenar el dataframe resultante por una columna específica
-datos_pivote_ordenado <- datos_pivote %>% arrange(ANO, MES)
-
-# Imprimir los resultados
-write_csv(datos_pivote_ordenado, "D15")
-```
-
-
-
-
-```{r}
-DN15plot <- ggplot(D15n %>% 
-                  filter(Sampling.point.x== c(2,4,6)), 
-               aes(MES,logd))+
-    geom_col(position = "dodge")+
-    theme_few()+ 
-    facet_grid(Sampling.point.x~ANO)+
-    #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
-    theme(axis.text.x = element_text(angle = 90,
-                                     hjust = 1,
-                                     vjust= 0.5,
-                                     size = 8),
-          axis.text.y = element_text(size = 8),
-          legend.position = "bottom")+
-    guides(fill = guide_legend(reverse=F))+
-    ylim(0,5)+
-    ylab("Tallas Medias (mm)") +
-    xlab("MES") +
-    ggtitle("Tallas medias coquina por año, mes y tipo de rastro")
-DN15plot
-```
-
-
-
-
-
-# DENSIDAD POBLACIONAL
-
 ### Bases de Densidades
 
 Recordar que las bases de densidades previas al 2021 estan en la misma base que las longitudes
@@ -779,6 +635,9 @@ nombres_iguales_pob <- identical(names(dens2021pobf),
 #junto la base
 denspob2123f <- rbind(dens2021pobf, dens2022pobf, dens2023pobf)
 ```
+
+
+
 ## Separate `Date` column
 
 ```{r}
@@ -839,6 +698,120 @@ denspobtot2 <- denspobtot %>%
 tail(denspobtot2)
 ```
 
+Aqui trataré de replicar los rresultados de los Informes de MD.
+
+Primer calcularemos la proporcion de ind bajo los 15 mm con `sizeall2`
+
+
+Creo la funciñon para estimar el `%`
+
+```{r}
+FUN <- function(x)  (sum(x) / length(x)) * 100
+
+D15 <- sizeall2 %>%
+  filter(Sampling.point== c(2,4,6)) %>% 
+  group_by(ANO, MES, Sampling.point) %>%
+  summarize(d15 = FUN(Size<15)) 
+```
+representación con barPlot
+
+
+```{r}
+D15plot <- ggplot(D15, aes(d15, Sampling.point,
+                  fill=Sampling.point))+
+  geom_col(position = "dodge")+
+  scale_fill_viridis_d(option = "A",
+                       name= "Punto")+
+  facet_grid(MES~ANO)+
+  geom_vline(xintercept = 8,
+             col="red",
+             linetype=2)+
+  coord_flip()+
+  theme_few()+
+  xlim(0,60)
+D15plot
+```
+
+
+```{r}
+landpop <- ggplot(D15) +
+  geom_lollipop(aes(y=d15, 
+                  x=Sampling.point,
+                  colour=Sampling.point), 
+              size=0.9)+
+  scale_colour_viridis_d(option = "D",
+                       name= "Punto")+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme_bw() +
+  theme(
+    legend.position = "none",
+    panel.border = element_blank(),
+    panel.spacing = unit(0.1, "lines"),
+    strip.text.x = element_text(size = 6),
+    axis.text.x = element_text(size = 5),
+    axis.text.y = element_text(size = 5)) +
+  xlab("") +
+  ylab("Desembarque (t) por Establecimiento") +
+  facet_grid(ANO~MES)
+landpop
+```
+Ahora por la cantidad de individuos bajo los 15 mm. Estoy usando los datos desde el 2017, pero previo al 2020, no se puede asignar un area a los datos. Por lo que trabajo con los datos del 2020 al 2023 `size3`
+
+Primero calculo en n de ind medidos y luego junto con base que tiene medida del area `track_m`
+
+```{r}
+D15n <- size3 %>% 
+  select(-1) %>%
+  drop_na() %>% 
+  group_by(ANO, 
+           MES, 
+           Sampling.point, 
+           ID_codificado_muestreo, 
+           Categoria,
+           Beach) %>% 
+  summarize(num_individuos = n(), .groups = "drop") 
+
+D15n$Sampling.point <- as.double(D15n$Sampling.point)
+
+D15n1 <- left_join(D15n,
+             dens2023pobf,
+             by=c("ID_codificado_muestreo",
+                  "Sampling.point",
+                  "Beach",
+                  "Categoria"))
+```
+
+
+
+Calculo el reclutamiento, es decir, n ind /`track_m`* 0.045
+
+```{r}
+D15n2 <- D15n1 %>% 
+  group_by(ANO, MES, Sampling.point, Categoria, Beach) %>% 
+  ungroup() %>%
+  mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
+  arrange(ANO, MES) %>% 
+  filter(ANO==2023,
+         MES==10) %>%
+  group_by(Sampling.point) %>%
+  summarize(across(num_individuos_m2, mean))
+D15n2
+```
+
+
+
+Tabla con los datos de octubre
+```{r}
+kbl(D15n2$Sampling.point, D15n2$num_individuos_m2, 
+    booktabs = T,format = "latex",
+    caption = "D15 Mes de Octubre 2023") %>%
+    kable_styling(latex_options = c("striped",
+                                  "condensed","scale_down"),
+                full_width = FALSE,font_size=8)
+
+```
 
 
 
@@ -1178,9 +1151,6 @@ playas <- st_read('~/IEO/DATA/Shapefiles_Andalucia/playas.shp')
 lito <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_02_Litologia.shp')
 hidro <- st_read('~/IEO/DATA/Shapefiles_Andalucia/red_hidrografica.shp')
 cuencas <- st_read('~/IEO/DATA/Shapefiles_Andalucia/cuencas.shp')
-lmarino <- st_read('~/IEO/DATA/Shapefiles_Andalucia/13_36_LimiteMarino.shp')
-
-zzpp_resolucion_2023_25830
 ```
 
 
@@ -1194,7 +1164,7 @@ lito1 <- st_transform(lito, "+init=epsg:4326")
 spain1 <- st_transform(spain, "+init=epsg:4326")
 portug1 <- st_transform(portug, "+init=epsg:4326")
 cuencas1 <- st_transform(cuencas, "+init=epsg:4326")
-lmarino1 <- st_transform(lmarino, "+init=epsg:4326")
+#lmarino1 <- st_transform(lmarino, "+init=epsg:4326")
 hidro1 <- st_transform(hidro, "+init=epsg:4326")
 #chile1 <- st_transform(chile, "+init=epsg:4326")
 ```

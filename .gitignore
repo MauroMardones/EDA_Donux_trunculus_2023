@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 *csv
+*jpeg
 *xlsx
 Fig/
 Data/

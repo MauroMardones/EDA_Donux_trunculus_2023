@@ -5,9 +5,12 @@
 #M. DELGADO, 17/05/2021
 
 ##DATOS
+Data_size_Coquina_2023 <- read_excel("Data/Posterior 2020/Data_size_Coquina_2023.xlsx")
+Data_sample_FEMP_04_2023 <- read_excel("Data/Posterior 2020/Data_sample_FEMP_04_2023.xlsx", 
+                                       sheet = "Data_POBL")
 
-dataP<-merge(dens2023pob,
-             size2023,
+dataP<-merge(Data_sample_FEMP_04_2023,
+             Data_size_Coquina_2023,
              by="ID_codificado_muestreo")#Creados a partir de Data_sample y Data_size, y seleccionando poblacional solo
 
 dataP<-dataP[-c(8,9,10,11,22,36,37,38,39,40,44,45,46,47,48,49,50,51,54)]
@@ -84,7 +87,7 @@ head(resultN15)
 
 #months<-10#Para hacer solo un mes concreto en bucle
 #months<-c(1:12)#Para 2021, puntos 2, 4 y 6
-months<-c(1,2,3,4,5,6,7,8,10,11,12) #Falta mes septiembre 2022
+months<-c(1,2,3,4,5,6,7,8,9, 10,11,12) #Falta mes septiembre 2022
 months<-c(3,7,11)#Espacial en 2022
 #months<-c(1,4,7,10,12)#Para 2021, puntos 9, 10 y 11
 

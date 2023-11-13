@@ -2,7 +2,7 @@
 title: "Historical survey EDA Donux trunculus 2023"
 subtitle: "Complementary analysis to advice and management report FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "18 October, 2023"
+date:  "13 November, 2023"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -385,7 +385,7 @@ glimpse(size_17_20)
 
 
 ```r
-size_17_20$Date <- ymd(size_17_20$Date)
+size_17_20$Date <- dmy(size_17_20$Date)
 # separo los meses , dias y años
 # Separar en columnas de día, mes y año
 realdate <- as.Date(size_17_20$Date, format="%Y-%M-%D")
@@ -400,34 +400,41 @@ head(size2)
 ```
 
 ```
-##   Date ANO MES DIA months Date  Beach Sampling.point track_activelog lat_1
-## 1 <NA>  NA  NA  NA      7 <NA> Donana              2              NA    NA
-## 2 <NA>  NA  NA  NA      7 <NA> Donana              2              NA    NA
-## 3 <NA>  NA  NA  NA      7 <NA> Donana              2              NA    NA
-## 4 <NA>  NA  NA  NA      7 <NA> Donana              2              NA    NA
-## 5 <NA>  NA  NA  NA      7 <NA> Donana              2              NA    NA
-## 6 <NA>  NA  NA  NA      7 <NA> Donana              2              NA    NA
-##   long_1 lat_2 long_2 plus_m tow_time    rastro zaranda mariscador     sample
-## 1     NA    NA     NA     NA        5 COMERCIAL       R       LUIS 13/07/2017
-## 2     NA    NA     NA     NA        5 COMERCIAL       R       LUIS 13/07/2017
-## 3     NA    NA     NA     NA        5 COMERCIAL       R       LUIS 13/07/2017
-## 4     NA    NA     NA     NA        5 COMERCIAL       R       LUIS 13/07/2017
-## 5     NA    NA     NA     NA        5 COMERCIAL       R       LUIS 13/07/2017
-## 6     NA    NA     NA     NA        5 COMERCIAL       R       LUIS 13/07/2017
-##   Sample_weight Clam_sample_weigth Measured_clam_sample_weigth CAT Categoria
-## 1            NA                195                         195   1          
-## 2            NA                195                         195   1          
-## 3            NA                195                         195   1          
-## 4            NA                195                         195   1          
-## 5            NA                195                         195   1          
-## 6            NA                195                         195   1          
-##    Size SizeE Tide_coef Low_tide_hour Sampling_hour number_fisherman veda dists
-## 1 27.21    27        72      12:30 AM                             NA   NA    NA
-## 2 26.65    26        72      12:30 AM                             NA   NA    NA
-## 3 26.65    26        72      12:30 AM                             NA   NA    NA
-## 4 25.07    25        72      12:30 AM                             NA   NA    NA
-## 5 27.49    27        72      12:30 AM                             NA   NA    NA
-## 6 26.15    26        72      12:30 AM                             NA   NA    NA
+##         Date  ANO MES DIA months       Date  Beach Sampling.point
+## 1 2017-07-13 2017   7  13      7 2017-07-13 Donana              2
+## 2 2017-07-13 2017   7  13      7 2017-07-13 Donana              2
+## 3 2017-07-13 2017   7  13      7 2017-07-13 Donana              2
+## 4 2017-07-13 2017   7  13      7 2017-07-13 Donana              2
+## 5 2017-07-13 2017   7  13      7 2017-07-13 Donana              2
+## 6 2017-07-13 2017   7  13      7 2017-07-13 Donana              2
+##   track_activelog lat_1 long_1 lat_2 long_2 plus_m tow_time    rastro zaranda
+## 1              NA    NA     NA    NA     NA     NA        5 COMERCIAL       R
+## 2              NA    NA     NA    NA     NA     NA        5 COMERCIAL       R
+## 3              NA    NA     NA    NA     NA     NA        5 COMERCIAL       R
+## 4              NA    NA     NA    NA     NA     NA        5 COMERCIAL       R
+## 5              NA    NA     NA    NA     NA     NA        5 COMERCIAL       R
+## 6              NA    NA     NA    NA     NA     NA        5 COMERCIAL       R
+##   mariscador     sample Sample_weight Clam_sample_weigth
+## 1       LUIS 13/07/2017            NA                195
+## 2       LUIS 13/07/2017            NA                195
+## 3       LUIS 13/07/2017            NA                195
+## 4       LUIS 13/07/2017            NA                195
+## 5       LUIS 13/07/2017            NA                195
+## 6       LUIS 13/07/2017            NA                195
+##   Measured_clam_sample_weigth CAT Categoria  Size SizeE Tide_coef Low_tide_hour
+## 1                         195   1           27.21    27        72      12:30 AM
+## 2                         195   1           26.65    26        72      12:30 AM
+## 3                         195   1           26.65    26        72      12:30 AM
+## 4                         195   1           25.07    25        72      12:30 AM
+## 5                         195   1           27.49    27        72      12:30 AM
+## 6                         195   1           26.15    26        72      12:30 AM
+##   Sampling_hour number_fisherman veda dists
+## 1                             NA   NA    NA
+## 2                             NA   NA    NA
+## 3                             NA   NA    NA
+## 4                             NA   NA    NA
+## 5                             NA   NA    NA
+## 6                             NA   NA    NA
 ```
 
 ```r
@@ -435,7 +442,9 @@ table(size2$MES)
 ```
 
 ```
-## < table of extent 0 >
+## 
+##    1    2    3    4    5    6    7    8    9   10   11   12 
+## 4190 3300 5020 1833 2278 7201 5718 6291 9648 5640 4477 6487
 ```
 
 ```r
@@ -456,7 +465,9 @@ table(size2$ANO)
 ```
 
 ```
-## < table of extent 0 >
+## 
+##  2017  2018  2019  2020 
+## 10121 20418 18109 13435
 ```
 
 ### Viz
@@ -564,7 +575,7 @@ ANO=as.numeric (format(realdate,"%Y"))
 MES=as.numeric (format(realdate,"%m"))
 DIA=as.numeric (format(realdate,"%d"))
 size3<-cbind(dfdate,ANO,MES,DIA,size_21_23)
-colnames(size3)
+ colnames(size3)
 ```
 
 ```
@@ -576,13 +587,15 @@ colnames(size3)
 ```
 
 ```r
-table(size3$ANO)
+table(size3$ANO, size3$MES)
 ```
 
 ```
-## 
-##  2021  2022  2023 
-## 21971 17426  6751
+##       
+##           1    2    3    4    5    6    7    8    9   10   11   12
+##   2021 3103 1600  897 2399  784 1384 2846  819 1384 2389 1552 2814
+##   2022 1374 1156 2560 1673 1013 1857 2577  868    0  996 2619  733
+##   2023  915 1040  866  857  732 1068  618  655  639  384    0    0
 ```
 
 Now join all years
@@ -662,7 +675,7 @@ dim(sizeall)
 ```
 
 ```
-## [1] 108231     11
+## [1] 109254     11
 ```
 
 ```r
@@ -671,8 +684,8 @@ table(sizeall$ANO)
 
 ```
 ## 
-##  2021  2022  2023 
-## 21971 17426  6751
+##  2017  2018  2019  2020  2021  2022  2023 
+## 10121 20418 18109 13435 21971 17426  7774
 ```
 
 Rename values
@@ -732,8 +745,8 @@ unique(sizeall2$MES)
 ```
 
 ```
-##  [1] <NA>      January   February  March     April     May       June     
-##  [8] July      August    September October   November  December 
+##  [1] July      August    September October   November  December  January  
+##  [8] February  March     April     May       June     
 ## 12 Levels: January February March April May June July August ... December
 ```
 
@@ -756,7 +769,7 @@ nall <- ggplot(sizeall2,
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   theme_few()+
   theme(legend.position = "bottom")+
-  xlab("Longitud (cm.)")+
+  xlab("Longitud (mm.)")+
   ylab("")+
   xlim(0,40)
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
@@ -784,7 +797,7 @@ nallbeach <- ggplot(sizeall2,
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   theme_few()+
   theme(legend.position = "bottom")+
-  xlab("Longitud (cm.)")+
+  xlab("Longitud (mm.)")+
   ylab("")+
   xlim(0,40)
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
@@ -813,7 +826,7 @@ pobeach <- ggplot(sizeall2 %>%
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   theme_few()+
   theme(legend.position = "bottom")+
-  xlab("Longitud (cm.)")+
+  xlab("Longitud (mm.)")+
   ylab("")+
   xlim(0,40)
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
@@ -842,7 +855,7 @@ combeach <- ggplot(sizeall2 %>%
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   theme_few()+
   theme(legend.position = "bottom")+
-  xlab("Longitud (cm.)")+
+  xlab("Longitud (mm.)")+
   ylab("")+
   xlim(0,40)
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
@@ -857,13 +870,13 @@ last month of 2023 (august) by beach
 ```r
 combeachago23 <- ggplot(sizeall2 %>% 
                       filter(ANO==2023), 
-               aes(x=Size, y=Beach, fill=rastro))+
+               aes(x=Size, y=Beach, fill=as.character(rastro)))+
   geom_density_ridges(stat = "binline", 
                       bins = 40, 
                       scale = 1.2,
                       alpha=0.8)+
   scale_fill_manual(values = c("red", "blue"))+
-  facet_wrap(.~MES, ncol=4) +
+  facet_wrap(.~MES, ncol=5) +
   geom_vline(xintercept = 10.8, color = "red")+
   theme_few()+
   theme(legend.position = "bottom")+
@@ -884,7 +897,7 @@ scatter plot
 
 ```r
 sizemean <-sizeall2 %>% 
-  dplyr::group_by(ANO, MES, rastro, Beach) %>%
+  dplyr::group_by(ANO, MES, rastro, Sampling.point) %>%
   dplyr::summarise(avg=mean(SizeE))
 #kableExtra::kable(coutlength, format = "html")
 ```
@@ -893,22 +906,25 @@ Mean length in time series by Subarea.
 
 
 ```r
-pmea <- ggplot(sizemean, 
+pmea <- ggplot(sizemean %>% 
+                 filter(Sampling.point %in% c("2", "4", "6", "M")), 
                aes(MES,avg,
-               color=Beach, group=Beach))+
+               color=rastro, group=rastro))+
     geom_point(show.legend = T,
                alpha=.7) +
     geom_smooth(method= "lm")+
     theme_few()+ 
-    facet_grid(rastro~ANO)+
+    facet_grid(Sampling.point~ANO)+
     #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
     theme(axis.text.x = element_text(angle = 90,
                                      hjust = 1,
+                                     vjust= 0.5,
                                      size = 8),
           axis.text.y = element_text(size = 8),
           legend.position = "bottom")+
     guides(fill = guide_legend(reverse=F))+
-    scale_color_viridis_d(name="Playa")+
+    scale_color_viridis_d(option="H",
+                          name="Punto")+
     ylim(10,30)+
     ylab("Tallas Medias (mm)") +
     xlab("MES") +
@@ -918,7 +934,7 @@ pmea
 
 <img src="index_files/figure-html/unnamed-chunk-23-1.jpeg" style="display: block; margin: auto;" />
 
-# DENSIDAD POBLACIONAL
+# INDICE DE RECLUTAMIENTO POBLACIONAL (D15)
 
 ### Bases de Densidades
 
@@ -929,21 +945,12 @@ Recordar que las bases de densidades previas al 2021 estan en la misma base que 
 dens2021pob <- read_excel(here("Data", "Posterior 2020", 
                                "Data_sample_FEMP_04_2021.xlsx"),
                        sheet = "Data_POBL")
-dens2021com <- read_excel(here("Data", "Posterior 2020", 
-                               "Data_sample_FEMP_04_2021.xlsx"),
-                       sheet = "DATA_COM")
 dens2022pob <- read_excel(here("Data", "Posterior 2020", 
                                "Data_sample_FEMP_04_2022.xlsx"),
                        sheet = "Data_POBL")
-dens2022com <- read_excel(here("Data", "Posterior 2020", 
-                               "Data_sample_FEMP_04_2022.xlsx"),
-                       sheet = "DATA_COM")
 dens2023pob <- read_excel(here("Data", "Posterior 2020", 
                                "Data_sample_FEMP_04_2023.xlsx"),
                        sheet = "Data_POBL")
-dens2023com <- read_excel(here("Data", "Posterior 2020", 
-                               "Data_sample_FEMP_04_2023.xlsx"),
-                       sheet = "DATA_COM")
 ```
 
 Visualizo los datos y su estructura. Para replicar los procesos de calculos en las hojas excel, usaremos solo las columnas con datos crudos. Es decir, desde `Date` hasta `MCSWsub`, y algunas columnas finales. La idea es hacer los cálculos en el codigo para tener la secuencia y replicar los resultados informados por @Delgado2023. 
@@ -1003,6 +1010,9 @@ nombres_iguales_pob <- identical(names(dens2021pobf),
 #junto la base
 denspob2123f <- rbind(dens2021pobf, dens2022pobf, dens2023pobf)
 ```
+
+
+
 ## Separate `Date` column
 
 
@@ -1037,7 +1047,7 @@ table(denspob2123f$ANO)
 ```
 ## 
 ## 2021 2022 2023 
-##   98   90    6
+##   98   90   59
 ```
 
 
@@ -1085,16 +1095,191 @@ denspobtot2 <- denspobtot %>%
          area = m_track * 0.445,
          bio= Btotal * area,
          dens = Ntotal * area)
+tail(denspobtot2)
+```
+
+```
+## # A tibble: 6 × 46
+## # Groups:   Beach, Sampling.point, ANO, MES, DIA [3]
+##     ANO   MES   DIA Date                Beach      Sampl…¹ m_track tow_t…²  Latº
+##   <dbl> <dbl> <dbl> <dttm>              <chr>        <dbl>   <dbl>   <dbl> <dbl>
+## 1  2023    10    16 2023-10-16 00:00:00 Donana_no…       6      65       5    36
+## 2  2023    10    16 2023-10-16 00:00:00 Donana_no…       6      65       5    36
+## 3  2023    10    16 2023-10-16 00:00:00 Donana_no…       4      73       5    36
+## 4  2023    10    16 2023-10-16 00:00:00 Donana_no…       4      73       5    36
+## 5  2023    10    16 2023-10-16 00:00:00 Donana_sur       2      50       5    36
+## 6  2023    10    16 2023-10-16 00:00:00 Donana_sur       2      50       5    36
+## # … with 37 more variables: Latmin <dbl>, Longº <dbl>, Longmin <dbl>,
+## #   Lat <dbl>, Long <dbl>, rastro <chr>, mariscador <chr>, SW <dbl>,
+## #   SWsub <dbl>, CSWsub <dbl>, MCSWsub <dbl>, DCSWsub <dbl>, Categoria <chr>,
+## #   CAT <dbl>, Nmedida <dbl>, Ndañossub <dbl>, Tide_coef <dbl>,
+## #   Low_tide_hour <dttm>, Catch_hour <dttm>, species <chr>, Temp <dbl>,
+## #   ID_codificado_punto <chr>, ID_codificado_muestreo <chr>, fps <dbl>,
+## #   CSW <dbl>, fpm <dbl>, MCSW <dbl>, DCSW <dbl>, TCSW <dbl>, Btotal <dbl>, …
+```
+
+Aqui trataré de replicar los rresultados de los Informes de MD.
+
+Primer calcularemos la proporcion de ind bajo los 15 mm con `sizeall2`
+
+
+Creo la funciñon para estimar el `%`
+
+
+```r
+FUN <- function(x)  (sum(x) / length(x)) * 100
+
+D15 <- sizeall2 %>%
+  filter(Sampling.point== c(2,4,6)) %>% 
+  group_by(ANO, MES, Sampling.point) %>%
+  summarize(d15 = FUN(Size<15)) 
+```
+representación con barPlot
+
+
+
+```r
+D15plot <- ggplot(D15, aes(d15, Sampling.point,
+                  fill=Sampling.point))+
+  geom_col(position = "dodge")+
+  scale_fill_viridis_d(option = "A",
+                       name= "Punto")+
+  facet_grid(MES~ANO)+
+  geom_vline(xintercept = 8,
+             col="red",
+             linetype=2)+
+  coord_flip()+
+  theme_few()+
+  xlim(0,60)
+D15plot
+```
+
+<img src="index_files/figure-html/unnamed-chunk-29-1.jpeg" style="display: block; margin: auto;" />
+
+
+
+```r
+landpop <- ggplot(D15) +
+  geom_lollipop(aes(y=d15, 
+                  x=Sampling.point,
+                  colour=Sampling.point), 
+              size=0.9)+
+  scale_colour_viridis_d(option = "D",
+                       name= "Punto")+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme_bw() +
+  theme(
+    legend.position = "none",
+    panel.border = element_blank(),
+    panel.spacing = unit(0.1, "lines"),
+    strip.text.x = element_text(size = 6),
+    axis.text.x = element_text(size = 5),
+    axis.text.y = element_text(size = 5)) +
+  xlab("") +
+  ylab("Desembarque (t) por Establecimiento") +
+  facet_grid(ANO~MES)
+landpop
+```
+
+<img src="index_files/figure-html/unnamed-chunk-30-1.jpeg" style="display: block; margin: auto;" />
+Ahora por la cantidad de individuos bajo los 15 mm. Estoy usando los datos desde el 2017, pero previo al 2020, no se puede asignar un area a los datos. Por lo que trabajo con los datos del 2020 al 2023 `size3`
+
+Primero calculo en n de ind medidos y luego junto con base que tiene medida del area `track_m`
+
+
+```r
+D15n <- size3 %>% 
+  select(-1) %>%
+  drop_na() %>% 
+  group_by(ANO, 
+           MES, 
+           Sampling.point, 
+           ID_codificado_muestreo, 
+           Categoria,
+           Beach) %>% 
+  summarize(num_individuos = n(), .groups = "drop") 
+
+D15n$Sampling.point <- as.double(D15n$Sampling.point)
+
+D15n1 <- left_join(D15n,
+             dens2023pobf,
+             by=c("ID_codificado_muestreo",
+                  "Sampling.point",
+                  "Beach",
+                  "Categoria"))
 ```
 
 
 
-# INDICE DE RECLUTAMIENTO POBLACIONAL
-Calculate a recruit index
+Calculo el reclutamiento, es decir, n ind /`track_m`* 0.045
+
+
+```r
+D15n2 <- D15n1 %>% 
+  group_by(ANO, MES, Sampling.point, Categoria, Beach) %>% 
+  ungroup() %>%
+  mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
+  arrange(ANO, MES) %>% 
+  filter(ANO==2023,
+         MES==10) %>%
+  group_by(Sampling.point) %>%
+  summarize(across(num_individuos_m2, mean))
+```
+
+
+
+Tabla con los datos de octubre
+
+```r
+kbl(D15n2, booktabs = T,format = "latex",
+    caption = "D15 Mes de Octubre 2023") %>%
+    kable_styling(latex_options = c("striped",
+                                  "condensed","scale_down"),
+                full_width = FALSE,font_size=8)
+```
+
+\begin{table}
+
+\caption{(\#tab:unnamed-chunk-33)D15 Mes de Octubre 2023}
+\centering
+\resizebox{\linewidth}{!}{
+\fontsize{8}{10}\selectfont
+\begin{tabular}[t]{rr}
+\toprule
+Sampling.point & num\_individuos\_m2\\
+\midrule
+\cellcolor{gray!6}{2} & \cellcolor{gray!6}{13.77778}\\
+4 & 30.28919\\
+\cellcolor{gray!6}{6} & \cellcolor{gray!6}{11.11111}\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
 
 # YIELD ANALYSIS (Rendimiento)
 
 Aca se trabaja con los datos del muestreo `COMERCIAL`
+
+Leo los datos
+
+
+```r
+dens2017com <- read_delim("Data/Anterior a 2020/data_ieo_2017_def.csv", 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE)
+
+
+dens2021com <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2021.xlsx"),
+                       sheet = "DATA_COM")
+dens2022com <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2022.xlsx"),
+                       sheet = "DATA_COM")
+dens2023com <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2023.xlsx"),
+                       sheet = "DATA_COM")
+```
 
 
 
@@ -1106,7 +1291,7 @@ dens2021comf <- dens2021com %>%
 dens2022comf <- dens2022com %>% 
   select(2:19, 24, 28:30, 33, 36:42)
 dens2023comf <- dens2023com %>% 
-    select(2:19, 24, 28:30, 33, 36:42)
+  select(2:19, 24, 29:31, 34, 37:43) 
 #compruebo si hay columnas iguales
 nombres_iguales_com <- identical(names(dens2021comf),
                              names(dens2023comf)) && identical(names(dens2021comf), 
@@ -1149,7 +1334,7 @@ table(dens2123comf$ANO)
 ```
 ## 
 ## 2021 2022 2023 
-##   54   42    4
+##   54   42   40
 ```
 
 ## Calculo variables
@@ -1219,8 +1404,8 @@ Ahora procedo a vizualizar el rendimiento
 
 ```r
 rend1 <- ggplot(denscomtot, 
-               aes(MES,Rend,
-               color=Beach, group=Beach))+
+               aes(MES,Rend1,
+                group=Beach))+
     geom_point(show.legend = T,
                alpha=.7) +
     geom_smooth(method= "loess")+
@@ -1229,21 +1414,84 @@ rend1 <- ggplot(denscomtot,
     #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
    theme(axis.text.x = element_text(angle = 90,
                                      hjust = 1,
+                                    vjust = 0.5,
                                      size = 8),
           axis.text.y = element_text(size = 8),
-          legend.position = "bottom")+
+          legend.position = "none")+
     guides(fill = guide_legend(reverse=F))+
     scale_color_viridis_d(option= "F", 
                           name="Playa")+
-    ylim(0,60)+
-    ylab("Tallas Medias (mm)") +
-    xlab("Rendimiento") +
-    ggtitle("Rendimiento coquina por año, mes y tipo de rastro")
+    geom_hline(yintercept=3.5, col=2)+
+    ylab("CPUE (Kg/3 hrs)") +
+    xlab("") +
+    ylim(0,10)+
+    ggtitle("Rendimiento coquina por año, mes y Playa")
 rend1
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-31-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-38-1.jpeg" style="display: block; margin: auto;" />
 
+```r
+rend2 <- ggplot(denscomtot, 
+               aes(MES,Rend1,
+                 
+                group=Sampling.point))+
+    geom_point(show.legend = T,
+               alpha=.7) +
+    geom_smooth(method= "loess")+
+    theme_few()+ 
+    facet_grid(ANO~Sampling.point)+
+    #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
+   theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     vjust = 0.5,
+                                     size = 8),
+          axis.text.y = element_text(size = 8),
+          legend.position = "none")+
+    guides(fill = guide_legend(reverse=F))+
+    scale_color_viridis_d(option= "H", 
+                          name="Sampling Point")+
+    geom_hline(yintercept=3.5, col=2)+
+    ylab("CPUE (Kg/3 hrs)") +
+    xlab("") +
+    ylim(0,10)+
+    ggtitle("Rendimiento coquina por año, mes y punto de muestreo")
+rend2
+```
+
+<img src="index_files/figure-html/unnamed-chunk-39-1.jpeg" style="display: block; margin: auto;" />
+solo el ultimo Año
+
+
+```r
+rend2023 <- ggplot(denscomtot %>% 
+                     filter(ANO==2023), 
+               aes(MES,Rend1,
+                group=Sampling.point))+
+    geom_point(alpha=.7) +
+    geom_smooth(method= "loess",
+                level=0.5,
+                span=3)+
+    theme_few()+ 
+    facet_grid(.~Sampling.point)+
+    scale_y_continuous(breaks = seq(from = 1, to = 6, by = 0.5))+
+   theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     vjust = 0.5,
+                                     size = 8),
+          axis.text.y = element_text(size = 8),
+          legend.position = "none")+
+    scale_color_viridis_d(option= "H", 
+                          name="Sampling Point")+
+    geom_hline(yintercept=3.5, col=2)+
+    ylab("CPUE (Kg/3 hrs)") +
+    xlab("") +
+  ylim(0,6)+
+  ggtitle("Rendimiento coquina 2023 por mes y punto de muestreo")
+rend2023
+```
+
+<img src="index_files/figure-html/unnamed-chunk-40-1.jpeg" style="display: block; margin: auto;" />
 
 
 
@@ -1287,7 +1535,7 @@ landings3 <- landings2 %>%
 hist(landings3$LANDINGS)
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-35-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-44-1.jpeg" style="display: block; margin: auto;" />
 
 ```r
 quantile(landings3$LANDINGS)
@@ -1308,7 +1556,7 @@ plotlam <- ggplot(landings3,aes(ANO, LANDINGS))+
 plotlam
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-36-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-45-1.jpeg" style="display: block; margin: auto;" />
 
 Otra viz
 
@@ -1336,7 +1584,7 @@ landpop <- ggplot(landings3 %>%
 landpop
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-37-1.jpeg" width="100%" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-46-1.jpeg" width="100%" style="display: block; margin: auto;" />
 Los datos fueron solicitados con información hasta Febrero del 2022, por lo mismo es necesario actualizar
 
 
@@ -1364,7 +1612,7 @@ orderland <-   ggplot(landings3 %>%
 orderland
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-38-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-47-1.jpeg" style="display: block; margin: auto;" />
 
 
 
@@ -1377,7 +1625,7 @@ kbl(table(landings2$MES, landings2$ANO),
 ```
 
 <table class="table" style="margin-left: auto; margin-right: auto;">
-<caption>(\#tab:unnamed-chunk-39)Registros de Desembarque por año y mes</caption>
+<caption>(\#tab:unnamed-chunk-48)Registros de Desembarque por año y mes</caption>
  <thead>
   <tr>
    <th style="text-align:right;"> 2017 </th>
@@ -1511,13 +1759,13 @@ Debo identificar clsaramete los poligonos utilizados en coquina.
 ```
 
 ```
-## Reading layer `ZonasProduccionMoluscos' from data source 
-##   `/Users/mauriciomardones/IEO/DATA/Shapefiles_Andalucia/ZonasProduccionMoluscos.shp' 
+## Reading layer `zzpp_resolucion_2023_25830' from data source 
+##   `/Users/mauriciomardones/IEO/DATA/Shapefiles_Andalucia/zzpp_resolucion_2023_25830.shp' 
 ##   using driver `ESRI Shapefile'
-## Simple feature collection with 56 features and 33 fields
-## Geometry type: MULTIPOLYGON
+## Simple feature collection with 31 features and 7 fields
+## Geometry type: POLYGON
 ## Dimension:     XY
-## Bounding box:  xmin: 107923.1 ymin: 3986747 xmax: 621699.8 ymax: 4137392
+## Bounding box:  xmin: 109203.4 ymin: 3987679 xmax: 518983.9 ymax: 4130032
 ## Projected CRS: ETRS89 / UTM zone 30N
 ```
 
@@ -1565,6 +1813,28 @@ Debo identificar clsaramete los poligonos utilizados en coquina.
 ## Projected CRS: ETRS89 / UTM zone 30N
 ```
 
+```
+## Reading layer `red_hidrografica' from data source 
+##   `/Users/mauriciomardones/IEO/DATA/Shapefiles_Andalucia/red_hidrografica.shp' 
+##   using driver `ESRI Shapefile'
+## Simple feature collection with 7541 features and 3 fields
+## Geometry type: MULTILINESTRING
+## Dimension:     XY
+## Bounding box:  xmin: 100525.8 ymin: 3988695 xmax: 620566.3 ymax: 4288532
+## Projected CRS: ED50 / UTM zone 30N
+```
+
+```
+## Reading layer `cuencas' from data source 
+##   `/Users/mauriciomardones/IEO/DATA/Shapefiles_Andalucia/cuencas.shp' 
+##   using driver `ESRI Shapefile'
+## Simple feature collection with 6 features and 4 fields
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: 100416.2 ymin: 3987100 xmax: 621540.5 ymax: 4288683
+## Projected CRS: ETRS89 / UTM zone 30N (N-E)
+```
+
 
 
 ```r
@@ -1576,6 +1846,10 @@ playas1 <- st_transform(playas, "+init=epsg:4326")
 lito1 <- st_transform(lito, "+init=epsg:4326")
 spain1 <- st_transform(spain, "+init=epsg:4326")
 portug1 <- st_transform(portug, "+init=epsg:4326")
+cuencas1 <- st_transform(cuencas, "+init=epsg:4326")
+#lmarino1 <- st_transform(lmarino, "+init=epsg:4326")
+hidro1 <- st_transform(hidro, "+init=epsg:4326")
+#chile1 <- st_transform(chile, "+init=epsg:4326")
 ```
 
 Un mapa de prueba
@@ -1585,18 +1859,24 @@ Un mapa de prueba
 mas <- ggplot() +
   geom_sf(data = spain1) +
   geom_sf(data = portug1) +
-  geom_sf(data = zonapro1, aes(fill=ZONA)) +
+  geom_sf(data = zonapro1, aes(fill=NAME_1)) +
   # geom_sf(data = fisicomar1, alpha=0.1,
   #         linetype=5) +
-  scale_fill_viridis_d(option="H")+
+  scale_fill_viridis_d(option="H",
+                       alpha=.5)+
   coord_sf() +
   xlab(expression(paste(Longitude^o,~'O'))) +
   ylab(expression(paste(Latitude^o,~'S')))+
-  geom_sf_label(data=zonapro1, aes(label = ZONA),
-               check_overlap = FALSE,
-               nudge_x = 0.1,
-               nudge_y = 0.1,
-               stat = "sf_coordinates")+
+  ggrepel::geom_label_repel(
+    data = zonapro1,
+    aes(label = NAME_1, geometry = geometry),
+    stat = "sf_coordinates",
+    min.segment.length = ,
+    colour = "black",
+    size = 2,
+    segment.colour = "black",
+    box.padding = 0.7,
+    max.overlaps = 50) +
   theme_few()+
   theme(legend.position = "none")+
   xlim(-7.6,-6)+
@@ -1604,7 +1884,21 @@ mas <- ggplot() +
 mas
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-42-1.jpeg" style="display: block; margin: auto;" />
+<img src="index_files/figure-html/unnamed-chunk-51-1.jpeg" style="display: block; margin: auto;" />
+
+
+ 
+Agregar Data Frame con Puntos de Muestreo
+
+
+36.83339444	-6.40205556	Punto 2
+36.90075278	-6.43584444	Punto 3
+36.93598056	-6.48456944	Punto 4
+36.98449444	-6.53501944	Matalascañas
+
+
+
+
 
 
 # DUDAS
