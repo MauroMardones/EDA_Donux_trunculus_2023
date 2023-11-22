@@ -1,0 +1,317 @@
+---
+title: "Indice Reclutamiento D. trunculus"
+subtitle: "Datos Monitoreo poblacional FEMP_AND_04"
+author: "Mardones, M; Delgado, M"
+date:  "`r format(Sys.time(), '%d %B, %Y')`"
+bibliography: EDA_donux.bib
+csl: apa.csl
+link-citations: yes
+linkcolor: blue
+output: 
+  html_document:
+    fig-caption: yes
+    keep_md: true
+    toc: true
+    toc_deep: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    theme: cosmo
+    fontsize: 0.9em
+    linestretch: 1.7
+    html-math-method: katex
+    self-contained: true
+    code-tools: true
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup1}
+rm(list = ls())
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.align = 'center',
+                      dev = 'jpeg',
+                      dpi = 300, 
+                      fig.align='center')
+#XQuartz is a mess, put this in your onload to default to cairo instead
+options(bitmapType = "cairo") 
+# (https://github.com/tidyverse/ggplot2/issues/2655)
+# Lo mapas se hacen mas rapido
+```
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggridges)
+library(readxl)
+library(here)
+library(lubridate)
+library(readr)
+library(ggthemes)
+library(hrbrthemes)
+library(viridis)
+library(kableExtra)
+library(ggalt)
+library(rnaturalearth)
+library(sf)
+library(psych)
+```
+
+
+# INDICE DE RECLUTAMIENTO POBLACIONAL (D15)
+
+## Bases de Densidades
+
+Recordar que las bases de densidades previas al 2021 estan en la misma base que las longitudes
+
+```{r}
+dens2021pob <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2021.xlsx"),
+                       sheet = "Data_POBL")
+dens2022pob <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2022.xlsx"),
+                       sheet = "Data_POBL")
+dens2023pob <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2023.xlsx"),
+                       sheet = "Data_POBL")
+```
+
+Visualizo los datos y su estructura. Para replicar los procesos de calculos en las hojas excel, usaremos solo las columnas con datos crudos. Es decir, desde `Date` hasta `MCSWsub`, y algunas columnas finales. La idea es hacer los cálculos en el codigo para tener la secuencia y replicar los resultados informados por @Delgado2023. 
+
+Primero comenzamos con los datos estandarizados del os años 2021 al 2023. Luego juntamos la data. En ambos muestreos `COMERCIAL`y `POBLACIONAL` dejo las siguientes columas;
+
+- `Date` = Fecha
+- `Beach` = Playa
+- `Sampling.point` =punto de Muestreo
+- `m_track` = distancia de arrastre (mts)
+- `tow_time` = tiempo de arrastre (minutos)
+- `Latº` 
+- `Latmin`                
+- `Longº` 
+- `Longmin`               
+- `Lat`  
+- `Long`                  
+- `rastro`
+- `mariscador`            
+- `SW` = Peso total de la muestra ( cascajo, coquina, fauna)  
+- `SWsub` = SubMuestra de `SW`                 
+- `CSWsub` = Peso coquina contenida en `SWsub`
+- `CMSWsub` = Peso de toda la coquina comercial sub (>25 mm) (Columna solo en base `COMERCIAL`)
+- `MCSWsub` = Peso de la coquina medida de `CSWsub` real*
+- `DCSWsub` = Peso de la coquina con daños en la muestra `SWsub`
+- `Categoria` = na
+- `CAT` = 2Poblacional, 1 Comercial
+- `Nmedida` =   Este dato son los individuos medidos provenientes de  los datos de Tallas. Preguntar a MD*             
+- `Ndañossub` =            
+- `Tide_coef`  =  Coef de Marea
+- `Low_tide_hour` = 
+- `Catch_hour`  = Hora de faena
+- `species`   = Especie
+- `Temp` = TSM
+- `ID_codificado_punto` = ID
+- `ID_codificado_muestreo` = ID
+
+
+Filtro las bases
+
+```{r}
+# poblacional
+dens2021pobf <- dens2021pob %>% 
+  select(2:18, 23, 27:29, 32, 35:39, 44, 45)
+dens2022pobf <- dens2022pob %>% 
+  select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
+  rename(ID_codificado_punto=ID)
+dens2023pobf <- dens2023pob %>% 
+  select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
+  rename(ID_codificado_punto=ID)
+
+#compruebo si hay columnas iguales
+nombres_iguales_pob <- identical(names(dens2021pobf),
+                             names(dens2023pobf)) && identical(names(dens2021pobf), 
+                                                               names(dens2022pobf))
+#junto la base
+denspob2123f <- rbind(dens2021pobf, dens2022pobf, dens2023pobf)
+```
+
+
+
+ Separate `Date` column
+
+```{r}
+realdate <- as.Date(denspob2123f$Date, format="%Y-%M-%D")
+dfdate <- data.frame(Date=realdate)
+ANO=as.numeric (format(realdate,"%Y"))
+MES=as.numeric (format(realdate,"%m"))
+DIA=as.numeric (format(realdate,"%d"))
+denspob2123f<-cbind(ANO,MES,DIA,denspob2123f)
+colnames(denspob2123f)
+table(denspob2123f$ANO)
+```
+
+
+De todas formas, hay una columna que difiere de ambos bases filtradas `COMERCIAL`y `POBLACIONAL`, en este caso `CMSWsub` definida previamente. por lo mismo, no puedo juntar las bases.
+
+
+Ahora calculamos las siguientes variables para `POBLACIONAL`;
+
+- `fps` =`SW`/ `SWsub`
+- `CSW` = `CSWsub` * `fps`
+- `fpm` =   `CSW` / `CSWsub` 
+- `MCSW` = `MCSWsub`* `fpm` (Peso de coquina medida de `CSW`  Hipotetico)
+- `DCSW` =  `DCSWsub` * `fps` (Peso de la coquina con daños en `SW`)
+- `TCSW`  = `CSW`+ `DCSW` (peso coquina en `SW` , incluidos daños)
+- `Btotal` = `TCSW (g)` + `TCSW (p)` (Grande y pequeña, Usar como referencia el `Sampling.point`)
+- `fpn` =   `MCSWsub`/ `CSW`
+- `NtotalCSW`  = `Nmedida` * `fpn`
+- `Ndaños`= `Ndañossub` * `fps`      
+- `Ntotal` = `NtotalCSW (g)`+`NtotalCSW (p)` + `Ndaños` * `fps` (Grande y pequeña, Usar como referencia el `Sampling.point`)
+- `area` = `m_track`* 0.445 (preguntar valor!)
+- `bio` = `Btotal`* `area`
+- `dens` =  `Ntotal` * `area` (ind/m2)
+
+
+
+pproceder a los calculos para calcular las variables poblacionales de interes, en este caso Densidad, Abundancia y Biomasa;
+
+```{r}
+denspobtot <- denspob2123f %>% 
+  mutate(fps = SW /SWsub,
+         CSW = CSWsub * fps,
+         fpm = CSW * CSWsub,
+         MCSW = MCSWsub * fpm,
+         DCSW = DCSWsub * fps,
+         TCSW = CSW + DCSW)
+
+denspobtot2 <- denspobtot %>% 
+  group_by(Beach, Sampling.point, ANO, MES, DIA) %>% 
+  mutate(Btotal=sum(TCSW),
+         fpn = MCSWsub/CSW,
+         NtotalCSW  = Nmedida * fpn, 
+         Ndaños = Ndañossub * fps, 
+         Ntotal = sum(NtotalCSW) + Ndaños * fps,
+         area = m_track * 0.445,
+         bio= Btotal * area,
+         dens = Ntotal * area)
+tail(denspobtot2)
+```
+
+Aqui trataré de replicar los rresultados de los Informes de MD.
+
+Primer calcularemos la proporcion de ind bajo los 15 mm con `sizeall2`
+
+
+Creo la función para estimar el `%`
+
+```{r}
+FUN <- function(x)  (sum(x) / length(x)) * 100
+
+D15 <- sizeall2 %>%
+  filter(Sampling.point== c(2,4,6)) %>% 
+  group_by(ANO, MES, Sampling.point) %>%
+  summarize(d15 = FUN(Size<15)) 
+```
+representación con barPlot
+
+
+```{r}
+D15plot <- ggplot(D15, aes(d15, Sampling.point,
+                  fill=Sampling.point))+
+  geom_col(position = "dodge")+
+  scale_fill_viridis_d(option = "A",
+                       name= "Punto")+
+  facet_grid(MES~ANO)+
+  geom_vline(xintercept = 8,
+             col="red",
+             linetype=2)+
+  coord_flip()+
+  theme_few()+
+  xlim(0,60)
+D15plot
+```
+
+
+```{r}
+landpop <- ggplot(D15) +
+  geom_lollipop(aes(y=d15, 
+                  x=Sampling.point,
+                  colour=Sampling.point), 
+              size=0.9)+
+  scale_colour_viridis_d(option = "D",
+                       name= "Punto")+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme_bw() +
+  theme(
+    legend.position = "none",
+    panel.border = element_blank(),
+    panel.spacing = unit(0.1, "lines"),
+    strip.text.x = element_text(size = 6),
+    axis.text.x = element_text(size = 5),
+    axis.text.y = element_text(size = 5)) +
+  xlab("") +
+  ylab("Desembarque (t) por Establecimiento") +
+  facet_grid(ANO~MES)
+landpop
+```
+Ahora por la cantidad de individuos bajo los 15 mm. Si bien hemos visualizado la base usando los datos desde el 2017, previo al 2020 no se puede asignar un area a los datos. Por lo que trabajo con los datos del 2020 al 2023 `size3`
+
+Primero calculo en n de ind medidos y luego junto con base que tiene medida del area `track_m`
+
+```{r}
+D15n <- size3 %>% 
+  select(-1) %>%
+  drop_na() %>% 
+  group_by(ANO, 
+           MES, 
+           Sampling.point, 
+           ID_codificado_muestreo, 
+           Categoria,
+           Beach) %>% 
+  summarize(num_individuos = n(), .groups = "drop") 
+
+D15n$Sampling.point <- as.double(D15n$Sampling.point)
+
+D15n1 <- left_join(D15n,
+             dens2023pobf,
+             by=c("ID_codificado_muestreo",
+                  "Sampling.point",
+                  "Beach",
+                  "Categoria"))
+```
+
+
+
+Calculo el reclutamiento, es decir, n ind /`track_m`* 0.045
+
+```{r}
+D15n2 <- D15n1 %>% 
+  group_by(ANO, MES, Sampling.point, Categoria, Beach) %>% 
+  ungroup() %>%
+  mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
+  arrange(ANO, MES) %>% 
+  filter(ANO==2023,
+         MES==10) %>%
+  group_by(Sampling.point) %>%
+  summarize(across(num_individuos_m2, mean))
+D15n2
+```
+
+
+
+Tabla con los datos de octubre
+```{r}
+kbl(D15n2$Sampling.point, D15n2$num_individuos_m2, 
+    booktabs = T,format = "latex",
+    caption = "D15 Mes de Octubre 2023") %>%
+    kable_styling(latex_options = c("striped",
+                                  "condensed","scale_down"),
+                full_width = FALSE,font_size=8)
+
+```
+
+
+
+
