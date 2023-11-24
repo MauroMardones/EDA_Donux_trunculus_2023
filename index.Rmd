@@ -46,6 +46,7 @@ options(bitmapType = "cairo")
 # CONTEXTO
 
 
+
 El siguiente documento tienen como objetivo estandarizar las bases de datos provenientes del proyecto FEMP_AND_04, el cual analiza el desempeño de la pesquería y poblacion de la coquina (*Donax trunculus*) en el Golfo de Cádiz en un contexto histórico. Este proyecto y los datos comprenden información de aspectos biológicos, pesqueros y ambientales. Estos datos comienzan a recogerse el año 2013 y fueron informados en [@Delgado2015]. El proyecto tiene continuidad de muestreo salvo el año 2016. Por otro lado, las rutinas y análisis aqui documentados deben ser aplicables y reproducibles por cualquier investigador que requiera información y analisis complementarios respecto a la pesquería de coquina.
 
 Una vez estandarizadas las bases, se realiza un Análisis Exploratorio de Datos (AED) como componente metodológico complementario para dos aspectos fundamentales; el primero tiene que ver con la asesoria cientifica para el levantamiento de indicadores biológico-pesquero, y en segundo lugar, identificar patrones y generar templates para realizar la primera evaluación de stock sobre este recurso. Previo a ello, es necesario el desarrollo de un modelo conceptual adecuado sobre el cual pronunciarse sobre asesoría y estado de explotación.
