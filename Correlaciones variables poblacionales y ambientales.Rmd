@@ -62,7 +62,7 @@ library(psych)
 
 # CORRELACIONES
 
-Identificar correlaciones entre variables relativas a los indicadores. La idea seria identificar variables respuestas como rendimiento y D15
+Identificar correlaciones entre variables relativas a los indicadores. La idea seria identificar variables respuestas como rendimiento y D15 cofrontadas con la otra información ambiental que rescata el proyecto FEMP-04
 
 ```{r}
 corr <- denscomtot %>% 
