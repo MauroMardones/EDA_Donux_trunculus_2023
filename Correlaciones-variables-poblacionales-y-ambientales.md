@@ -2,7 +2,7 @@
 title: "Correlaciones variables poblacionales y ambientales D. trunculus"
 subtitle: "Datos Monitoreo poblacional FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "`r format(Sys.time(), '%d %B, %Y')`"
+date:  "04 December, 2023"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -27,7 +27,8 @@ editor_options:
     wrap: 72
 ---
 
-```{r setup1}
+
+```r
 rm(list = ls())
 knitr::opts_chunk$set(echo = TRUE,
                       message = FALSE,
@@ -42,7 +43,8 @@ options(bitmapType = "cairo")
 # Lo mapas se hacen mas rapido
 ```
 
-```{r message=FALSE, warning=FALSE}
+
+```r
 library(tidyverse)
 library(ggridges)
 library(readxl)
@@ -65,14 +67,15 @@ library(psych)
 Identificar correlaciones entre variables relativas a los indicadores. La idea seria identificar variables respuestas como rendimiento y D15 cofrontadas con la otra información ambiental que rescata el proyecto FEMP-04
 
 
-```{r}
+
+```r
 ChlData <- read_csv("~/IEO/DATA/Ambientales_Data/Clorophila_Data.csv")
 ChlData$Fecha<-mdy(ChlData$Fecha)
-
 ```
 Defino y separo las fechas entre Año, Mes y dia
 
-```{r}
+
+```r
 ChlData<- ChlData %>%
   mutate(
     DIA = day(Fecha),
@@ -83,7 +86,8 @@ ChlData<- ChlData %>%
 
 Identifico en columnas separadas los sitios y las replicas
 
-```{r}
+
+```r
 ChlData<- ChlData %>% 
   separate(Muestra, into = c("ID", "Sampling.point"), sep = "_") %>% 
   mutate(Site = as.numeric(sub("[A-Za-z]", "", Sampling.point)),
@@ -96,7 +100,8 @@ ChlData<- ChlData %>%
 
 Primero el comportamiento. de la variabe y luego su tendencia por sitios y por tiempo.
 
-```{r}
+
+```r
 histo1 <- ggplot(ChlData %>% 
                    drop_na(), aes(CONCETR))+
   geom_histogram(stat = "bin",
@@ -106,10 +111,13 @@ histo1 <- ggplot(ChlData %>%
 histo1
 ```
 
+<img src="Correlaciones-variables-poblacionales-y-ambientales_files/figure-html/unnamed-chunk-5-1.jpeg" style="display: block; margin: auto;" />
+
 
 Promedios
 
-```{r}
+
+```r
 meanchl <- ChlData %>% 
   group_by(ANO,
            MES,
@@ -117,7 +125,8 @@ meanchl <- ChlData %>%
   summarise(MEANCON = mean(CONCETR), na.rm = TRUE)
 ```
 
-```{r, fig.align="center", warning=FALSE}
+
+```r
 meach <- ggplot(meanchl %>% 
                   drop_na(), 
                aes(ANO, MEANCON))+
@@ -140,4 +149,6 @@ meach <- ggplot(meanchl %>%
     xlab("") 
 meach
 ```
+
+<img src="Correlaciones-variables-poblacionales-y-ambientales_files/figure-html/unnamed-chunk-7-1.jpeg" style="display: block; margin: auto;" />
 
