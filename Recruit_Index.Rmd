@@ -210,7 +210,7 @@ FUN <- function(x)  (sum(x) / length(x)) * 100
 D15 <- sizeall2 %>%
   filter(Sampling.point== c(2,4,6)) %>% 
   group_by(ANO, MES, Sampling.point) %>%
-  summarize(d15 = FUN(Size<15)) 
+  summarize(d15 = FUN(Size<15), rm.na=T) 
 ```
 representación con barPlot
 
@@ -252,7 +252,7 @@ landpop <- ggplot(D15) +
     axis.text.x = element_text(size = 5),
     axis.text.y = element_text(size = 5)) +
   xlab("") +
-  ylab("Desembarque (t) por Establecimiento") +
+  ylab("D15") +
   facet_grid(ANO~MES)
 landpop
 ```
@@ -293,7 +293,7 @@ D15n2 <- D15n1 %>%
   mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
   arrange(ANO, MES) %>% 
   filter(ANO==2023,
-         MES==10) %>%
+         MES==11) %>%
   group_by(Sampling.point) %>%
   summarize(across(num_individuos_m2, mean))
 D15n2

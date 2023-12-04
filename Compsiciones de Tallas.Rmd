@@ -51,65 +51,515 @@ library(lubridate)
 library(readr)
 library(ggthemes)
 library(hrbrthemes)
-library(viridis)
 library(kableExtra)
-library(ggalt)
-library(rnaturalearth)
-library(sf)
-library(psych)
+library(gtsummary)
 ```
 
 
-# COMPOSICIONES DE TALLAS
+# Contexto de las composiciones de tallas del monitoreo
 
-Leer y juntar Data Base  provenientoe de todos los datos de composiciones, sean estos previos y posteriores al 2020.
+El monitoreo de tallas considera dos compenentes. muestreo espacial, temporal y por arte de pesca (comercial y poblacional)
 
-Cabe señsalar que las bases de datos previas al 2020, tienen los campos de todos los aspectos del muestreo, es decir, densidad, rendimiento y tallas. 
+
+# Metodología de manipulación de data
+
+Leer y juntar Data Base  provenientos de todos los muestreos, que datan desde el 2013.
+
+Cabe señalar que las bases de datos previas al 2020, tiene (o pueden contener) otras columnas como densidad, rendimiento y tallas. 
 
 ```{r, include=FALSE}
 ## Set path
 here::here()
 ```
 
+Ordenar la data. El año 2013 es el que tiene mas diferencias de formatos.  Tambien debo hacer columnas con formato de los datos posteriores al 2020. Para esto se diagnosticaron las bases del año 2013 que estaban separadas por rastro y por mes con diferentes formatos de campos. Por ello se realiza un trabajo de data handling. 
+
+## Datos 2013
+
+```{r}
+# Enero
+sizep01_13 <-read_excel("Data/Datos_13_14/Datos tallas 2013/Muestreo poblacional 22_1_14.xls", 
+    sheet = "Coquina") %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="POBLACIONAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  rename(sizeE=`Peso Submuestra`) %>% 
+  select(-c(1, 3, 4, 5, 6))
+sizep01_13$Date <- ymd("2013-01-01") 
+
+# Marzo
+sizec03_13 <- read_excel("Data/Datos_13_14/Datos tallas 2013/Coquina 26_03_2013_Luis.xlsx", 
+    sheet = "Comercial", 
+    skip = 2)%>%
+  select(2) %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="COMERCIAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  rename(sizeE=Largo) 
+sizec03_13$Date <- ymd("2013-03-01")
+
+# mayo
+sizep05_13 <- read_excel("Data/Datos_13_14/Datos tallas 2013/Muestro_Mayo_2.xlsx", 
+    sheet = "Poblacion") %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="POBLACIONAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  dplyr::rename(sizeE=Dato)%>% 
+  select(-c(2, 3, 4))
+sizep05_13$Date <- ymd("2013-05-01")
+
+
+
+sizec05_13 <- read_excel("Data/Datos_13_14/Datos tallas 2013/Muestro_Mayo_2.xlsx", 
+    sheet = "Comercial") %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="COMERCIAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  dplyr::rename(sizeE=...1)%>% 
+  select(-c(2, 3, 4, 5, 6 , 7))
+sizec05_13$Date <- ymd("2013-05-01")
+
+# marzo abril mayo junio nov
+sizep2013 <- read_excel(here("Data", 
+                           "Datos_13_14",
+                           "Datos tallas 2014_2015",
+                           "DATOS 2013",
+                           "Datos tallas_2013.xlsx"),
+                       sheet = "Datos poblacional",
+                       skip=2)
+sizep2013 <- sizep2013 %>%
+  select(c(3, 4)) %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="POBLACIONAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  dplyr::rename(sizeE=`Longitud (mm)`,
+                Date=Fecha)
+
+# marzo abril jun agost sept oct nov dic
+sizec2013 <- read_excel(here("Data", 
+                           "Datos_13_14",
+                           "Datos tallas 2014_2015",
+                           "DATOS 2013",
+                           "Datos tallas_2013.xlsx"),
+                       sheet = "Datos comercial",
+                       skip=1)
+sizec2013 <- sizec2013 %>%
+  select(c(3, 4)) %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="COMERCIAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  dplyr::rename(sizeE=`Longitud (mm)`,
+                Date=Fecha)
+
+
+# Septiembre
+sizep09_13 <- read_excel("Data/Datos_13_14/Datos tallas 2013/Muestreo Septiembre coquina-comercial.xlsx", 
+    sheet = "Sin cribar")
+
+sizep09_13 <- sizep09_13 %>%
+  select(c(1)) %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="POBLACIONAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  dplyr::rename(sizeE=Talla)
+sizep09_13$Date <- ymd("2013-09-01")
+
+# Octubre
+sizep10_13 <- read_excel("Data/Datos_13_14/Datos repetidos dudas/Muestreo octubre coquina_comercial.xlsx", 
+                         sheet = "Sin cribar")
+
+
+sizep10_13 <- sizep10_13 %>%
+  select(c(1)) %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = 4,
+    rastro="POBLACIONAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  dplyr::rename(sizeE=Length)
+sizep10_13$Date <- ymd("2013-10-01")
+
+
+# Diciembre
+sizep12_13 <- read_excel("Data/Datos_13_14/Datos tallas 2013/2013_12_23 Coquina (poblacion).xls", 
+                        skip = 2)
+sizep12_13 <- sizep12_13 %>%
+  select(c(3)) %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = 2,
+    rastro="POBLACIONAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  dplyr::rename(sizeE=talla)
+sizep12_13$Date <- ymd("2013-12-01")
+
+
+sizec12_13 <- read_excel("Data/Datos_13_14/Datos tallas 2013/Muestreo diciembre coquina_comercial.xlsx", 
+    sheet = "Cribada")
+sizec12_13 <- sizec12_13 %>%
+  select(c(1)) %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="COMERCIAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  dplyr::rename(sizeE=`COMERCIAL-CRIBADA`)
+sizec12_13$Date <- ymd("2013-12-01")
+
+
+```
+
+Corroboro nombres de los df y junto los datos del 2013
+
+```{r}
+names(sizep01_13) # enero
+names(sizec03_13) # marzo
+names(sizec05_13) # mayo
+names(sizep09_13)# sep
+names(sizep10_13) # oct
+names(sizep12_13) # dic
+names(sizec2013) # comercial hartos meses
+names(sizep2013) # poblacional hartos meses
+names(sizec12_13) # dic comercial
+names(sizep01_13) #enero
+```
+```{r}
+size2013 <- bind_rows(sizep01_13,
+                  sizec03_13,
+                  sizec05_13,
+                  sizep09_13,
+                  sizep10_13,
+                  sizep12_13,
+                  sizec2013,
+                  sizep2013,
+                  sizec12_13,
+                  sizep01_13) %>% 
+  mutate(
+    DIA = day(Date),
+    MES = month(Date),
+    ANO = year(Date)
+  )
+```
+
+Primer vistazo
+
+```{r}
+s2013 <- ggplot(size2013 %>%
+                  drop_na(sizeE), 
+               aes(x=sizeE, 
+                   y = as.factor(MES),
+                  fill= as.factor(rastro)))+
+  geom_density_ridges2(stat = "density_ridges",
+                       position = "points_sina",
+                      scale = 1.5,
+                      alpha=0.7)+
+  # geom_density_ridges2(stat = "binline",
+  #                      position = "points_sina",
+  #                     scale = 1.5,
+  #                     alpha=0.7)+
+  #facet_wrap(.~rastro, ncol=4) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_viridis_d(option="F",
+                       name="Rastro")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,40)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+s2013
+```
+
+
+## Datos 2014-2015
+
+Estos datos fueron compilados en dos archivos. Estos datos estan agrupados como frecuencias lo que dificulta su trabajo analitico, poor lo cual los desagregamos y dejamos como data crudo.
+
+Junto a ello, cambiamos el formato de las coliummnas siguiendo la logica del os datos del 2013.
+
+```{r}
+sizec14_15 <- read_excel("Data/Datos_13_14/Datos tallas 2014_2015/Datos totales/TALLAS_Com_2014-2015.xlsx") %>% 
+  select(c(1, 2, 3, 6, 7)) %>%
+  mutate(Number2 =round(Number), 0) %>% 
+  uncount(Number2) %>% 
+  select(-c(5,6))
+
+sizec14_15 <- sizec14_15 %>%
+  mutate(
+    rastro="COMERCIAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+ rename(Sampling.point = "Station" ,
+                sizeE="Size")
+
+
+
+
+sizep14_15 <- read_excel("Data/Datos_13_14/Datos tallas 2014_2015/Datos totales/TALLAS_Pobl_2014-2015.xlsx") %>% 
+  select(c(1, 2, 3, 6, 7)) %>%
+  drop_na(Number) %>% 
+  mutate(Number2 =round(Number), 0) %>% 
+  uncount(Number2) %>% 
+  select(-c(5,6))
+
+sizep14_15 <- sizep14_15 %>%
+  mutate(
+    rastro="POBLACIONAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+ rename(Sampling.point = "Station" ,
+                sizeE="Size")
+```
+
+Junto los artes de pesca y separo las fechas
+```{r}
+size14_15 <- bind_rows(sizec14_15,
+                       sizep14_15) %>% 
+  mutate(
+    DIA = day(Date),
+    MES = month(Date),
+    ANO = year(Date)
+  )
+```
+
+
+```{r}
+s201415 <- ggplot(size14_15 %>%
+                  drop_na(sizeE), 
+               aes(x=sizeE, 
+                   y = as.factor(MES),
+                  fill= as.factor(rastro)))+
+  geom_density_ridges2(stat = "density_ridges",
+                       position = "points_sina",
+                      scale = 1.5,
+                      alpha=0.7)+
+  # geom_density_ridges2(stat = "binline",
+  #                      position = "points_sina",
+  #                     scale = 1.5,
+  #                     alpha=0.7)+
+  facet_wrap(ANO~., ncol=4) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_viridis_d(option="F",
+                       name="Rastro")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,40)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+s201415
+```
+Separo las fechas
+
+## Datos 2016
+
+solo tengo datos del mes de agosto y sin punto de referencia
+
+```{r}
+# comercial
+sizec2016 <- read_excel(here("Data", 
+                             "Datos_13_14", 
+                             "Datos tallas 2016",
+                             "Muestreo coquina Doคana 23_08_2016.xls"),
+                             sheet = "Comercial", 
+                             skip = 3) %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="COMERCIAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  dplyr::rename(sizeE=Talla)
+sizec2016$Date <- ymd("2016-08-01")
+#poblacional
+sizep2016 <- read_excel(here("Data",
+                             "Datos_13_14", 
+                             "Datos tallas 2016",
+                             "Muestreo coquina Doคana 23_08_2016.xls"),
+                             sheet = "Poblacional", 
+                             skip = 3)
+df1 <- sizep2016 %>% 
+  select(1)
+df2 <- sizep2016 %>% 
+  select(3) %>% 
+  rename("Tall grande" ="Talla pequeña")
+
+sizep2016 <- bind_rows(df1, df2)%>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="POBLACIONAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    )%>% 
+  dplyr::rename(sizeE="Tall grande")
+
+sizep2016$Date <- ymd("2016-08-01")
+```
+
+uno los datos del 2016
+
+```{r}
+size2016 <- bind_rows(sizec2016,
+                      sizep2016)%>% 
+  mutate(
+    DIA = day(Date),
+    MES = month(Date),
+    ANO = year(Date)
+  )
+```
+un plot simple
+
+```{r}
+s2016 <- ggplot(size2016 %>%
+                  drop_na(sizeE), 
+               aes(x=sizeE, 
+                   y = as.factor(rastro),
+                  fill= as.factor(rastro)))+
+  geom_density_ridges2(stat = "density_ridges",
+                       position = "points_sina",
+                      scale = 1.5,
+                      alpha=0.7)+
+  # geom_density_ridges2(stat = "binline",
+  #                      position = "points_sina",
+  #                     scale = 1.5,
+  #                     alpha=0.7)+
+  #facet_wrap(rastro~., ncol=4) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_viridis_d(option="F",
+                       name="Rastro")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,40)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+s2016
+```
+
+
+## Datos 2017-2020
+
+estos datos tienen otros campos pero seguiremos la logica de los campos previos, es decir;
+
+[1] "sizeE"                  "Beach"                  "Sampling.point"        
+ [4] "rastro"                 "CAT"                    "Categoria"             
+ [7] "size"                   "ID_codificado_muestreo" "Date"                  
+[10] "DIA"                    "MES"                    "ANO" 
+
+
 ```{r}
 # Datos 2020 size and dens and abundance join
 size2017 <- read.csv2(here("Data", 
                            "Anterior a 2020", 
                            "data_ieo_2017_def.csv"),
-                      dec=".")
+                      dec=".") %>% 
+  select(c(22, 3, 4, 12, 19, 20, 21, 2)) %>% 
+   mutate(
+    ID_codificado_muestreo=NA
+    )%>% 
+  rename(sizeE=SizeE,
+         size=Size)
+  
+
 size2018 <- read.csv2(here("Data", 
                            "Anterior a 2020", 
                            "data_ieo_2018_def.csv"), 
-                      dec=".")
+                      dec=".") %>% 
+  select(c(22, 3, 4, 12, 19, 20, 21, 2)) %>% 
+   mutate(
+    ID_codificado_muestreo=NA
+    ) %>% 
+  rename(sizeE=SizeE,
+         size=Size)
 size2019 <- read.csv2(here("Data", 
                            "Anterior a 2020",
                            "data_ieo_2019_def.csv"), 
-                      dec=".")
+                      dec=".") %>% 
+  select(c(22, 3, 4, 12, 19, 20, 21, 2)) %>% 
+   mutate(
+    ID_codificado_muestreo=NA
+    ) %>% 
+  rename(sizeE=SizeE,
+         size=Size)
+
+
 size2020 <- read.csv2(here("Data", 
                            "Anterior a 2020", 
                            "data_ieo_2020_def.csv"), 
-                      dec=".")
-# datos post 2020 separate files sizes and dens
-# Lenght 
-size2021 <- read_excel(here("Data", 
-                            "Posterior 2020", 
-                            "Data_size_Coquina_2021.xlsx"), 
-                       sheet = "Coquina_donax")
-size2022 <- read_excel(here("Data",
-                            "Posterior 2020", 
-                            "Data_size_Coquina_2022.xlsx"),  
-                       sheet = "Coquina_donax")
-size2023 <- read_excel(here("Data", 
-                            "Posterior 2020",
-                            "Data_size_Coquina_2023.xlsx"),  
-                       sheet = "Coquina_Donax")
+                      dec=".") %>% 
+  select(c(22, 3, 4, 12, 19, 20, 21, 2)) %>% 
+   mutate(
+    ID_codificado_muestreo=NA
+    ) %>% 
+  rename(sizeE=SizeE,
+         size=Size)
 ```
-
-
-
-Este aspecto se trabaja de forma de ponderación ad-hoc descrita en la
-Figure \@ref(fig:edaplot1)
-
 
 Same names. Could merge the DF
 
@@ -118,133 +568,103 @@ size_17_20 <- rbind(size2017,
                     size2018,
                     size2019,
                     size2020)
+size_17_20$Date <- dmy(size_17_20$Date)
 ```
 
 Comprubo la estructura
 
 ```{r}
-# new dimension
-#dim(size_17_20)
-glimpse(size_17_20)
+summary(size_17_20)
 ```
 
 Change `Date` columns from `character`to `Date` format
 
 ```{r}
-size_17_20$Date <- dmy(size_17_20$Date)
 # separo los meses , dias y años
 # Separar en columnas de día, mes y año
-realdate <- as.Date(size_17_20$Date, format="%Y-%M-%D")
 
-dfdate <- data.frame(Date=realdate)
-ANO=as.numeric (format(realdate,"%Y"))
-MES=as.numeric (format(realdate,"%m"))
-DIA=as.numeric (format(realdate,"%d"))
-
-size2<-cbind(dfdate,ANO,MES,DIA,size_17_20)
-
-table(size2$MES)
-table(size2$months)
+size_17_20<- size_17_20 %>%
+  mutate(
+    DIA = day(Date),
+    MES = month(Date),
+    ANO = year(Date)
+  )
+unique(size_17_20$ANO)
 ```
-Hay una diferencie entre los meses que estaban en la base original y los meses calculados mediante la rutina previa
+a qui tengo diferencias con los nombres. Verificar cuando se junten todos los años
 
-Preguntar.
+
+## Data 2020-2023
 
 ```{r}
-table(size2$ANO)
+size2021 <- read_excel(here("Data", 
+                            "Posterior 2020", 
+                            "Data_size_Coquina_2021.xlsx"), 
+                       sheet = "Coquina_donax") %>% 
+  select(-c(1, 10, 11))  
+size2022 <- read_excel(here("Data",
+                            "Posterior 2020", 
+                            "Data_size_Coquina_2022.xlsx"),  
+                       sheet = "Coquina_donax") %>% 
+  select(-c(1, 2))  
+size2023 <- read_excel(here("Data", 
+                            "Posterior 2020",
+                            "Data_size_Coquina_2023.xlsx"),  
+                       sheet = "Coquina_Donax") %>% 
+  select(-c(1, 2))  
 ```
 
-### Vizualización 
-
-Primera vizulación de las tallas de coquina diferenciasdas por tipo de muestreo. Línea roja es SL50 (10.8 mm para hembras [@Delgado2017] y línea amarilla es la talla mínima de extracción legal en 25 mm.
-[@Delgado2018].
 
 
+Este aspecto se trabaja de forma de ponderación ad-hoc descrita en la
+Figure \@ref(fig:edaplot1)
 
-by beach
-
-```{r}
-nbeach <- ggplot(size2 %>% 
-                 select(-1), 
-               aes(x=SizeE, 
-                   y = as.factor(MES),
-                  fill= as.factor(Beach)))+
-  geom_density_ridges(stat = "binline", 
-                      bins = 40, 
-                      scale = 1.2,
-                      alpha=0.7)+
-  facet_wrap(.~ANO, ncol=4) +
-  geom_vline(xintercept = 10.8, color = "red")+
-  scale_fill_viridis_d(option="F",
-                       name="Beach")+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-  theme_few()+
-  xlab("Longitud (cm.)")+
-  ylab("")+
-  xlim(0,40)
-#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
-nbeach
-```
 
 Now, we handling data 2021-2023. Same columns data 2017-2020
 
 ```{r}
-size2021b <- size2021 %>% 
-  select(2, 3, 4, 5, 6, 7, 8, 9, 12)
-names(size2021b)
-size2022b <- size2022 %>% 
-  select(-c(1, 2))
-size2023b <- size2023 %>% 
-  select(-c(1, 2))
-
-size_21_23 <- rbind(size2021b,
-                    size2022b,
-                    size2023b)
+size_21_23 <- rbind(size2021,
+                    size2022,
+                    size2023)
 ```
 Separate `Date` column
 
 ```{r}
-size_21_23$Date <- ymd(size_21_23$Date)
-# separo los meses , dias y años
-# Separar en columnas de día, mes y año
-realdate <- as.Date(size_21_23$Date, format="%Y-%M-%D")
-dfdate <- data.frame(Date=realdate)
-ANO=as.numeric (format(realdate,"%Y"))
-MES=as.numeric (format(realdate,"%m"))
-DIA=as.numeric (format(realdate,"%d"))
-size3<-cbind(dfdate,ANO,MES,DIA,size_21_23)
-colnames(size3)
-table(size3$ANO, size3$MES)
+size_21_23<- size_21_23 %>%
+  mutate(
+    DIA = day(Date),
+    MES = month(Date),
+    ANO = year(Date)
+  )
+unique(size_21_23$rastro)
 ```
 
-Now join all years
+## Unir los datos desde el 2013 al 2023
 
 ```{r}
-names(size2) # 2017-2020
-names(size3)# 2021-2023
-size2fil <- size2 %>% 
-  select(1, 2, 3, 4, 7, 8, 16, 23, 24, 25, 26)
-size3fil <- size3 %>% 
-  select(-c(13,5)) %>% 
-  rename(Size = size,
-         SizeE = sizeE)
-names(size2fil) # 2017-2020
-names(size3fil)# 2021-2023
 # join data
-sizeall <- rbind(size2fil, size3fil)
+sizeall <- rbind(size2013,
+                 size14_15,
+                 size2016,
+                 size_17_20,
+                 size_21_23) 
 ```
 
-check dimension
+check dimension. ahora la base completa tiente 21 mil registros
 
 ```{r}
 dim(sizeall)
 table(sizeall$ANO)
+table(sizeall$Beach)
+table(sizeall$Sampling.point)
+table(sizeall$rastro)
 ```
 
 Rename values
 
 ```{r}
-sizeall2 <- sizeall %>% 
+sizeall2 <- sizeall %>%
+  drop_na(rastro) %>% 
   mutate(rastro = str_replace_all(rastro, " ", ""),
          rastro = str_replace_all(rastro, "COMERCIALNEW", "COMERCIAL"),
          Beach = str_replace_all(Beach, "Donana", "Donaña"),
@@ -279,23 +699,36 @@ sizeall2 <- sizeall %>%
 unique(sizeall2$Beach)
 unique(sizeall2$rastro)
 unique(sizeall2$MES)
+table(sizeall2$ANO, sizeall2$rastro)
 ```
+## Save data
+
+```{r eval=FALSE}
+saveRDS(sizeall2, "tallas13_23.Rdata")
+```
+
 
 some plots
 
-```{r}
-nall <- ggplot(sizeall2, 
-               aes(x=Size, 
-                   y = as.factor(MES),
+```{r warning=F, message=FALSE}
+nall <- ggplot(sizeall2 %>% 
+                 drop_na(sizeE, 
+                         MES), 
+               aes(x=sizeE, 
+                   y = MES,
                   fill= as.factor(rastro)))+
-  geom_density_ridges(stat = "binline", 
-                      bins = 50, 
-                      scale = 1.2,
+  # geom_density_ridges(stat = "densit", 
+  #                     bins = 50, 
+  #                     scale = 1.2,
+  #                     alpha=0.7)+
+   geom_density_ridges2(stat = "density_ridges",
+                       position = "points_sina",
+                      scale = 1.5,
                       alpha=0.7)+
-  facet_wrap(.~ANO, ncol=7) +
+  facet_wrap(.~ANO, ncol=6) +
   geom_vline(xintercept = 10.8, color = "red")+
   scale_fill_viridis_d(option="B",
-                       name="Rastro")+
+                       name="Gear")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   theme_few()+
   theme(legend.position = "bottom")+
@@ -309,11 +742,11 @@ nall
 
 ```{r}
 nallbeach <- ggplot(sizeall2, 
-               aes(x=Size, 
+               aes(x=sizeE, 
                    y = as.factor(MES),
-                  fill= as.factor(Beach)))+
+                  fill= as.factor(Sampling.point)))+
   geom_density_ridges(stat = "binline", 
-                      bins = 50, 
+                      bins = 40, 
                       scale = 1.2,
                       alpha=0.7)+
   facet_wrap(.~ANO, ncol=7) +
@@ -335,11 +768,11 @@ just Poblacional sample
 ```{r}
 pobeach <- ggplot(sizeall2 %>% 
                       filter(rastro!="COMERCIAL"), 
-               aes(x=Size, 
+               aes(x=sizeE, 
                    y = as.factor(MES),
-                  fill= as.factor(Beach)))+
+                  fill= as.factor(Sampling.point)))+
   geom_density_ridges(stat = "binline", 
-                      bins = 50, 
+                      bins = 30, 
                       scale = 1.2,
                       alpha=0.7)+
   facet_wrap(.~ANO, ncol=7) +
@@ -361,11 +794,11 @@ justm Comercial sample
 ```{r}
 combeach <- ggplot(sizeall2 %>% 
                       filter(rastro!="POBLACIONAL"), # saco poblacional
-               aes(x=Size, 
+               aes(x=sizeE, 
                    y = as.factor(MES),
                   fill= as.factor(Beach)))+
   geom_density_ridges(stat = "binline", 
-                      bins = 50, 
+                      bins = 40, 
                       scale = 1.2,
                       alpha=0.7)+
   facet_wrap(.~ANO, ncol=7) +
@@ -382,12 +815,12 @@ combeach <- ggplot(sizeall2 %>%
 combeach
 ```
 
-last month of 2023 (august) by beach
+Ahora plotear el ultimo mes para el informe
 
 ```{r}
 combeachago23 <- ggplot(sizeall2 %>% 
                       filter(ANO==2023), 
-               aes(x=Size, y=Beach, fill=as.character(rastro)))+
+               aes(x=sizeE, y=Beach, fill=as.character(rastro)))+
   geom_density_ridges(stat = "binline", 
                       bins = 40, 
                       scale = 1.2,
@@ -411,9 +844,8 @@ another way to viz is a scatter plot
 sizemean <-sizeall2 %>% 
   dplyr::group_by(ANO, 
                   MES, 
-                  rastro, 
-                  Sampling.point) %>%
-  dplyr::summarise(avg=mean(SizeE))
+                  rastro) %>%
+  dplyr::summarise(avg=mean(sizeE))
 #kableExtra::kable(coutlength, format = "html")
 ```
 
@@ -421,15 +853,14 @@ Mean length in time series by Subarea.
 
 ```{r, fig.align="center", warning=FALSE}
 pmea <- ggplot(sizemean %>% 
-                 filter(Sampling.point %in% c("2", "4", "6", "M")), 
-               aes(MES,avg,
-               color=rastro, group=rastro))+
+                 drop_na(avg), 
+               aes(ANO, avg,
+               color=rastro))+
     geom_point(show.legend = T,
                alpha=.7) +
-    geom_smooth(method= "lm")+
+    geom_smooth(method= "glm")+
     theme_few()+ 
-    facet_grid(Sampling.point~ANO)+
-    #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
+    scale_y_continuous(breaks = seq(from = 2013, to = 2023, by = 1))+
     theme(axis.text.x = element_text(angle = 90,
                                      hjust = 1,
                                      vjust= 0.5,
@@ -438,15 +869,67 @@ pmea <- ggplot(sizemean %>%
           legend.position = "bottom")+
     guides(fill = guide_legend(reverse=F))+
     scale_color_viridis_d(option="H",
-                          name="Punto")+
-    ylim(10,30)+
+                          name="")+
     ylab("Tallas Medias (mm)") +
-    xlab("MES") +
-    ggtitle("Tallas medias coquina por año, mes y tipo de rastro")
+    xlab("") +
+    ggtitle("Tallas medias coquina por año")
 pmea
 ```
 
+## Modelos 
+comprobar tendencia estadisticamente para las tendencias de ambos sistemas de muestreo en las tallas.
+
+```{r}
+# comercial
+sizemeanc <- sizemean %>% 
+  filter(rastro!="COMERCIAL")
+
+modelc <- lm(avg ~ANO, data=sizemeanc)
+
+# poblacional
+sizemeanp <- sizemean %>% 
+  filter(rastro!="POBLACIONAL")
+
+modelp <- lm(avg ~ANO, data=sizemeanp)
+```
 
 
+```{r}
+tp <- tbl_regression(modelp, 
+                     estimate_fun = function(x) style_number(x, digits = 3))
+tc <- tbl_regression(modelc, 
+                     estimate_fun = function(x) style_number(x, digits = 3))
+```
 
-# REFERENCIAS
+Tabla de cada tendencia de tallas por años
+
+```{r}
+tp
+```
+
+
+```{r}
+tc
+```
+
+
+# Dudas.
+
+### 2013
+- el año 2013 no tiene asingación de sampling point
+- el año 2013 no tiene datos del mes 7
+
+
+### 2014 y 2015
+
+- no hay datos de los meses ago-dic en poblacional para el 2015
+
+```{r}
+table(size14_15$ANO, size14_15$MES)
+```
+
+
+- el año 2016 solo tiene un muestreo, cuando fue realizado y donde?
+
+
+# Referencias

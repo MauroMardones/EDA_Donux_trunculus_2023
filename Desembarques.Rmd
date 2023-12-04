@@ -64,8 +64,8 @@ library(psych)
 Leo los datos entregados por E. Marco. Actualizar pedida con Junta Andalucia.
 
 ```{r}
-landings <- read_excel(here("Data", 
-                            "Datos_venta_2017_14_02_22.xlsx"))
+Landings <- read_excel("Data/Desembarques/Data_13_23_Landings.xlsx")
+View(Landings)
 ```
 
 Identifico las columnas necesarias para el analisis, que en este caso,
@@ -73,13 +73,14 @@ serían las columnas condato crudo.
 
 ```{r}
 # Fecha original en formato "año-mes-día"
-fecha_original <- ymd(landings$FECHA_VENTA)
+fecha_original <- ymd(Landings$MESANYO)
 # Separar en año, mes y día
 ANO <- year(fecha_original)
 MES <- month(fecha_original)
 DIA <- day(fecha_original)
 # uno la base
-landings2 <-cbind(ANO,MES,DIA,landings)
+landings2 <-cbind(ANO,MES,DIA,Landings)
+unique(landings2$ESTABLECIMIENTO)
 ```
 
 

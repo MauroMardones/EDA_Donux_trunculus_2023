@@ -1,8 +1,8 @@
 ---
-title: "Composiciones de Tallas"
+title: "Composiciones de Tallas D. trunculus"
 subtitle: "Datos Monitoreo poblacional FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "22 November, 2023"
+date:  "04 December, 2023"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -53,22 +53,564 @@ library(lubridate)
 library(readr)
 library(ggthemes)
 library(hrbrthemes)
-library(viridis)
 library(kableExtra)
-library(ggalt)
-library(rnaturalearth)
-library(sf)
-library(psych)
+library(gtsummary)
 ```
 
 
-# COMPOSICIONES DE TALLAS
+# Contexto de las composiciones de tallas del monitoreo
 
-Leer y juntar Data Base  provenientoe de todos los datos de composiciones, sean estos previos y posteriores al 2020.
-
-Cabe señsalar que las bases de datos previas al 2020, tienen los campos de todos los aspectos del muestreo, es decir, densidad, rendimiento y tallas. 
+El monitoreo de tallas considera dos compenentes. muestreo espacial, temporal y por arte de pesca (comercial y poblacional)
 
 
+# Metodología de manipulación de data
+
+Leer y juntar Data Base  provenientos de todos los muestreos, que datan desde el 2013.
+
+Cabe señalar que las bases de datos previas al 2020, tiene (o pueden contener) otras columnas como densidad, rendimiento y tallas. 
+
+
+
+Ordenar la data. El año 2013 es el que tiene mas diferencias de formatos.  Tambien debo hacer columnas con formato de los datos posteriores al 2020. Para esto se diagnosticaron las bases del año 2013 que estaban separadas por rastro y por mes con diferentes formatos de campos. Por ello se realiza un trabajo de data handling. 
+
+## Datos 2013
+
+
+```r
+# Enero
+sizep01_13 <-read_excel("Data/Datos_13_14/Datos tallas 2013/Muestreo poblacional 22_1_14.xls", 
+    sheet = "Coquina") %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="POBLACIONAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  rename(sizeE=`Peso Submuestra`) %>% 
+  select(-c(1, 3, 4, 5, 6))
+sizep01_13$Date <- ymd("2013-01-01") 
+
+# Marzo
+sizec03_13 <- read_excel("Data/Datos_13_14/Datos tallas 2013/Coquina 26_03_2013_Luis.xlsx", 
+    sheet = "Comercial", 
+    skip = 2)%>%
+  select(2) %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="COMERCIAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  rename(sizeE=Largo) 
+sizec03_13$Date <- ymd("2013-03-01")
+
+# mayo
+sizep05_13 <- read_excel("Data/Datos_13_14/Datos tallas 2013/Muestro_Mayo_2.xlsx", 
+    sheet = "Poblacion") %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="POBLACIONAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  dplyr::rename(sizeE=Dato)%>% 
+  select(-c(2, 3, 4))
+sizep05_13$Date <- ymd("2013-05-01")
+
+
+
+sizec05_13 <- read_excel("Data/Datos_13_14/Datos tallas 2013/Muestro_Mayo_2.xlsx", 
+    sheet = "Comercial") %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="COMERCIAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  dplyr::rename(sizeE=...1)%>% 
+  select(-c(2, 3, 4, 5, 6 , 7))
+sizec05_13$Date <- ymd("2013-05-01")
+
+# marzo abril mayo junio nov
+sizep2013 <- read_excel(here("Data", 
+                           "Datos_13_14",
+                           "Datos tallas 2014_2015",
+                           "DATOS 2013",
+                           "Datos tallas_2013.xlsx"),
+                       sheet = "Datos poblacional",
+                       skip=2)
+sizep2013 <- sizep2013 %>%
+  select(c(3, 4)) %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="POBLACIONAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  dplyr::rename(sizeE=`Longitud (mm)`,
+                Date=Fecha)
+
+# marzo abril jun agost sept oct nov dic
+sizec2013 <- read_excel(here("Data", 
+                           "Datos_13_14",
+                           "Datos tallas 2014_2015",
+                           "DATOS 2013",
+                           "Datos tallas_2013.xlsx"),
+                       sheet = "Datos comercial",
+                       skip=1)
+sizec2013 <- sizec2013 %>%
+  select(c(3, 4)) %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="COMERCIAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  dplyr::rename(sizeE=`Longitud (mm)`,
+                Date=Fecha)
+
+
+# Septiembre
+sizep09_13 <- read_excel("Data/Datos_13_14/Datos tallas 2013/Muestreo Septiembre coquina-comercial.xlsx", 
+    sheet = "Sin cribar")
+
+sizep09_13 <- sizep09_13 %>%
+  select(c(1)) %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="POBLACIONAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  dplyr::rename(sizeE=Talla)
+sizep09_13$Date <- ymd("2013-09-01")
+
+# Octubre
+sizep10_13 <- read_excel("Data/Datos_13_14/Datos repetidos dudas/Muestreo octubre coquina_comercial.xlsx", 
+                         sheet = "Sin cribar")
+
+
+sizep10_13 <- sizep10_13 %>%
+  select(c(1)) %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = 4,
+    rastro="POBLACIONAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  dplyr::rename(sizeE=Length)
+sizep10_13$Date <- ymd("2013-10-01")
+
+
+# Diciembre
+sizep12_13 <- read_excel("Data/Datos_13_14/Datos tallas 2013/2013_12_23 Coquina (poblacion).xls", 
+                        skip = 2)
+sizep12_13 <- sizep12_13 %>%
+  select(c(3)) %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = 2,
+    rastro="POBLACIONAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  dplyr::rename(sizeE=talla)
+sizep12_13$Date <- ymd("2013-12-01")
+
+
+sizec12_13 <- read_excel("Data/Datos_13_14/Datos tallas 2013/Muestreo diciembre coquina_comercial.xlsx", 
+    sheet = "Cribada")
+sizec12_13 <- sizec12_13 %>%
+  select(c(1)) %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="COMERCIAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  dplyr::rename(sizeE=`COMERCIAL-CRIBADA`)
+sizec12_13$Date <- ymd("2013-12-01")
+```
+
+Corroboro nombres de los df y junto los datos del 2013
+
+
+```r
+names(sizep01_13) # enero
+```
+
+```
+## [1] "sizeE"                  "Beach"                  "Sampling.point"        
+## [4] "rastro"                 "CAT"                    "Categoria"             
+## [7] "size"                   "ID_codificado_muestreo" "Date"
+```
+
+```r
+names(sizec03_13) # marzo
+```
+
+```
+## [1] "sizeE"                  "Beach"                  "Sampling.point"        
+## [4] "rastro"                 "CAT"                    "Categoria"             
+## [7] "size"                   "ID_codificado_muestreo" "Date"
+```
+
+```r
+names(sizec05_13) # mayo
+```
+
+```
+## [1] "sizeE"                  "Beach"                  "Sampling.point"        
+## [4] "rastro"                 "CAT"                    "Categoria"             
+## [7] "size"                   "ID_codificado_muestreo" "Date"
+```
+
+```r
+names(sizep09_13)# sep
+```
+
+```
+## [1] "sizeE"                  "Beach"                  "Sampling.point"        
+## [4] "rastro"                 "CAT"                    "Categoria"             
+## [7] "size"                   "ID_codificado_muestreo" "Date"
+```
+
+```r
+names(sizep10_13) # oct
+```
+
+```
+## [1] "sizeE"                  "Beach"                  "Sampling.point"        
+## [4] "rastro"                 "CAT"                    "Categoria"             
+## [7] "size"                   "ID_codificado_muestreo" "Date"
+```
+
+```r
+names(sizep12_13) # dic
+```
+
+```
+## [1] "sizeE"                  "Beach"                  "Sampling.point"        
+## [4] "rastro"                 "CAT"                    "Categoria"             
+## [7] "size"                   "ID_codificado_muestreo" "Date"
+```
+
+```r
+names(sizec2013) # comercial hartos meses
+```
+
+```
+## [1] "Date"                   "sizeE"                  "Beach"                 
+## [4] "Sampling.point"         "rastro"                 "CAT"                   
+## [7] "Categoria"              "size"                   "ID_codificado_muestreo"
+```
+
+```r
+names(sizep2013) # poblacional hartos meses
+```
+
+```
+## [1] "Date"                   "sizeE"                  "Beach"                 
+## [4] "Sampling.point"         "rastro"                 "CAT"                   
+## [7] "Categoria"              "size"                   "ID_codificado_muestreo"
+```
+
+```r
+names(sizec12_13) # dic comercial
+```
+
+```
+## [1] "sizeE"                  "Beach"                  "Sampling.point"        
+## [4] "rastro"                 "CAT"                    "Categoria"             
+## [7] "size"                   "ID_codificado_muestreo" "Date"
+```
+
+```r
+names(sizep01_13) #enero
+```
+
+```
+## [1] "sizeE"                  "Beach"                  "Sampling.point"        
+## [4] "rastro"                 "CAT"                    "Categoria"             
+## [7] "size"                   "ID_codificado_muestreo" "Date"
+```
+
+```r
+size2013 <- bind_rows(sizep01_13,
+                  sizec03_13,
+                  sizec05_13,
+                  sizep09_13,
+                  sizep10_13,
+                  sizep12_13,
+                  sizec2013,
+                  sizep2013,
+                  sizec12_13,
+                  sizep01_13) %>% 
+  mutate(
+    DIA = day(Date),
+    MES = month(Date),
+    ANO = year(Date)
+  )
+```
+
+Primer vistazo
+
+
+```r
+s2013 <- ggplot(size2013 %>%
+                  drop_na(sizeE), 
+               aes(x=sizeE, 
+                   y = as.factor(MES),
+                  fill= as.factor(rastro)))+
+  geom_density_ridges2(stat = "density_ridges",
+                       position = "points_sina",
+                      scale = 1.5,
+                      alpha=0.7)+
+  # geom_density_ridges2(stat = "binline",
+  #                      position = "points_sina",
+  #                     scale = 1.5,
+  #                     alpha=0.7)+
+  #facet_wrap(.~rastro, ncol=4) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_viridis_d(option="F",
+                       name="Rastro")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,40)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+s2013
+```
+
+<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-6-1.jpeg" style="display: block; margin: auto;" />
+
+
+## Datos 2014-2015
+
+Estos datos fueron compilados en dos archivos. Estos datos estan agrupados como frecuencias lo que dificulta su trabajo analitico, poor lo cual los desagregamos y dejamos como data crudo.
+
+Junto a ello, cambiamos el formato de las coliummnas siguiendo la logica del os datos del 2013.
+
+
+```r
+sizec14_15 <- read_excel("Data/Datos_13_14/Datos tallas 2014_2015/Datos totales/TALLAS_Com_2014-2015.xlsx") %>% 
+  select(c(1, 2, 3, 6, 7)) %>%
+  mutate(Number2 =round(Number), 0) %>% 
+  uncount(Number2) %>% 
+  select(-c(5,6))
+
+sizec14_15 <- sizec14_15 %>%
+  mutate(
+    rastro="COMERCIAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+ rename(Sampling.point = "Station" ,
+                sizeE="Size")
+
+
+
+
+sizep14_15 <- read_excel("Data/Datos_13_14/Datos tallas 2014_2015/Datos totales/TALLAS_Pobl_2014-2015.xlsx") %>% 
+  select(c(1, 2, 3, 6, 7)) %>%
+  drop_na(Number) %>% 
+  mutate(Number2 =round(Number), 0) %>% 
+  uncount(Number2) %>% 
+  select(-c(5,6))
+
+sizep14_15 <- sizep14_15 %>%
+  mutate(
+    rastro="POBLACIONAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+ rename(Sampling.point = "Station" ,
+                sizeE="Size")
+```
+
+Junto los artes de pesca y separo las fechas
+
+```r
+size14_15 <- bind_rows(sizec14_15,
+                       sizep14_15) %>% 
+  mutate(
+    DIA = day(Date),
+    MES = month(Date),
+    ANO = year(Date)
+  )
+```
+
+
+
+```r
+s201415 <- ggplot(size14_15 %>%
+                  drop_na(sizeE), 
+               aes(x=sizeE, 
+                   y = as.factor(MES),
+                  fill= as.factor(rastro)))+
+  geom_density_ridges2(stat = "density_ridges",
+                       position = "points_sina",
+                      scale = 1.5,
+                      alpha=0.7)+
+  # geom_density_ridges2(stat = "binline",
+  #                      position = "points_sina",
+  #                     scale = 1.5,
+  #                     alpha=0.7)+
+  facet_wrap(ANO~., ncol=4) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_viridis_d(option="F",
+                       name="Rastro")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,40)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+s201415
+```
+
+<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-9-1.jpeg" style="display: block; margin: auto;" />
+Separo las fechas
+
+## Datos 2016
+
+solo tengo datos del mes de agosto y sin punto de referencia
+
+
+```r
+# comercial
+sizec2016 <- read_excel(here("Data", 
+                             "Datos_13_14", 
+                             "Datos tallas 2016",
+                             "Muestreo coquina Doคana 23_08_2016.xls"),
+                             sheet = "Comercial", 
+                             skip = 3) %>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="COMERCIAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    ) %>% 
+  dplyr::rename(sizeE=Talla)
+sizec2016$Date <- ymd("2016-08-01")
+#poblacional
+sizep2016 <- read_excel(here("Data",
+                             "Datos_13_14", 
+                             "Datos tallas 2016",
+                             "Muestreo coquina Doคana 23_08_2016.xls"),
+                             sheet = "Poblacional", 
+                             skip = 3)
+df1 <- sizep2016 %>% 
+  select(1)
+df2 <- sizep2016 %>% 
+  select(3) %>% 
+  rename("Tall grande" ="Talla pequeña")
+
+sizep2016 <- bind_rows(df1, df2)%>% 
+  mutate(
+    Beach = NA,
+    Sampling.point = NA,
+    rastro="POBLACIONAL",
+    CAT=NA,
+    Categoria=NA,
+    size=NA,
+    ID_codificado_muestreo=NA
+    )%>% 
+  dplyr::rename(sizeE="Tall grande")
+
+sizep2016$Date <- ymd("2016-08-01")
+```
+
+uno los datos del 2016
+
+
+```r
+size2016 <- bind_rows(sizec2016,
+                      sizep2016)%>% 
+  mutate(
+    DIA = day(Date),
+    MES = month(Date),
+    ANO = year(Date)
+  )
+```
+un plot simple
+
+
+```r
+s2016 <- ggplot(size2016 %>%
+                  drop_na(sizeE), 
+               aes(x=sizeE, 
+                   y = as.factor(rastro),
+                  fill= as.factor(rastro)))+
+  geom_density_ridges2(stat = "density_ridges",
+                       position = "points_sina",
+                      scale = 1.5,
+                      alpha=0.7)+
+  # geom_density_ridges2(stat = "binline",
+  #                      position = "points_sina",
+  #                     scale = 1.5,
+  #                     alpha=0.7)+
+  #facet_wrap(rastro~., ncol=4) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_viridis_d(option="F",
+                       name="Rastro")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,40)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+s2016
+```
+
+<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-12-1.jpeg" style="display: block; margin: auto;" />
+
+
+## Datos 2017-2020
+
+estos datos tienen otros campos pero seguiremos la logica de los campos previos, es decir;
+
+[1] "sizeE"                  "Beach"                  "Sampling.point"        
+ [4] "rastro"                 "CAT"                    "Categoria"             
+ [7] "size"                   "ID_codificado_muestreo" "Date"                  
+[10] "DIA"                    "MES"                    "ANO" 
 
 
 
@@ -77,40 +619,48 @@ Cabe señsalar que las bases de datos previas al 2020, tienen los campos de todo
 size2017 <- read.csv2(here("Data", 
                            "Anterior a 2020", 
                            "data_ieo_2017_def.csv"),
-                      dec=".")
+                      dec=".") %>% 
+  select(c(22, 3, 4, 12, 19, 20, 21, 2)) %>% 
+   mutate(
+    ID_codificado_muestreo=NA
+    )%>% 
+  rename(sizeE=SizeE,
+         size=Size)
+  
+
 size2018 <- read.csv2(here("Data", 
                            "Anterior a 2020", 
                            "data_ieo_2018_def.csv"), 
-                      dec=".")
+                      dec=".") %>% 
+  select(c(22, 3, 4, 12, 19, 20, 21, 2)) %>% 
+   mutate(
+    ID_codificado_muestreo=NA
+    ) %>% 
+  rename(sizeE=SizeE,
+         size=Size)
 size2019 <- read.csv2(here("Data", 
                            "Anterior a 2020",
                            "data_ieo_2019_def.csv"), 
-                      dec=".")
+                      dec=".") %>% 
+  select(c(22, 3, 4, 12, 19, 20, 21, 2)) %>% 
+   mutate(
+    ID_codificado_muestreo=NA
+    ) %>% 
+  rename(sizeE=SizeE,
+         size=Size)
+
+
 size2020 <- read.csv2(here("Data", 
                            "Anterior a 2020", 
                            "data_ieo_2020_def.csv"), 
-                      dec=".")
-# datos post 2020 separate files sizes and dens
-# Lenght 
-size2021 <- read_excel(here("Data", 
-                            "Posterior 2020", 
-                            "Data_size_Coquina_2021.xlsx"), 
-                       sheet = "Coquina_donax")
-size2022 <- read_excel(here("Data",
-                            "Posterior 2020", 
-                            "Data_size_Coquina_2022.xlsx"),  
-                       sheet = "Coquina_donax")
-size2023 <- read_excel(here("Data", 
-                            "Posterior 2020",
-                            "Data_size_Coquina_2023.xlsx"),  
-                       sheet = "Coquina_Donax")
+                      dec=".") %>% 
+  select(c(22, 3, 4, 12, 19, 20, 21, 2)) %>% 
+   mutate(
+    ID_codificado_muestreo=NA
+    ) %>% 
+  rename(sizeE=SizeE,
+         size=Size)
 ```
-
-
-
-Este aspecto se trabaja de forma de ponderación ad-hoc descrita en la
-Figure \@ref(fig:edaplot1)
-
 
 Same names. Could merge the DF
 
@@ -120,265 +670,127 @@ size_17_20 <- rbind(size2017,
                     size2018,
                     size2019,
                     size2020)
+size_17_20$Date <- dmy(size_17_20$Date)
 ```
 
 Comprubo la estructura
 
 
 ```r
-# new dimension
-#dim(size_17_20)
-glimpse(size_17_20)
+summary(size_17_20)
 ```
 
 ```
-## Rows: 62,083
-## Columns: 28
-## $ months                      <int> 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, …
-## $ Date                        <chr> "13/07/2017", "13/07/2017", "13/07/2017", …
-## $ Beach                       <chr> "Donana", "Donana", "Donana", "Donana", "D…
-## $ Sampling.point              <chr> "2", "2", "2", "2", "2", "2", "2", "2", "2…
-## $ track_activelog             <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
-## $ lat_1                       <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
-## $ long_1                      <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
-## $ lat_2                       <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
-## $ long_2                      <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
-## $ plus_m                      <int> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
-## $ tow_time                    <dbl> 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, …
-## $ rastro                      <chr> "COMERCIAL", "COMERCIAL", "COMERCIAL", "CO…
-## $ zaranda                     <chr> "R", "R", "R", "R", "R", "R", "R", "R", "R…
-## $ mariscador                  <chr> "LUIS", "LUIS", "LUIS", "LUIS", "LUIS", "L…
-## $ sample                      <chr> "13/07/2017", "13/07/2017", "13/07/2017", …
-## $ Sample_weight               <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
-## $ Clam_sample_weigth          <dbl> 195, 195, 195, 195, 195, 195, 195, 195, 19…
-## $ Measured_clam_sample_weigth <dbl> 195, 195, 195, 195, 195, 195, 195, 195, 19…
-## $ CAT                         <int> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
-## $ Categoria                   <chr> "", "", "", "", "", "", "", "", "", "", ""…
-## $ Size                        <dbl> 27.21, 26.65, 26.65, 25.07, 27.49, 26.15, …
-## $ SizeE                       <int> 27, 26, 26, 25, 27, 26, 26, 28, 25, 28, 26…
-## $ Tide_coef                   <int> 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72…
-## $ Low_tide_hour               <chr> "12:30 AM", "12:30 AM", "12:30 AM", "12:30…
-## $ Sampling_hour               <chr> "", "", "", "", "", "", "", "", "", "", ""…
-## $ number_fisherman            <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
-## $ veda                        <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
-## $ dists                       <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+##      sizeE           Beach           Sampling.point        rastro         
+##  Min.   :  2.00   Length:62083       Length:62083       Length:62083      
+##  1st Qu.: 16.00   Class :character   Class :character   Class :character  
+##  Median : 22.00   Mode  :character   Mode  :character   Mode  :character  
+##  Mean   : 20.65                                                           
+##  3rd Qu.: 26.00                                                           
+##  Max.   :102.00                                                           
+##       CAT         Categoria              size            Date           
+##  Min.   :1.000   Length:62083       Min.   : 2.83   Min.   :2017-07-13  
+##  1st Qu.:1.000   Class :character   1st Qu.:16.20   1st Qu.:2018-05-14  
+##  Median :2.000   Mode  :character   Median :22.38   Median :2019-01-10  
+##  Mean   :1.528                      Mean   :21.12   Mean   :2019-02-15  
+##  3rd Qu.:2.000                      3rd Qu.:26.23   3rd Qu.:2019-11-14  
+##  Max.   :2.000                      Max.   :79.50   Max.   :2020-12-17  
+##  ID_codificado_muestreo
+##  Mode:logical          
+##  NA's:62083            
+##                        
+##                        
+##                        
+## 
 ```
 
 Change `Date` columns from `character`to `Date` format
 
 
 ```r
-size_17_20$Date <- dmy(size_17_20$Date)
 # separo los meses , dias y años
 # Separar en columnas de día, mes y año
-realdate <- as.Date(size_17_20$Date, format="%Y-%M-%D")
 
-dfdate <- data.frame(Date=realdate)
-ANO=as.numeric (format(realdate,"%Y"))
-MES=as.numeric (format(realdate,"%m"))
-DIA=as.numeric (format(realdate,"%d"))
-
-size2<-cbind(dfdate,ANO,MES,DIA,size_17_20)
-
-table(size2$MES)
+size_17_20<- size_17_20 %>%
+  mutate(
+    DIA = day(Date),
+    MES = month(Date),
+    ANO = year(Date)
+  )
+unique(size_17_20$ANO)
 ```
 
 ```
-## 
-##    1    2    3    4    5    6    7    8    9   10   11   12 
-## 4190 3300 5020 1833 2278 7201 5718 6291 9648 5640 4477 6487
+## [1] 2017 2018 2019 2020
 ```
+a qui tengo diferencias con los nombres. Verificar cuando se junten todos los años
 
-```r
-table(size2$months)
-```
 
-```
-## 
-##     1     2     3     4     5     6     7     8     9    10    11    12 
-##  4190  3300  5020  1833  2278  7201  5718  6291 10812  4476  4477  6487
-```
-Hay una diferencie entre los meses que estaban en la base original y los meses calculados mediante la rutina previa
-
-Preguntar.
+## Data 2020-2023
 
 
 ```r
-table(size2$ANO)
+size2021 <- read_excel(here("Data", 
+                            "Posterior 2020", 
+                            "Data_size_Coquina_2021.xlsx"), 
+                       sheet = "Coquina_donax") %>% 
+  select(-c(1, 10, 11))  
+size2022 <- read_excel(here("Data",
+                            "Posterior 2020", 
+                            "Data_size_Coquina_2022.xlsx"),  
+                       sheet = "Coquina_donax") %>% 
+  select(-c(1, 2))  
+size2023 <- read_excel(here("Data", 
+                            "Posterior 2020",
+                            "Data_size_Coquina_2023.xlsx"),  
+                       sheet = "Coquina_Donax") %>% 
+  select(-c(1, 2))  
 ```
 
-```
-## 
-##  2017  2018  2019  2020 
-## 10121 20418 18109 13435
-```
-
-### Vizualización 
-
-Primera vizulación de las tallas de coquina diferenciasdas por tipo de muestreo. Línea roja es SL50 (10.8 mm para hembras [@Delgado2017] y línea amarilla es la talla mínima de extracción legal en 25 mm.
-[@Delgado2018].
 
 
+Este aspecto se trabaja de forma de ponderación ad-hoc descrita en la
+Figure \@ref(fig:edaplot1)
 
-by beach
-
-
-```r
-nbeach <- ggplot(size2 %>% 
-                 select(-1), 
-               aes(x=SizeE, 
-                   y = as.factor(MES),
-                  fill= as.factor(Beach)))+
-  geom_density_ridges(stat = "binline", 
-                      bins = 40, 
-                      scale = 1.2,
-                      alpha=0.7)+
-  facet_wrap(.~ANO, ncol=4) +
-  geom_vline(xintercept = 10.8, color = "red")+
-  scale_fill_viridis_d(option="F",
-                       name="Beach")+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-  theme_few()+
-  xlab("Longitud (cm.)")+
-  ylab("")+
-  xlim(0,40)
-#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
-nbeach
-```
-
-<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-8-1.jpeg" style="display: block; margin: auto;" />
 
 Now, we handling data 2021-2023. Same columns data 2017-2020
 
 
 ```r
-size2021b <- size2021 %>% 
-  select(2, 3, 4, 5, 6, 7, 8, 9, 12)
-names(size2021b)
-```
-
-```
-## [1] "Date"                   "Beach"                  "Sampling.point"        
-## [4] "rastro"                 "CAT"                    "Categoria"             
-## [7] "size"                   "sizeE"                  "ID_codificado_muestreo"
-```
-
-```r
-size2022b <- size2022 %>% 
-  select(-c(1, 2))
-size2023b <- size2023 %>% 
-  select(-c(1, 2))
-
-size_21_23 <- rbind(size2021b,
-                    size2022b,
-                    size2023b)
+size_21_23 <- rbind(size2021,
+                    size2022,
+                    size2023)
 ```
 Separate `Date` column
 
 
 ```r
-size_21_23$Date <- ymd(size_21_23$Date)
-# separo los meses , dias y años
-# Separar en columnas de día, mes y año
-realdate <- as.Date(size_21_23$Date, format="%Y-%M-%D")
-dfdate <- data.frame(Date=realdate)
-ANO=as.numeric (format(realdate,"%Y"))
-MES=as.numeric (format(realdate,"%m"))
-DIA=as.numeric (format(realdate,"%d"))
-size3<-cbind(dfdate,ANO,MES,DIA,size_21_23)
-colnames(size3)
+size_21_23<- size_21_23 %>%
+  mutate(
+    DIA = day(Date),
+    MES = month(Date),
+    ANO = year(Date)
+  )
+unique(size_21_23$rastro)
 ```
 
 ```
-##  [1] "Date"                   "ANO"                    "MES"                   
-##  [4] "DIA"                    "Date"                   "Beach"                 
-##  [7] "Sampling.point"         "rastro"                 "CAT"                   
-## [10] "Categoria"              "size"                   "sizeE"                 
-## [13] "ID_codificado_muestreo"
+## [1] "POBLACIONAL" "COMERCIAL"   NA
 ```
 
-```r
-table(size3$ANO, size3$MES)
-```
+## Unir los datos desde el 2013 al 2023
 
-```
-##       
-##           1    2    3    4    5    6    7    8    9   10   11   12
-##   2021 3103 1600  897 2399  784 1384 2846  819 1384 2389 1552 2814
-##   2022 1374 1156 2560 1673 1013 1857 2577  868    0  996 2619  733
-##   2023  915 1040  866  857  732 1068  618  655  639  384  490    0
-```
-
-Now join all years
-
-
-```r
-names(size2) # 2017-2020
-```
-
-```
-##  [1] "Date"                        "ANO"                        
-##  [3] "MES"                         "DIA"                        
-##  [5] "months"                      "Date"                       
-##  [7] "Beach"                       "Sampling.point"             
-##  [9] "track_activelog"             "lat_1"                      
-## [11] "long_1"                      "lat_2"                      
-## [13] "long_2"                      "plus_m"                     
-## [15] "tow_time"                    "rastro"                     
-## [17] "zaranda"                     "mariscador"                 
-## [19] "sample"                      "Sample_weight"              
-## [21] "Clam_sample_weigth"          "Measured_clam_sample_weigth"
-## [23] "CAT"                         "Categoria"                  
-## [25] "Size"                        "SizeE"                      
-## [27] "Tide_coef"                   "Low_tide_hour"              
-## [29] "Sampling_hour"               "number_fisherman"           
-## [31] "veda"                        "dists"
-```
-
-```r
-names(size3)# 2021-2023
-```
-
-```
-##  [1] "Date"                   "ANO"                    "MES"                   
-##  [4] "DIA"                    "Date"                   "Beach"                 
-##  [7] "Sampling.point"         "rastro"                 "CAT"                   
-## [10] "Categoria"              "size"                   "sizeE"                 
-## [13] "ID_codificado_muestreo"
-```
-
-```r
-size2fil <- size2 %>% 
-  select(1, 2, 3, 4, 7, 8, 16, 23, 24, 25, 26)
-size3fil <- size3 %>% 
-  select(-c(13,5)) %>% 
-  rename(Size = size,
-         SizeE = sizeE)
-names(size2fil) # 2017-2020
-```
-
-```
-##  [1] "Date"           "ANO"            "MES"            "DIA"           
-##  [5] "Beach"          "Sampling.point" "rastro"         "CAT"           
-##  [9] "Categoria"      "Size"           "SizeE"
-```
-
-```r
-names(size3fil)# 2021-2023
-```
-
-```
-##  [1] "Date"           "ANO"            "MES"            "DIA"           
-##  [5] "Beach"          "Sampling.point" "rastro"         "CAT"           
-##  [9] "Categoria"      "Size"           "SizeE"
-```
 
 ```r
 # join data
-sizeall <- rbind(size2fil, size3fil)
+sizeall <- rbind(size2013,
+                 size14_15,
+                 size2016,
+                 size_17_20,
+                 size_21_23) 
 ```
 
-check dimension
+check dimension. ahora la base completa tiente 21 mil registros
 
 
 ```r
@@ -386,7 +798,7 @@ dim(sizeall)
 ```
 
 ```
-## [1] 109744     11
+## [1] 210672     12
 ```
 
 ```r
@@ -395,15 +807,50 @@ table(sizeall$ANO)
 
 ```
 ## 
-##  2017  2018  2019  2020  2021  2022  2023 
-## 10121 20418 18109 13435 21971 17426  8264
+##  2013  2014  2015  2016  2017  2018  2019  2020  2021  2022  2023 
+##  6179 71147 22972   386 10121 20418 18109 13435 21971 17426  8264
+```
+
+```r
+table(sizeall$Beach)
+```
+
+```
+## 
+##       Donana      Donana  Donana_norte   Donana_sur       Huelva  Isla_Canela 
+##       105673          285        23538        14128        40841        14435 
+##      La_Bota       LaBota     Malandar Matalascanas      Mazagon 
+##         3043         1266            7          382          265
+```
+
+```r
+table(sizeall$Sampling.point)
+```
+
+```
+## 
+##     1    10    11    12    13     2     3     4    4R     5     6     7     8 
+## 12221 35089 15306   265     7 30975 11911 48502   221  3544 26564  9813  5182 
+##     9     M 
+##  4310   410
+```
+
+```r
+table(sizeall$rastro)
+```
+
+```
+## 
+##     COMERCIAL    COMERCIAL  COMERCIAL NEW   POBLACIONAL  POBLACIONAL  
+##         53377            16           873        156350            39
 ```
 
 Rename values
 
 
 ```r
-sizeall2 <- sizeall %>% 
+sizeall2 <- sizeall %>%
+  drop_na(rastro) %>% 
   mutate(rastro = str_replace_all(rastro, " ", ""),
          rastro = str_replace_all(rastro, "COMERCIALNEW", "COMERCIAL"),
          Beach = str_replace_all(Beach, "Donana", "Donaña"),
@@ -439,8 +886,9 @@ unique(sizeall2$Beach)
 ```
 
 ```
-## [1] "Donaña"       "La_Bota"      "Isla_Canela"  "Mazagon"      "Malandar"    
-## [6] "Donaña_sur"   "Donaña_norte" "LaBota"       "Matalascañas"
+##  [1] NA             "Donaña"       "Huelva"       "La_Bota"      "Isla_Canela" 
+##  [6] "Mazagon"      "Malandar"     "Donaña_sur"   "Donaña_norte" "LaBota"      
+## [11] "Matalascañas"
 ```
 
 ```r
@@ -448,7 +896,7 @@ unique(sizeall2$rastro)
 ```
 
 ```
-## [1] "COMERCIAL"   "POBLACIONAL"
+## [1] "POBLACIONAL" "COMERCIAL"
 ```
 
 ```r
@@ -456,27 +904,60 @@ unique(sizeall2$MES)
 ```
 
 ```
-##  [1] July      August    September October   November  December  January  
-##  [8] February  March     April     May       June     
+##  [1] January   March     May       September October   December  <NA>     
+##  [8] April     June      August    November  February  July     
 ## 12 Levels: January February March April May June July August ... December
 ```
+
+```r
+table(sizeall2$ANO, sizeall2$rastro)
+```
+
+```
+##       
+##        COMERCIAL POBLACIONAL
+##   2013      2255        3924
+##   2014     16960       54187
+##   2015       956       22016
+##   2016       142         244
+##   2017      3529        6592
+##   2018      5330       15088
+##   2019      6136       11973
+##   2020      3596        9839
+##   2021      7124       14847
+##   2022      5732       11694
+##   2023      2505        5759
+```
+## Save data
+
+
+```r
+saveRDS(sizeall2, "tallas13_23.Rdata")
+```
+
 
 some plots
 
 
 ```r
-nall <- ggplot(sizeall2, 
-               aes(x=Size, 
-                   y = as.factor(MES),
+nall <- ggplot(sizeall2 %>% 
+                 drop_na(sizeE, 
+                         MES), 
+               aes(x=sizeE, 
+                   y = MES,
                   fill= as.factor(rastro)))+
-  geom_density_ridges(stat = "binline", 
-                      bins = 50, 
-                      scale = 1.2,
+  # geom_density_ridges(stat = "densit", 
+  #                     bins = 50, 
+  #                     scale = 1.2,
+  #                     alpha=0.7)+
+   geom_density_ridges2(stat = "density_ridges",
+                       position = "points_sina",
+                      scale = 1.5,
                       alpha=0.7)+
-  facet_wrap(.~ANO, ncol=7) +
+  facet_wrap(.~ANO, ncol=6) +
   geom_vline(xintercept = 10.8, color = "red")+
   scale_fill_viridis_d(option="B",
-                       name="Rastro")+
+                       name="Gear")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   theme_few()+
   theme(legend.position = "bottom")+
@@ -487,4 +968,1154 @@ nall <- ggplot(sizeall2,
 nall
 ```
 
-<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-14-1.jpeg" style="display: block; margin: auto;" />
+<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-24-1.jpeg" style="display: block; margin: auto;" />
+
+
+
+```r
+nallbeach <- ggplot(sizeall2, 
+               aes(x=sizeE, 
+                   y = as.factor(MES),
+                  fill= as.factor(Sampling.point)))+
+  geom_density_ridges(stat = "binline", 
+                      bins = 40, 
+                      scale = 1.2,
+                      alpha=0.7)+
+  facet_wrap(.~ANO, ncol=7) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_viridis_d(option="F",
+                       name="Beach")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  theme(legend.position = "bottom")+
+  xlab("Longitud (mm.)")+
+  ylab("")+
+  xlim(0,40)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+nallbeach
+```
+
+<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-25-1.jpeg" style="display: block; margin: auto;" />
+
+just Poblacional sample
+
+
+```r
+pobeach <- ggplot(sizeall2 %>% 
+                      filter(rastro!="COMERCIAL"), 
+               aes(x=sizeE, 
+                   y = as.factor(MES),
+                  fill= as.factor(Sampling.point)))+
+  geom_density_ridges(stat = "binline", 
+                      bins = 30, 
+                      scale = 1.2,
+                      alpha=0.7)+
+  facet_wrap(.~ANO, ncol=7) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_viridis_d(option="G",
+                       name="Beach")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  theme(legend.position = "bottom")+
+  xlab("Longitud (mm.)")+
+  ylab("")+
+  xlim(0,40)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+pobeach
+```
+
+<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-26-1.jpeg" style="display: block; margin: auto;" />
+
+justm Comercial sample
+
+
+```r
+combeach <- ggplot(sizeall2 %>% 
+                      filter(rastro!="POBLACIONAL"), # saco poblacional
+               aes(x=sizeE, 
+                   y = as.factor(MES),
+                  fill= as.factor(Beach)))+
+  geom_density_ridges(stat = "binline", 
+                      bins = 40, 
+                      scale = 1.2,
+                      alpha=0.7)+
+  facet_wrap(.~ANO, ncol=7) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  scale_fill_viridis_d(option="F",
+                       name="Beach")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme_few()+
+  theme(legend.position = "bottom")+
+  xlab("Longitud (mm.)")+
+  ylab("")+
+  xlim(0,40)
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+combeach
+```
+
+<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-27-1.jpeg" style="display: block; margin: auto;" />
+
+Ahora plotear el ultimo mes para el informe
+
+
+```r
+combeachago23 <- ggplot(sizeall2 %>% 
+                      filter(ANO==2023), 
+               aes(x=sizeE, y=Beach, fill=as.character(rastro)))+
+  geom_density_ridges(stat = "binline", 
+                      bins = 40, 
+                      scale = 1.2,
+                      alpha=0.8)+
+  scale_fill_manual(values = c("red", "blue"))+
+  facet_wrap(.~MES, ncol=5) +
+  geom_vline(xintercept = 10.8, color = "red")+
+  theme_few()+
+  theme(legend.position = "bottom")+
+  xlab("Longitud (cm.)")+
+  ylab("")+
+  xlim(0,40)+
+  labs(title= "Survey 2023")
+#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+combeachago23
+```
+
+<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-28-1.jpeg" style="display: block; margin: auto;" />
+
+another way to viz is a scatter plot
+
+
+```r
+sizemean <-sizeall2 %>% 
+  dplyr::group_by(ANO, 
+                  MES, 
+                  rastro) %>%
+  dplyr::summarise(avg=mean(sizeE))
+#kableExtra::kable(coutlength, format = "html")
+```
+
+Mean length in time series by Subarea.
+
+
+```r
+pmea <- ggplot(sizemean %>% 
+                 drop_na(avg), 
+               aes(ANO, avg,
+               color=rastro))+
+    geom_point(show.legend = T,
+               alpha=.7) +
+    geom_smooth(method= "glm")+
+    theme_few()+ 
+    scale_y_continuous(breaks = seq(from = 2013, to = 2023, by = 1))+
+    theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     vjust= 0.5,
+                                     size = 8),
+          axis.text.y = element_text(size = 8),
+          legend.position = "bottom")+
+    guides(fill = guide_legend(reverse=F))+
+    scale_color_viridis_d(option="H",
+                          name="")+
+    ylab("Tallas Medias (mm)") +
+    xlab("") +
+    ggtitle("Tallas medias coquina por año")
+pmea
+```
+
+<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-30-1.jpeg" style="display: block; margin: auto;" />
+
+## Modelos 
+comprobar tendencia estadisticamente para las tendencias de ambos sistemas de muestreo en las tallas.
+
+
+```r
+# comercial
+sizemeanc <- sizemean %>% 
+  filter(rastro!="COMERCIAL")
+
+modelc <- lm(avg ~ANO, data=sizemeanc)
+
+# poblacional
+sizemeanp <- sizemean %>% 
+  filter(rastro!="POBLACIONAL")
+
+modelp <- lm(avg ~ANO, data=sizemeanp)
+```
+
+
+
+```r
+tp <- tbl_regression(modelp, 
+                     estimate_fun = function(x) style_number(x, digits = 3))
+tc <- tbl_regression(modelc, 
+                     estimate_fun = function(x) style_number(x, digits = 3))
+
+tp
+```
+
+```{=html}
+<div id="clavnhtxim" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#clavnhtxim table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#clavnhtxim thead, #clavnhtxim tbody, #clavnhtxim tfoot, #clavnhtxim tr, #clavnhtxim td, #clavnhtxim th {
+  border-style: none;
+}
+
+#clavnhtxim p {
+  margin: 0;
+  padding: 0;
+}
+
+#clavnhtxim .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#clavnhtxim .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#clavnhtxim .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#clavnhtxim .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#clavnhtxim .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#clavnhtxim .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#clavnhtxim .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#clavnhtxim .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#clavnhtxim .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#clavnhtxim .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#clavnhtxim .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#clavnhtxim .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#clavnhtxim .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#clavnhtxim .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#clavnhtxim .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#clavnhtxim .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#clavnhtxim .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#clavnhtxim .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#clavnhtxim .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#clavnhtxim .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#clavnhtxim .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#clavnhtxim .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#clavnhtxim .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#clavnhtxim .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#clavnhtxim .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#clavnhtxim .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#clavnhtxim .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#clavnhtxim .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#clavnhtxim .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#clavnhtxim .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#clavnhtxim .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#clavnhtxim .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#clavnhtxim .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#clavnhtxim .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#clavnhtxim .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#clavnhtxim .gt_left {
+  text-align: left;
+}
+
+#clavnhtxim .gt_center {
+  text-align: center;
+}
+
+#clavnhtxim .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#clavnhtxim .gt_font_normal {
+  font-weight: normal;
+}
+
+#clavnhtxim .gt_font_bold {
+  font-weight: bold;
+}
+
+#clavnhtxim .gt_font_italic {
+  font-style: italic;
+}
+
+#clavnhtxim .gt_super {
+  font-size: 65%;
+}
+
+#clavnhtxim .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#clavnhtxim .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#clavnhtxim .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#clavnhtxim .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#clavnhtxim .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#clavnhtxim .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#clavnhtxim .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Characteristic&lt;/strong&gt;"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Beta&lt;/strong&gt;"><strong>Beta</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;95% CI&lt;/strong&gt;&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>95% CI</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;p-value&lt;/strong&gt;"><strong>p-value</strong></th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="label" class="gt_row gt_left">ANO</td>
+<td headers="estimate" class="gt_row gt_center">-0.102</td>
+<td headers="ci" class="gt_row gt_center">-0.160, -0.044</td>
+<td headers="p.value" class="gt_row gt_center"><0.001</td></tr>
+  </tbody>
+  
+  <tfoot class="gt_footnotes">
+    <tr>
+      <td class="gt_footnote" colspan="4"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> CI = Confidence Interval</td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+```
+
+```r
+tc
+```
+
+```{=html}
+<div id="kvevywbpok" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#kvevywbpok table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#kvevywbpok thead, #kvevywbpok tbody, #kvevywbpok tfoot, #kvevywbpok tr, #kvevywbpok td, #kvevywbpok th {
+  border-style: none;
+}
+
+#kvevywbpok p {
+  margin: 0;
+  padding: 0;
+}
+
+#kvevywbpok .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#kvevywbpok .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#kvevywbpok .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#kvevywbpok .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#kvevywbpok .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#kvevywbpok .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#kvevywbpok .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#kvevywbpok .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#kvevywbpok .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#kvevywbpok .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#kvevywbpok .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#kvevywbpok .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#kvevywbpok .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#kvevywbpok .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#kvevywbpok .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#kvevywbpok .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#kvevywbpok .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#kvevywbpok .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#kvevywbpok .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kvevywbpok .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#kvevywbpok .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#kvevywbpok .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#kvevywbpok .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kvevywbpok .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#kvevywbpok .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#kvevywbpok .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#kvevywbpok .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kvevywbpok .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#kvevywbpok .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#kvevywbpok .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#kvevywbpok .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#kvevywbpok .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#kvevywbpok .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kvevywbpok .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#kvevywbpok .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kvevywbpok .gt_left {
+  text-align: left;
+}
+
+#kvevywbpok .gt_center {
+  text-align: center;
+}
+
+#kvevywbpok .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#kvevywbpok .gt_font_normal {
+  font-weight: normal;
+}
+
+#kvevywbpok .gt_font_bold {
+  font-weight: bold;
+}
+
+#kvevywbpok .gt_font_italic {
+  font-style: italic;
+}
+
+#kvevywbpok .gt_super {
+  font-size: 65%;
+}
+
+#kvevywbpok .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#kvevywbpok .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#kvevywbpok .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#kvevywbpok .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#kvevywbpok .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#kvevywbpok .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#kvevywbpok .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Characteristic&lt;/strong&gt;"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Beta&lt;/strong&gt;"><strong>Beta</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;95% CI&lt;/strong&gt;&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>95% CI</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;p-value&lt;/strong&gt;"><strong>p-value</strong></th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="label" class="gt_row gt_left">ANO</td>
+<td headers="estimate" class="gt_row gt_center">-0.077</td>
+<td headers="ci" class="gt_row gt_center">-0.243, 0.089</td>
+<td headers="p.value" class="gt_row gt_center">0.4</td></tr>
+  </tbody>
+  
+  <tfoot class="gt_footnotes">
+    <tr>
+      <td class="gt_footnote" colspan="4"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> CI = Confidence Interval</td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+```
+
+
+# Dudas.
+
+### 2013
+- el año 2013 no tiene asingación de sampling point
+- el año 2013 no tiene datos del mes 7
+
+
+### 2014 y 2015
+
+- no hay datos de los meses ago-dic en poblacional para el 2015
+
+
+```r
+table(size14_15$ANO, size14_15$MES)
+```
+
+```
+##       
+##            1     2     3     4     5     6     7     8     9    10    11    12
+##   2014     0  8089  3650  5626 14118  5638  4389  3652  9703  4806 10705   771
+##   2015   452  4677  1919  6353   541  8892   138     0     0     0     0     0
+```
+
+
+- el año 2016 solo tiene un muestreo, cuando fue realizado y donde?
+
+
+# Referencias

@@ -64,11 +64,17 @@ library(psych)
 
 Identificar correlaciones entre variables relativas a los indicadores. La idea seria identificar variables respuestas como rendimiento y D15 cofrontadas con la otra información ambiental que rescata el proyecto FEMP-04
 
-```{r}
-corr <- denscomtot %>% 
-  select(c(27, 31, 41, 44)) 
 
-pairs.panels(corr) 
+```{r}
+ChlData <- read_excel("~/IEO/DATA/Ambientales_Data/Clorophila_Data.xlsx", 
+    sheet = "HOJA DE TRABAJO", 
+    skip = 3)
+```
+
+
+```{r}
+ChlData$Fecha <- dmy(ChlData$Fecha)
+realdate <- as.Date(ChlData$Fecha, format="%D-%M-%Y")
 
 ```
 
