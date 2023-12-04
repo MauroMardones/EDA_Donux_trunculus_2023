@@ -893,6 +893,7 @@ sizemeanp <- sizemean %>%
 modelp <- lm(avg ~ANO, data=sizemeanp)
 ```
 
+usamees la función `gtsummary` [@gtsummary] para visualizar los resultados de los modelos.
 
 ```{r}
 tp <- tbl_regression(modelp, 
