@@ -2,7 +2,7 @@
 title: "Correlaciones variables poblacionales y ambientales D. trunculus"
 subtitle: "Datos Monitoreo poblacional FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "04 December, 2023"
+date:  "12 December, 2023"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -66,12 +66,16 @@ library(psych)
 
 Identificar correlaciones entre variables relativas a los indicadores. La idea seria identificar variables respuestas como rendimiento y D15 cofrontadas con la otra información ambiental que rescata el proyecto FEMP-04
 
-
+## Lee data
 
 ```r
 ChlData <- read_csv("~/IEO/DATA/Ambientales_Data/Clorophila_Data.csv")
 ChlData$Fecha<-mdy(ChlData$Fecha)
 ```
+
+## Manipular estructura de datos 
+
+
 Defino y separo las fechas entre Año, Mes y dia
 
 
@@ -94,9 +98,11 @@ ChlData<- ChlData %>%
          Modo = ifelse(grepl("[A-Za-z]", Sampling.point), 
                         sub("[0-9]+", "", Sampling.point), 
                         NA)) %>% 
-  rename(CONCETR = `ug/l Sea water`)
+  rename(CONCETR = `ug/l Sea water`) %>% 
+  mutate(TRIM = cut(MES, breaks = c(0, 3, 6, 9, 12), labels = FALSE))
 ```
 
+## Visualizar las variables
 
 Primero el comportamiento. de la variabe y luego su tendencia por sitios y por tiempo.
 
@@ -105,8 +111,8 @@ Primero el comportamiento. de la variabe y luego su tendencia por sitios y por t
 histo1 <- ggplot(ChlData %>% 
                    drop_na(), aes(CONCETR))+
   geom_histogram(stat = "bin",
-                 binwidth = 0.1)+
-  facet_wrap(ANO~., ncol=3)+
+                 binwidth = 0.5)+
+  facet_wrap(ANO~., ncol=5)+
   theme_bw()
 histo1
 ```
@@ -114,15 +120,16 @@ histo1
 <img src="Correlaciones-variables-poblacionales-y-ambientales_files/figure-html/unnamed-chunk-5-1.jpeg" style="display: block; margin: auto;" />
 
 
-Promedios
+Manipulo los datos y estimo una media y desviacion por variable
 
 
 ```r
 meanchl <- ChlData %>% 
   group_by(ANO,
-           MES,
+           TRIM,
            Site) %>% 
-  summarise(MEANCON = mean(CONCETR), na.rm = TRUE)
+  summarise(MEANCON = mean(CONCETR), na.rm = TRUE,
+            VARCON = sd(CONCETR))
 ```
 
 
@@ -130,15 +137,50 @@ meanchl <- ChlData %>%
 meach <- ggplot(meanchl %>% 
                   drop_na(), 
                aes(ANO, MEANCON))+
-    geom_point(show.legend = T,
+    geom_col(position = "dodge",
                alpha=.7) +
-    geom_smooth(method= "lm")+
+    geom_smooth(method= "loess",
+                se=FALSE)+
     theme_few()+ 
-    scale_color_viridis_c(option="H",
-                          name="")+
-    scale_x_continuous(breaks = seq(from = 2018, to = 2023, by = 1))+
-    facet_wrap(Site~.,
-               ncol=5)+
+   # scale_x_continuous(breaks = seq(from = 2018, to = 2023, by = 1))+
+  scale_x_continuous(breaks = seq(from = 2018, 
+                                  to = 2023, 
+                                  by = 1))+
+  scale_y_continuous(breaks = seq(from = 0, 
+                                  to = 5, 
+                                  by = 2.5))+
+    facet_grid(Site~TRIM)+
+    theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     vjust= 0.5,
+                                     size = 8),
+          axis.text.y = element_text(size = 8),
+          legend.position = "none")+
+    ylab("Standar Deviation (ug/ml)") +
+    xlab("")+
+  ggtitle("Media de Chl por Sitio de Muestreo y Trimestre")
+meach
+```
+
+<img src="Correlaciones-variables-poblacionales-y-ambientales_files/figure-html/unnamed-chunk-7-1.jpeg" style="display: block; margin: auto;" />
+
+
+```r
+varch <- ggplot(meanchl %>% 
+                  drop_na(), 
+               aes(ANO, VARCON))+
+    geom_point(alpha=.7) +
+    geom_smooth(method= "lm",
+                col="red")+
+    theme_few()+ 
+   # scale_x_continuous(breaks = seq(from = 2018, to = 2023, by = 1))+
+  scale_x_continuous(breaks = seq(from = 2018, 
+                                  to = 2023, 
+                                  by = 1))+
+  scale_y_continuous(breaks = seq(from = 0, 
+                                  to = 2.5, 
+                                  by = 0.5))+
+    facet_grid(Site~TRIM)+
     theme(axis.text.x = element_text(angle = 90,
                                      hjust = 1,
                                      vjust= 0.5,
@@ -146,9 +188,20 @@ meach <- ggplot(meanchl %>%
           axis.text.y = element_text(size = 8),
           legend.position = "none")+
     ylab("Concentración (ug/ml)") +
-    xlab("") 
-meach
+    xlab("")+
+  ylim(0,2.6)+
+  ggtitle("Desviación Standar Chl por Sitio de Muestreo y Trimestre")
+varch
 ```
 
-<img src="Correlaciones-variables-poblacionales-y-ambientales_files/figure-html/unnamed-chunk-7-1.jpeg" style="display: block; margin: auto;" />
+<img src="Correlaciones-variables-poblacionales-y-ambientales_files/figure-html/unnamed-chunk-8-1.jpeg" style="display: block; margin: auto;" />
+
+## Guardo la data 
+
+Data correspondiente al objeto `meanchl`
+
+
+```r
+saveRDS(meanchl, "Cloro.RDS")
+```
 

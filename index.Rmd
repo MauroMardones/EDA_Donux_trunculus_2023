@@ -147,7 +147,7 @@ Cada componente y su rutina de estandarización estan detallas en los siguientes
 
 - [Composiciones de Tallas](Compsiciones-de-Tallas.html)
 - [Rendimiento Pesquero](Rendimiento-pesuero.html)
-- [CorrelacioCorrelaciones-variables-poblacionales-y-ambientales.html.html)
+- [Correlaciones ambientales](Correlaciones-variables-poblacionales-y-ambientales.html.html)
 - [Desembarques](Rendimiento-pesuero.html)
 - [Mapas](Rendimiento-pesuero.html)
 - [Indice de Recu¡lutamiento](Rendimiento-pesuero.html)
