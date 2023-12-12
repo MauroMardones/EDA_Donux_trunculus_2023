@@ -2,7 +2,7 @@
 title: "AED FEMP_AND_04 Proyecto"
 subtitle: "Análisis complementarios para el manejo, asesoría y evaluación de stock de D. trunculus"
 author: "Mardones, M; Delgado, M"
-date:  "24 November, 2023"
+date:  "12 December, 2023"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -138,13 +138,13 @@ Cada componente y su rutina de estandarización estan detallas en los siguientes
 
 - [Composiciones de Tallas](Compsiciones-de-Tallas.html)
 - [Rendimiento Pesquero](Rendimiento-pesuero.html)
-- [Correlaciones](Rendimiento-pesuero.html)
+- [Correlaciones ambientales](Correlaciones-variables-poblacionales-y-ambientales.html)
 - [Desembarques](Rendimiento-pesuero.html)
 - [Mapas](Rendimiento-pesuero.html)
 - [Indice de Recu¡lutamiento](Rendimiento-pesuero.html)
 
 
-# COnsideraciones generales
+# Consideraciones generales
 
 - Existe una gran diversidad de formatos y preguntas que estan de alguna manera representadas en las bases de datos aca utilizadas, lo cual dificulta su estandarización. Lo importante es realizar las preguntas correctas y precisas para poder, en primer lugar, manipular la data, y en segundo lugar, realizar los analisis correctos.
 
