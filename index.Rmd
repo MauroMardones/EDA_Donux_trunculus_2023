@@ -145,6 +145,7 @@ Este AED ha sido estructurado separando los análisis por cada pieza de informac
 Cada componente y su rutina de estandarización estan detallas en los siguientes link;
 
 
+
 - [Composiciones de Tallas](Compsiciones-de-Tallas.html)
 - [Rendimiento Pesquero](Rendimiento-pesuero.html)
 - [Correlaciones ambientales](Correlaciones-variables-poblacionales-y-ambientales.html)
