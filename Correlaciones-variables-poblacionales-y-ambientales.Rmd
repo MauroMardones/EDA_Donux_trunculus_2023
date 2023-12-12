@@ -125,7 +125,7 @@ meanchl <- ChlData %>%
             VARCON = sd(CONCETR))
 ```
 
-```{r, fig.align="center", warning=FALSE, fig.width=4, fig.height=6}
+```{r, fig.align="center", warning=FALSE}
 meach <- ggplot(meanchl %>% 
                   drop_na(), 
                aes(ANO, MEANCON))+
@@ -150,11 +150,11 @@ meach <- ggplot(meanchl %>%
           legend.position = "none")+
     ylab("Standar Deviation (ug/ml)") +
     xlab("")+
-  ggtitle("Media de Chl por Sitio de Muestreo y Trimestre")
+  ggtitle("Media de concentración Chla por Sitio de Muestreo y Trimestre")
 meach
 ```
 
-```{r, fig.align="center", warning=FALSE, fig.width=4, fig.height=6}
+```{r, fig.align="center", warning=FALSE}
 varch <- ggplot(meanchl %>% 
                   drop_na(), 
                aes(ANO, VARCON))+
@@ -179,7 +179,7 @@ varch <- ggplot(meanchl %>%
     ylab("Concentración (ug/ml)") +
     xlab("")+
   ylim(0,2.6)+
-  ggtitle("Desviación Standar Chl por Sitio de Muestreo y Trimestre")
+  ggtitle("Desviación Standar Chla por Sitio de Muestreo y Trimestre")
 varch
 ```
 

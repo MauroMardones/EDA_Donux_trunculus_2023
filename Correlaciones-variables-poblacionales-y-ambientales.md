@@ -158,7 +158,7 @@ meach <- ggplot(meanchl %>%
           legend.position = "none")+
     ylab("Standar Deviation (ug/ml)") +
     xlab("")+
-  ggtitle("Media de Chl por Sitio de Muestreo y Trimestre")
+  ggtitle("Media de concentración Chla por Sitio de Muestreo y Trimestre")
 meach
 ```
 
@@ -190,7 +190,7 @@ varch <- ggplot(meanchl %>%
     ylab("Concentración (ug/ml)") +
     xlab("")+
   ylim(0,2.6)+
-  ggtitle("Desviación Standar Chl por Sitio de Muestreo y Trimestre")
+  ggtitle("Desviación Standar Chla por Sitio de Muestreo y Trimestre")
 varch
 ```
 
