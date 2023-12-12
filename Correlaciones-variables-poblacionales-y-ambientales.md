@@ -129,7 +129,8 @@ meanchl <- ChlData %>%
            TRIM,
            Site) %>% 
   summarise(MEANCON = mean(CONCETR), na.rm = TRUE,
-            VARCON = sd(CONCETR))
+            VARCON = sd(CONCETR),
+            INTENSIDAD= mean(Intensidad))
 ```
 
 
@@ -195,6 +196,29 @@ varch
 ```
 
 <img src="Correlaciones-variables-poblacionales-y-ambientales_files/figure-html/unnamed-chunk-8-1.jpeg" style="display: block; margin: auto;" />
+
+Relacion entre Concentracion e intensidad
+
+
+```r
+rl1 <- ggplot(ChlData %>% 
+                  drop_na(), 
+               aes(`ug/l Extracto`, Intensidad))+
+    geom_point(alpha=.7,
+               col="red") +
+    geom_smooth(method= "lm",
+                col=1)+
+    theme_few()+ 
+   # scale_x_continuous(breaks = seq(from = 2018, to = 2023, by = 1))+
+ 
+    facet_grid(Site~ANO)+
+    ylab("Extracto (ug/ml)") +
+    xlab("Intensidad")
+rl1
+```
+
+<img src="Correlaciones-variables-poblacionales-y-ambientales_files/figure-html/unnamed-chunk-9-1.jpeg" style="display: block; margin: auto;" />
+
 
 ## Guardo la data 
 

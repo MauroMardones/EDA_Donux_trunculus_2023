@@ -122,7 +122,8 @@ meanchl <- ChlData %>%
            TRIM,
            Site) %>% 
   summarise(MEANCON = mean(CONCETR), na.rm = TRUE,
-            VARCON = sd(CONCETR))
+            VARCON = sd(CONCETR),
+            INTENSIDAD= mean(Intensidad))
 ```
 
 ```{r, fig.align="center", warning=FALSE}
@@ -182,6 +183,26 @@ varch <- ggplot(meanchl %>%
   ggtitle("Desviación Standar Chla por Sitio de Muestreo y Trimestre")
 varch
 ```
+
+Relacion entre Concentracion e intensidad
+
+```{r warning=FALSE}
+rl1 <- ggplot(ChlData %>% 
+                  drop_na(), 
+               aes(`ug/l Extracto`, Intensidad))+
+    geom_point(alpha=.7,
+               col="red") +
+    geom_smooth(method= "lm",
+                col=1)+
+    theme_few()+ 
+   # scale_x_continuous(breaks = seq(from = 2018, to = 2023, by = 1))+
+ 
+    facet_grid(Site~ANO)+
+    ylab("Extracto (ug/ml)") +
+    xlab("Intensidad")
+rl1
+```
+
 
 ## Guardo la data 
 
