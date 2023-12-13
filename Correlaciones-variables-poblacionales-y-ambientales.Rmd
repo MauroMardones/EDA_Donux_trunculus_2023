@@ -54,9 +54,9 @@ library(hrbrthemes)
 library(viridis)
 library(kableExtra)
 library(ggalt)
-library(rnaturalearth)
-library(sf)
-library(psych)
+library(see)
+library(egg)
+
 ```
 
 
@@ -67,16 +67,17 @@ Identificar correlaciones entre variables relativas a los indicadores. La idea s
 ## Lee data
 ```{r}
 ChlData <- read_csv("~/IEO/DATA/Ambientales_Data/Clorophila_Data.csv")
-ChlData$Fecha<-mdy(ChlData$Fecha)
-
 ```
 
 ## Manipular estructura de datos 
 
 
-Defino y separo las fechas entre Año, Mes y dia
+Defino y separo las fechas entre Año, Mes y Día
 
 ```{r}
+# transformo a POSIT.x
+ChlData$Fecha<-mdy(ChlData$Fecha)
+# Asigno  columnas a fechas separadas.
 ChlData<- ChlData %>%
   mutate(
     DIA = day(Fecha),
@@ -84,6 +85,34 @@ ChlData<- ChlData %>%
     ANO = year(Fecha)
   )
 ```
+
+
+
+Identifico outliers y aspectos de la captura
+```{r warning=FALSE}
+# A function for dotplots
+multi_dotplot <- function(filename, Xvar, Yvar){
+  filename %>%
+    ggplot(aes(x = {{Xvar}})) +
+    geom_point(aes(y = {{Yvar}})) +
+    theme_classic() +
+    coord_flip() +
+    labs(x = "Order of Data")}
+#Select continuous variables to plot
+Chldata2 <- ChlData %>%
+  mutate(order = seq(1:nrow(ChlData)))
+p1 <- multi_dotplot(Chldata2, order, Intensidad)
+p2 <- multi_dotplot(Chldata2, order, Chldata2$`ug/l Extracto`)
+#Plot as a grid
+ggarrange(p1, p2, nrow = 1)
+```
+
+```{r}
+# ver NA
+colSums(is.na(ChlData))
+```
+
+Sacar datos `cero`
 
 Identifico en columnas separadas los sitios y las replicas
 
@@ -94,6 +123,8 @@ ChlData<- ChlData %>%
          Modo = ifelse(grepl("[A-Za-z]", Sampling.point), 
                         sub("[0-9]+", "", Sampling.point), 
                         NA)) %>% 
+  filter(Intensidad>5,
+         ChlData$`ug/l Extracto`>5) %>% 
   rename(CONCETR = `ug/l Sea water`) %>% 
   mutate(TRIM = cut(MES, breaks = c(0, 3, 6, 9, 12), labels = FALSE))
 
@@ -109,7 +140,7 @@ histo1 <- ggplot(ChlData %>%
   geom_histogram(stat = "bin",
                  binwidth = 0.5)+
   facet_wrap(ANO~., ncol=5)+
-  theme_bw()
+  theme_few() 
 histo1
 ```
 
@@ -149,7 +180,7 @@ meach <- ggplot(meanchl %>%
                                      size = 8),
           axis.text.y = element_text(size = 8),
           legend.position = "none")+
-    ylab("Standar Deviation (ug/ml)") +
+    ylab("Concentration (ug/ml)") +
     xlab("")+
   ggtitle("Media de concentración Chla por Sitio de Muestreo y Trimestre")
 meach
@@ -177,7 +208,7 @@ varch <- ggplot(meanchl %>%
                                      size = 8),
           axis.text.y = element_text(size = 8),
           legend.position = "none")+
-    ylab("Concentración (ug/ml)") +
+    ylab("Desviación Standar (ug/ml)") +
     xlab("")+
   ylim(0,2.6)+
   ggtitle("Desviación Standar Chla por Sitio de Muestreo y Trimestre")
