@@ -61,15 +61,46 @@ library(psych)
 
 # YIELD ANALYSIS (Rendimiento)
 
-Aca se trabaja con los datos del muestreo `COMERCIAL`
+Aca se trabaja con los datos del muestreo `COMERCIAL`. El objetivo es explorar laas bases de datos desde el 2013.
 
-Leo los datos
+Las bases de datos tienen diferentes formatos, lo cual amerita un proceso de data wranling profundo.
+
+# Leo Data
+
+## 2013
+
+## 2014
+
+
+```{r}
+Dens2014pob <- read_excel(here("Data", 
+                            "Datos_13_14", 
+                            "Datos tallas 2014_2015",
+                            "Datos totales",
+                            "ABUNDANCIAS_Com_2014_2015_Paco.xlsx"))
+
+Dens2014com <- read_excel(here("Data", 
+                            "Datos_13_14", 
+                            "Datos tallas 2014_2015",
+                            "Datos totales",
+                            "ABUNDANCIAS_Pobl_2014-2015.xlsx",
+                            sheet = "Ratro a pie_resumido"))
+
+```
+
+
+## 2015
+
+## 2017 y 2020
 
 ```{r}
 dens2017com <- read_delim("Data/Anterior a 2020/data_ieo_2017_def.csv", 
     delim = ";", escape_double = FALSE, trim_ws = TRUE)
+```
 
+## 2021 y 2023
 
+```{r}
 dens2021com <- read_excel(here("Data", "Posterior 2020", 
                                "Data_sample_FEMP_04_2021.xlsx"),
                        sheet = "DATA_COM")
@@ -286,3 +317,9 @@ comp <- ggplot(denscomtot %>%
   ggtitle("Rendimiento coquina comparado por mes y punto de muestreo")
 comp
 ```
+
+# Dudas
+
+
+- Como se ha calculado las abundancias y biomasas?. Las BD solo tienen el dato sin previo vínculo de función. 
+- 
