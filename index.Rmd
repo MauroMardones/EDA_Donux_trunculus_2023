@@ -154,6 +154,7 @@ Cada componente y su rutina de estandarización estan detallas en los siguientes
 - [Indice de Reclutamiento](Recruit_Index.html.html)
 
 
+
 # Consideraciones generales
 
 - Existe una gran diversidad de formatos y preguntas que estan de alguna manera representadas en las bases de datos aca utilizadas, lo cual dificulta su estandarización. Lo importante es realizar las preguntas correctas y precisas para poder, en primer lugar, manipular la data, y en segundo lugar, realizar los analisis correctos.
