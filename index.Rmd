@@ -151,7 +151,7 @@ Cada componente y su rutina de estandarización estan detallas en los siguientes
 - [Correlaciones ambientales](Correlaciones-variables-poblacionales-y-ambientales.html)
 - [Desembarques](Rendimiento-pesuero.html)
 - [Mapas](Rendimiento-pesuero.html)
-- [Indice de Reclutamiento](Recruit_Index.html.html)
+- [Indice de Reclutamiento](Recruit_Index.html)
 
 
 
