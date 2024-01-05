@@ -2,7 +2,7 @@
 title: "AED FEMP_AND_04 Proyecto"
 subtitle: "Análisis complementarios para el manejo, asesoría y evaluación de stock de D. trunculus"
 author: "Mardones, M; Delgado, M"
-date:  "12 December, 2023"
+date:  "05 January, 2024"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -136,12 +136,14 @@ Este AED ha sido estructurado separando los análisis por cada pieza de informac
 Cada componente y su rutina de estandarización estan detallas en los siguientes link;
 
 
+
 - [Composiciones de Tallas](Compsiciones-de-Tallas.html)
 - [Rendimiento Pesquero](Rendimiento-pesuero.html)
 - [Correlaciones ambientales](Correlaciones-variables-poblacionales-y-ambientales.html)
 - [Desembarques](Rendimiento-pesuero.html)
 - [Mapas](Rendimiento-pesuero.html)
-- [Indice de Recu¡lutamiento](Rendimiento-pesuero.html)
+- [Indice de reclutamiento D15](Recruit_Index.html)
+
 
 
 # Consideraciones generales
