@@ -7,4 +7,5 @@ Main objective is explore length frequency survey data and populations variable 
 
 This analysis is complementary to advise to the **coquina** (*D. trunculus*) fishery and management.
 
+
 The comprensive code and workflow in this EDA can be visited [here](https://mauromardones.github.io/EDA_Donux_trunculus_2023/)
