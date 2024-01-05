@@ -63,7 +63,7 @@ library(psych)
 
 Aca se trabaja con los datos del muestreo `COMERCIAL`. El objetivo es explorar laas bases de datos desde el 2013.
 
-Las bases de datos tienen diferentes formatos, lo cual amerita un proceso de data wranling profundo.
+Las bases de datos tienen diferentes formatos, lo cual amerita un proceso de *data wrangling*                  .
 
 # Leo Data
 

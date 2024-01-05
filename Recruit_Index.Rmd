@@ -147,7 +147,7 @@ MES=as.numeric (format(realdate,"%m"))
 DIA=as.numeric (format(realdate,"%d"))
 denspob2123f<-cbind(ANO,MES,DIA,denspob2123f)
 colnames(denspob2123f)
-table(denspob2123f$ANO)
+table(denspob2123f$ANO, denspob2123f$MES)
 ```
 
 
@@ -201,16 +201,64 @@ Aqui trataré de replicar los rresultados de los Informes de MD.
 
 Primer calcularemos la proporcion de ind bajo los 15 mm con `sizeall2`
 
+## Data 2020-2023
+
+```{r}
+size2021 <- read_excel(here("Data", 
+                            "Posterior 2020", 
+                            "Data_size_Coquina_2021.xlsx"), 
+                       sheet = "Coquina_donax") %>% 
+  select(-c(1, 10, 11))  
+size2022 <- read_excel(here("Data",
+                            "Posterior 2020", 
+                            "Data_size_Coquina_2022.xlsx"),  
+                       sheet = "Coquina_donax") %>% 
+  select(-c(1, 2))  
+size2023 <- read_excel(here("Data", 
+                            "Posterior 2020",
+                            "Data_size_Coquina_2023.xlsx"),  
+                       sheet = "Coquina_Donax") %>% 
+  select(-c(1, 2))  
+```
+
+
+
+Este aspecto se trabaja de forma de ponderación ad-hoc descrita en la
+Figure \@ref(fig:edaplot1)
+
+
+Now, we handling data 2021-2023. Same columns data 2017-2020
+
+```{r}
+size_21_23 <- rbind(size2021,
+                    size2022,
+                    size2023)
+```
+Separate `Date` column
+
+```{r}
+size_21_23<- size_21_23 %>%
+  mutate(
+    DIA = day(Date),
+    MES = month(Date),
+    ANO = year(Date)
+  )
+unique(size_21_23$rastro)
+
+glimpse(size_21_23)
+table(size_21_23$ANO, size_21_23$MES)
+size_21_23
+```
+
 
 Creo la función para estimar el `%`
 
 ```{r}
 FUN <- function(x)  (sum(x) / length(x)) * 100
 
-D15 <- sizeall2 %>%
-  filter(Sampling.point== c(2,4,6)) %>% 
+D15 <- size_21_23 %>%
   group_by(ANO, MES, Sampling.point) %>%
-  summarize(d15 = FUN(Size<15), rm.na=T) 
+  summarize(d15 = FUN(sizeE<15), rm.na=T) 
 ```
 representación con barPlot
 
@@ -238,7 +286,7 @@ landpop <- ggplot(D15) +
                   x=Sampling.point,
                   colour=Sampling.point), 
               size=0.9)+
-  scale_colour_viridis_d(option = "D",
+  scale_colour_viridis_d(option = "C",
                        name= "Punto")+
   geom_hline(yintercept = 8,
              col="red",
@@ -261,25 +309,20 @@ Ahora por la cantidad de individuos bajo los 15 mm. Si bien hemos visualizado la
 Primero calculo en n de ind medidos y luego junto con base que tiene medida del area `track_m`
 
 ```{r}
-D15n <- size3 %>% 
-  select(-1) %>%
-  drop_na() %>% 
+D15n <- size_21_23 %>% 
+  drop_na() %>%
   group_by(ANO, 
            MES, 
            Sampling.point, 
            ID_codificado_muestreo, 
-           Categoria,
-           Beach) %>% 
+           Beach,
+           Categoria) %>% 
   summarize(num_individuos = n(), .groups = "drop") 
 
 D15n$Sampling.point <- as.double(D15n$Sampling.point)
 
-D15n1 <- left_join(D15n,
-             dens2023pobf,
-             by=c("ID_codificado_muestreo",
-                  "Sampling.point",
-                  "Beach",
-                  "Categoria"))
+D15n1 <- left_join(denspobtot2, D15n,
+             by = "ID_codificado_muestreo")
 ```
 
 
@@ -288,24 +331,24 @@ Calculo el reclutamiento, es decir, n ind /`track_m`* 0.045
 
 ```{r}
 D15n2 <- D15n1 %>% 
-  group_by(ANO, MES, Sampling.point, Categoria, Beach) %>% 
+  group_by(ANO.x, MES.x, Sampling.point.x, Categoria.x) %>% 
   ungroup() %>%
   mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
-  arrange(ANO, MES) %>% 
-  filter(ANO==2023,
-         MES==11) %>%
-  group_by(Sampling.point) %>%
+  arrange(ANO.x, MES.x) %>% 
+  filter(ANO.x==2023,
+         MES.x==12) %>%
+  group_by(Sampling.point.x) %>%
   summarize(across(num_individuos_m2, mean))
 D15n2
 ```
 
 
 
-Tabla con los datos de octubre
+Tabla con los datos de Diciembre
 ```{r}
-kbl(D15n2$Sampling.point, D15n2$num_individuos_m2, 
+kbl(D15n2$Sampling.point.x, D15n2$num_individuos_m2, 
     booktabs = T,format = "latex",
-    caption = "D15 Mes de Octubre 2023") %>%
+    caption = "D15 Mes de Diciembre 2023") %>%
     kable_styling(latex_options = c("striped",
                                   "condensed","scale_down"),
                 full_width = FALSE,font_size=8)
