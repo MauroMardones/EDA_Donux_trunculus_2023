@@ -88,7 +88,7 @@ Grafico general de los desembarques
 
 ```{r}
 landings3 <- landings2 %>% 
-  group_by(ANO, MES, ESTABLECIMIENTO, ZONA_PRODUCCION) %>% 
+  group_by(ANO, MES, ESTABLECIMIENTO) %>% 
   summarise(LANDINGS = sum(TOTAL_KILOS)/1000)
 ```
 
@@ -101,7 +101,7 @@ Hay valores cercanos a las 14 t. Identificar si esto tiene sentido. Preguntar a 
 ```{r}
 plotlam <- ggplot(landings3,aes(ANO, LANDINGS))+
   geom_bar(stat = "identity")+
-  facet_wrap(.~ESTABLECIMIENTO)+
+  facet_grid(MES~ESTABLECIMIENTO)+
   theme_few()
 plotlam
 ```

@@ -56,15 +56,15 @@ library(kableExtra)
 library(ggalt)
 library(see)
 library(egg)
-
 ```
-
 
 # CORRELACIONES
 
 Identificar correlaciones entre variables relativas a los indicadores. La idea seria identificar variables respuestas como rendimiento y D15 cofrontadas con la otra información ambiental que rescata el proyecto FEMP-04
 
-## Lee data
+## Data Clorofila 
+
+Lee data 
 ```{r}
 ChlData <- read_csv("~/IEO/DATA/Ambientales_Data/Clorophila_Data.csv")
 ```
@@ -243,3 +243,9 @@ Data correspondiente al objeto `meanchl`
 saveRDS(meanchl, "Cloro.RDS")
 ```
 
+## Data multiparametrico.
+
+
+para leer varios `.xls.` usar este ejemplo:
+
+[Leer multiples Excel](https://stackoverflow.com/questions/32888757/how-can-i-read-multiple-excel-files-into-r)
