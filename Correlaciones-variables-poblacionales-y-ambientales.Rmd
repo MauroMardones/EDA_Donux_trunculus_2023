@@ -249,3 +249,17 @@ saveRDS(meanchl, "Cloro.RDS")
 para leer varios `.xls.` usar este ejemplo:
 
 [Leer multiples Excel](https://stackoverflow.com/questions/32888757/how-can-i-read-multiple-excel-files-into-r)
+
+o 
+
+```{r}
+library(xlsx)
+setwd("~/IEO/DATA/Ambientales_Data/MultiParámetro")
+data.files = list.files(pattern = "*.xlsx")
+data <- lapply(data.files, function(x) read.xlsx(x, sheetIndex = 1))
+
+for (i in data.files) {
+    data <- rbind(data, read.xlsx(i, sheetIndex = 1))
+}
+```
+
