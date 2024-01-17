@@ -73,18 +73,12 @@ Las bases de datos tienen diferentes formatos, lo cual amerita un proceso de *da
 
 
 ```{r}
-Dens2014pob <- read_excel(here("Data", 
+Dens1415com <- read_excel(here("Data", 
                             "Datos_13_14", 
                             "Datos tallas 2014_2015",
                             "Datos totales",
-                            "ABUNDANCIAS_Com_2014_2015_Paco.xlsx"))
+                            "ABUNDANCIAS_Com_2014_2015.xlsx"))
 
-Dens2014com <- read_excel(here("Data", 
-                            "Datos_13_14", 
-                            "Datos tallas 2014_2015",
-                            "Datos totales",
-                            "ABUNDANCIAS_Pobl_2014-2015.xlsx",
-                            sheet = "Ratro a pie_resumido"))
 
 ```
 
@@ -169,9 +163,24 @@ denscom1720tot <- dens1720comf %>%
   filter(rastro=="COMERCIAL")
 ```
 
+
+agrupar;
+
+```{r}
+denscom1720g <- denscom1720tot %>% 
+  group_by(ANO, 
+           MES,
+           Beach,
+           mariscador,
+           Sampling.point) %>% 
+  summarise(Rend1m =mean(Rend1, na.rm = TRUE),
+            Rendm =mean(Rend, na.rm = TRUE))
+  
+```
+
 ```{r warning=FALSE, message=FALSE}
-rend1720 <- ggplot(denscom1720tot, 
-               aes(MES,Rend1,
+rend1720 <- ggplot(denscom1720g, 
+               aes(MES,rend1mean,
                 group=mariscador,
                 color=mariscador))+
     geom_point(alpha=.7) +
@@ -362,15 +371,14 @@ solo el ultimo Año
 
 ```{r warning=FALSE}
 rend2023 <- ggplot(denscomtot, 
-               aes(Sampling.point,Rend1,
-                group=mariscador,
-              color=mariscador))+
+               aes(MES,Rend1,
+                group=MES))+
     geom_point(alpha=.7) +
     geom_smooth(method= "loess",
                 level=0.5,
                 span=3)+
     theme_few()+ 
-    facet_grid(mariscador~MES)+
+    facet_grid(ANO~Sampling.point)+
     scale_y_continuous(breaks = seq(from = 1, to = 6, by = 0.5))+
    theme(axis.text.x = element_text(angle = 90,
                                      hjust = 1,
@@ -383,45 +391,206 @@ rend2023 <- ggplot(denscomtot,
     ylab("CPUE (Kg/3 hrs)") +
     xlab("") +
   ylim(0,6)+
+  coord_flip()+
   ggtitle("Rendimiento coquina 2023 por mes y punto de muestreo")
 rend2023
-```
-
-Ahora una comparación de los rendimientods entre meses por año.
-
-```{r warning=FALSE}
-comp <- ggplot(denscomtot %>% 
-                 filter(Sampling.point == c(2,4,6, "M")),
-               aes(ANO,Rend1))+
-    geom_point(alpha=.7) +
-    geom_smooth(method= "lm",
-                level=0.5,
-                span=1.5,
-                se = FALSE)+
-    theme_few()+ 
-    facet_grid(Sampling.point~MES)+
-   # scale_y_continuous(breaks = seq(from = 1, to = 6, by = 0.5))+
-  scale_x_continuous(breaks = seq(from = 2021, to = 2023, by = 1))+
-   theme(axis.text.x = element_text(angle = 90,
-                                     hjust = 1,
-                                     vjust = 0.5,
-                                     size = 8),
-          axis.text.y = element_text(size = 8),
-          legend.position = "none")+
-    scale_color_viridis_d(option= "H", 
-                          name="Sampling Point")+
-    geom_hline(yintercept=3.5, col=2)+
-    ylab("CPUE (Kg/1 hrs)") +
-    xlab("") +
-  ggtitle("Rendimiento coquina comparado por mes y punto de muestreo")
-comp
-
-
 ```
 
 
 ## Unir bases
 
+
+
+En este caso las bases del `denscom1720tot` y `denscomtot` con las variables mas relevantes.
+
+```{r}
+names(denscom1720g)
+names(denscomtot)
+```
+
+
+```{r}
+denscom1720totf <- denscom1720g %>% 
+  select( "Sampling.point" ,
+          "mariscador"  ,
+          "MES",
+          "ANO",
+          "Rendm",
+          "Rend1m") %>% 
+  rename(Rend =Rendm,
+         Rend1=Rend1m)
+denscomtotf <- denscomtot %>% 
+  select( "ANO",
+          "MES",
+          "Sampling.point",
+          "mariscador",
+          "Rend",
+          "Rend1")
+
+
+rend1723 <- rbind(denscom1720totf,
+                  denscomtotf)
+
+```
+
+# Graficas
+
+
+Plots distintos sampling points
+
+```{r, fig.align="center", warning=FALSE}
+rendire <- ggplot(rend1723, 
+               aes(MES,Rend1,
+                group=Sampling.point,
+                color=Sampling.point))+
+    geom_point(show.legend = T,
+               alpha=.7) +
+    geom_smooth(method= "loess")+
+    theme_few()+ 
+    facet_grid(.~ANO)+
+    #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
+   theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     vjust = 0.5,
+                                     size = 8),
+          axis.text.y = element_text(size = 8))+
+    guides(fill = guide_legend(reverse=F))+
+    scale_color_viridis_d(option= "H", 
+                          name="Sampling Point")+
+    geom_hline(yintercept=3.5, col=2)+
+    ylab("CPUE (Kg/Hr)") +
+    xlab("") +
+  ylim(0, 30)+
+    ggtitle("Rendimiento coquina por año, mes y Punto de Muestreo")
+rendire
+```
+
+Plots distintos solo con 2, 4 , 6 y M
+
+```{r, fig.align="center", warning=FALSE}
+rendire <- ggplot(rend1723 %>% 
+                    filter(Sampling.point %in% c(2,4,6, "M")), 
+               aes(MES,Rend1,
+                group=Sampling.point,
+                color=Sampling.point))+
+    geom_point(show.legend = T,
+               alpha=.7) +
+    geom_smooth(method= "loess",
+                alpha=.2)+
+    theme_few()+ 
+    facet_grid(.~ANO)+
+    #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
+   theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     vjust = 0.5,
+                                     size = 8),
+          axis.text.y = element_text(size = 8))+
+    guides(fill = guide_legend(reverse=F))+
+    scale_color_viridis_d(option= "H", 
+                          name="Sampling Point")+
+    geom_hline(yintercept=3.8, col="black")+
+  geom_hline(yintercept=3.5, col=2)+
+    ylab("CPUE (Kg/Hr)") +
+    xlab("") +
+  ylim(0, 25)+
+    ggtitle("Rendimiento coquina por año, mes y Punto de Muestreo")
+rendire
+```
+
+con rendimiento de 3 horas
+
+Plots distintos solo con 2, 4 , 6 y M
+
+```{r, fig.align="center", warning=FALSE}
+rendire3 <- ggplot(rend1723 %>% 
+                    filter(Sampling.point %in% c(2,4,6, "M")), 
+               aes(MES,Rend,
+                group=Sampling.point,
+                color=Sampling.point))+
+    geom_point(show.legend = T,
+               alpha=.7) +
+    geom_smooth(method= "loess",
+                alpha=.2)+
+    theme_few()+ 
+    facet_grid(.~ANO)+
+    #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
+   theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     vjust = 0.5,
+                                     size = 8),
+          axis.text.y = element_text(size = 8))+
+    guides(fill = guide_legend(reverse=F))+
+    scale_color_viridis_d(option= "H", 
+                          name="Sampling Point")+
+    geom_hline(yintercept=3.8, col="black")+
+  geom_hline(yintercept=3.5, col=2)+
+    ylab("CPUE (Kg/Hr)") +
+    xlab("") +
+  ylim(0, 50)+
+    ggtitle("Rendimiento coquina por año, mes y Punto de Muestreo")
+rendire3
+```
+```{r, fig.align="center", warning=FALSE}
+rendire3 <- ggplot(rend1723 %>% 
+                    filter(Sampling.point %in% c(2,4,6, "M")), 
+               aes(MES,Rend,
+                group=Sampling.point,
+                color=Sampling.point))+
+    geom_point(show.legend = T,
+               alpha=.7) +
+     geom_line(show.legend = T,
+               alpha=.7) +
+    theme_few()+ 
+    facet_grid(.~ANO)+
+    #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
+   theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     vjust = 0.5,
+                                     size = 8),
+          axis.text.y = element_text(size = 8))+
+    guides(fill = guide_legend(reverse=F))+
+    scale_color_viridis_d(option= "H", 
+                          name="Sampling Point")+
+    geom_hline(yintercept=3.8, col="black")+
+  geom_hline(yintercept=3.5, col=2)+
+    ylab("CPUE (Kg/Hr)") +
+    xlab("") +
+  ylim(0, 50)+
+    ggtitle("Rendimiento coquina por año, mes y Punto de Muestreo")
+rendire3
+```
+Por Sampling  point separados
+
+Plots distintos solo con 2, 4 , 6 y M
+
+```{r, fig.align="center", warning=FALSE}
+rendiresep <- ggplot(rend1723 %>% 
+                    filter(Sampling.point %in% c(2,4,6, "M")), 
+               aes(MES,Rend1,
+                group=Sampling.point))+
+    geom_point(show.legend = T,
+               alpha=.7) +
+    geom_smooth(method= "loess",
+                alpha=.2)+
+    theme_few()+ 
+    facet_grid(Sampling.point~ANO)+
+    #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
+   theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     vjust = 0.5,
+                                     size = 8),
+          axis.text.y = element_text(size = 8))+
+    guides(fill = guide_legend(reverse=F))+
+    scale_color_viridis_d(option= "H", 
+                          name="Sampling Point")+
+    geom_hline(yintercept=3.8, col="black")+
+  geom_hline(yintercept=3.5, col=2)+
+    ylab("CPUE (Kg/Hr)") +
+    xlab("") +
+  ylim(0, 25)+
+    ggtitle("Rendimiento coquina por año, mes y Punto de Muestreo")
+rendiresep
+```
 
 # Dudas
 
