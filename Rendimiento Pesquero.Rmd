@@ -57,6 +57,11 @@ library(ggalt)
 library(rnaturalearth)
 library(sf)
 library(psych)
+library(egg)
+library(sjPlot)
+library(correlation)
+library(easystats)
+library(ggpubr)
 ```
 
 # YIELD ANALYSIS (Rendimiento)
@@ -180,7 +185,7 @@ denscom1720g <- denscom1720tot %>%
 
 ```{r warning=FALSE, message=FALSE}
 rend1720 <- ggplot(denscom1720g, 
-               aes(MES,rend1mean,
+               aes(MES,Rend1m,
                 group=mariscador,
                 color=mariscador))+
     geom_point(alpha=.7) +
@@ -435,6 +440,61 @@ rend1723 <- rbind(denscom1720totf,
 
 # Graficas
 
+simple y global
+
+
+```{r fig.height=4}
+grurend1723 <- rend1723 %>% 
+  group_by(ANO, MES) %>% 
+  summarise(MEAN =mean(Rend1))
+
+rendgru <- ggplot(grurend1723 %>% 
+                    filter(ANO>2017), 
+               aes(ANO,MEAN))+
+    geom_point(show.legend = T,
+               alpha=.7) +
+    geom_smooth(method= "lm")+
+    theme_few()+ 
+    theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     vjust = 0.5,
+                                     size = 8),
+          axis.text.y = element_text(size = 8))+
+    guides(fill = guide_legend(reverse=F))+
+    scale_color_viridis_d(option= "H", 
+                          name="Sampling Point")+
+     geom_hline(yintercept=7.6, col="black")+
+  geom_hline(yintercept=3.5, col=2)+
+    ylab("CPUE (Kg/Hr)") +
+    xlab("") +
+  ylim(0, 20)
+rendgru
+
+```
+
+
+
+
+```{r}
+boxCPUE <- ggplot(rend1723,
+                aes(ANO, Rend1,
+                    group=ANO))+
+  facet_wrap(.~Sampling.point,
+             ncol = 5)+
+  geom_boxplot()+
+   geom_hline(yintercept=7.6, col="black")+
+  geom_hline(yintercept=3.5, col=2)+
+  theme_few()+
+   theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     vjust = 0.5,
+                                     size = 8),
+          axis.text.y = element_text(size = 8))+
+  
+   ylab("CPUE (Kg/Hr)") +
+    xlab("") 
+boxCPUE
+```
 
 Plots distintos sampling points
 
@@ -488,12 +548,12 @@ rendire <- ggplot(rend1723 %>%
     guides(fill = guide_legend(reverse=F))+
     scale_color_viridis_d(option= "H", 
                           name="Sampling Point")+
-    geom_hline(yintercept=3.8, col="black")+
+    geom_hline(yintercept=7.6, col="black")+
   geom_hline(yintercept=3.5, col=2)+
     ylab("CPUE (Kg/Hr)") +
     xlab("") +
   ylim(0, 25)+
-    ggtitle("Rendimiento coquina por año, mes y Punto de Muestreo")
+     theme(legend.position = "bottom")
 rendire
 ```
 
@@ -527,7 +587,7 @@ rendire3 <- ggplot(rend1723 %>%
     ylab("CPUE (Kg/Hr)") +
     xlab("") +
   ylim(0, 50)+
-    ggtitle("Rendimiento coquina por año, mes y Punto de Muestreo")
+     theme(legend.position = "bottom")
 rendire3
 ```
 ```{r, fig.align="center", warning=FALSE}
@@ -583,7 +643,7 @@ rendiresep <- ggplot(rend1723 %>%
     guides(fill = guide_legend(reverse=F))+
     scale_color_viridis_d(option= "H", 
                           name="Sampling Point")+
-    geom_hline(yintercept=3.8, col="black")+
+    geom_hline(yintercept=7.6, col="black")+
   geom_hline(yintercept=3.5, col=2)+
     ylab("CPUE (Kg/Hr)") +
     xlab("") +
@@ -591,6 +651,253 @@ rendiresep <- ggplot(rend1723 %>%
     ggtitle("Rendimiento coquina por año, mes y Punto de Muestreo")
 rendiresep
 ```
+
+
+# Estandarización de la CPUE
+
+```{r}
+Cloro <- readRDS("~/IEO/DATA/EDA_Donux_truculus_2023/Cloro.RDS")
+head(Cloro) 
+Cloro <- Cloro %>% 
+  rename(Sampling.point = Site) %>% 
+  mutate(Sampling.point = as.character(Sampling.point),
+         MES = case_when(
+           MES == 1 ~ "January",
+           MES == 2 ~ "February",
+           MES == 3 ~ "March",
+           MES == 4 ~ "April",
+           MES == 5 ~ "May",
+           MES == 6 ~ "June",
+           MES == 7 ~ "July",
+           MES == 8 ~ "August",
+           MES == 9 ~ "September",
+           MES == 10 ~ "October",
+           MES == 11 ~ "November",
+           MES == 12 ~ "December")) %>% 
+  mutate(MES = factor(MES, levels = c("January", 
+                                          "February", 
+                                          "March",
+                                          "April",
+                                          "May",
+                                          "June",
+                                          "July",
+                                          "August",
+                                          "September",
+                                          "October",
+                                          "November", 
+                                          "December")))
+```
+Uno las bases de cloro y rend para la estandarización.
+
+```{r}
+baserend <- merge(Cloro,
+                    rend1723,
+                    by = c("Sampling.point",
+                           "ANO",
+                           "MES"),
+                  all.y = TRUE)
+```
+Cambio a factores
+
+```{r}
+baserend1 <- baserend %>%
+  mutate(ANO = as.factor(ANO),
+         TRIM = as.factor(TRIM),
+         Sampling.point = as.factor(Sampling.point),
+         mariscador = as.factor(mariscador))
+```
+
+Evaluo la distribucion de la variable
+
+### Chequeo distribuciones
+
+Agrego log()
+
+```{r}
+#saco la variable transformada de la CPUE
+baserend1$logrend1 <- ifelse(baserend1$Rend1>0,
+                             log(baserend1$Rend1),NA)
+
+```
+
+```{r}
+bcpue <- ggplot(baserend1,
+                aes(Rend1,
+                    group=ANO))+
+  coord_flip()+
+  geom_boxplot()+
+  theme_few()
+
+
+hcpue <- ggplot(baserend1 ,
+                aes(baserend1$logrend1))+
+  geom_histogram(bins=15, fill=2)+
+  theme_few()
+
+d <- ggarrange(bcpue, hcpue, ncol = 2)
+
+```
+
+
+Normalidad
+
+```{r}
+shapiro.test(baserend1$logrend1)
+```
+
+Ahora lo aplicamos a nuestros datos.
+
+```{r fig.height=5}
+result <- correlation(baserend)
+result %>%
+  summary(redundant=TRUE) %>% 
+  plot(result, show_data = "points")+
+  theme_bw()
+```
+## Modelos
+
+
+```{r}
+mod0 <- glm(logrend1 ~ ANO,
+            family = gaussian(link = "identity"),
+            data = baserend1)
+mod1 <- glm(logrend1 ~ ANO +
+              TRIM,
+            family = gaussian(link = "identity"),
+            data = baserend1)
+#spatial component
+mod2 <- glm(logrend1 ~ ANO +
+              TRIM +
+              Sampling.point,
+            family = gaussian(link = "identity"),
+            data = baserend1)
+mod3 <- glm(logrend1 ~ ANO +
+              TRIM +
+              Sampling.point+
+              mariscador,
+            family = gaussian(link = "identity"),
+            data = baserend1)
+mod4 <- glm(logrend1 ~ ANO +
+              TRIM +
+              Sampling.point+
+              mariscador+
+              MEANCON,
+            family = gaussian(link = "identity"),
+            data = baserend1)
+```
+
+
+```{r}
+rmodelo00 <- c(AIC(mod0),(mod0$null.deviance-mod0$deviance)/mod0$null.deviance)
+rmodelo01 <- c(AIC(mod1),(mod1$null.deviance-mod1$deviance)/mod1$null.deviance)
+rmodelo02 <- c(AIC(mod2),(mod2$null.deviance-mod2$deviance)/mod2$null.deviance)
+rmodelo03 <- c(AIC(mod3),(mod3$null.deviance-mod3$deviance)/mod3$null.deviance)
+rmodelo04 <- c(AIC(mod4),(mod4$null.deviance-mod4$deviance)/mod4$null.deviance)
+```
+
+```{r eval=FALSE}
+resultados <- as.data.frame(rbind(rmodelo00,
+                                  rmodelo01,
+                                  rmodelo02,
+                                  rmodelo03,
+                                  rmodelo04 ))
+
+resultados <- resultados %>% 
+  rename("AIC"=V1,
+         "Deviance"=V2)
+```
+
+```{r}
+check_model(mod2)
+```
+```{r}
+res_glm<-as.numeric(mod2$residuals)
+
+res_hist<-ggplot(as.data.frame(res_glm), aes(x=res_glm)) +
+  geom_histogram(position="identity", bins = 20)+
+  theme_bw()+
+  xlab("Residuos")+
+  ylab("Frecuencia")
+#res_qqnorm<-qqnorm(res_glm)+
+ # qqline(res_glm) 
+
+res_density<-ggdensity(res_glm, res_glm = "", fill = "lightgray", 
+                                title = "") +
+  scale_x_continuous() +
+  stat_overlay_normal_density(color = "red", linetype = "dashed")+
+  xlab("Residuos")+
+  ylab("Densidad")
+res_points<-ggplot(as.data.frame(res_glm), 
+                            aes(y=res_glm, x=(1:length(res_glm)))) +
+  geom_point()+
+  xlab("")+
+  ylab("Residuos")+
+  theme_few()
+ggarrange(res_hist,  res_density, res_points,
+          labels = c("A", "B", "C"),
+          ncol = 3)
+
+```
+extraigo los valores del Modelo `M06`
+
+```{r eval=FALSE }
+coef <- mod2$coefficients[2:6] %>% 
+  data_frame() %>% 
+  mutate(Val=mod2$coefficients[1]-coef$.) 
+
+año <- as.data.frame(c("2019", "2020", "2021", "2022",
+                       "2023"))
+                    
+cpueest <- cbind(año, coef)
+colnames(cpueest) <- c("año", "valor", "CPUE")
+cpueest$Fuente <- c(rep("GLM",nrow(cpueest)))
+```
+
+Tests con funciones de @Ludecke2021
+
+Table with significance level (***).
+```{r}
+#summary(mod4)
+tab_model(mod0, 
+          mod1,
+          mod2, 
+          mod3,
+          mod4,
+          p.style = "stars")
+
+```
+
+Table comparing performance model. 
+```{r warning=F}
+compare_performance(mod0, 
+                    mod1,
+                    mod2,
+                    mod3,
+                    mod4,
+                    rank = TRUE, 
+                    verbose = FALSE)
+```
+```{r warning=FALSE}
+pairs.panels(baserend1 %>% 
+               select(c(1, 3, 4, 9, 11)),
+             smooth = TRUE,      
+             scale = FALSE,      
+             density = TRUE,     
+             ellipses = TRUE,  
+             method = "pearson",
+             pch = 21,           
+             lm = FALSE,        
+             cor = TRUE,         
+             jiggle = FALSE,     
+             factor = 2,        
+             hist.col = 4,       # Color de los histogramas
+             stars = TRUE)
+```
+```{r fig.width=5}
+plot_model(mod2)+
+  theme_few()
+```
+
 
 # Dudas
 

@@ -150,6 +150,7 @@ Manipulo los datos y estimo una media y desviacion por variable
 ```{r}
 meanchl <- ChlData %>% 
   group_by(ANO,
+           MES,
            TRIM,
            Site) %>% 
   summarise(MEANCON = mean(CONCETR), na.rm = TRUE,
