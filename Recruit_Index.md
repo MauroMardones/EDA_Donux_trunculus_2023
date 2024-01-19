@@ -2,7 +2,7 @@
 title: "Indice Reclutamiento D. trunculus"
 subtitle: "Datos Monitoreo poblacional FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "05 January, 2024"
+date:  "19 January, 2024"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -61,6 +61,9 @@ library(sf)
 library(psych)
 ```
 
+# CONTEXTO
+
+En este codigo, se establecen dos formas de estimar el indice de reclutamiento para coquina. El primero es la forma que se ha estado usando desde @Delgado2015. El segundo es una nueva propuesta basada en la prorporcionalidad de individuos basados en los muestreos poblacionales
 
 # INDICE DE RECLUTAMIENTO POBLACIONAL (D15)
 
@@ -500,6 +503,82 @@ x\\
 \end{tabular}}
 \end{table}
 
+# RECRUIT PROPORTION (from sea urchin, Chile)
 
 
+```r
+talla13_23 <- readRDS("tallas13_23.Rdata")
+```
+
+ Calculo el imndice
+ 
+
+```r
+FUN <- function(x)  (sum(x) / length(x)) * 100
+indice_reclutamiento <- talla13_23 %>%
+  filter(sizeE<15,
+         rastro=="POBLACIONAL") %>% 
+  group_by(ANO, MES, Sampling.point) %>%
+  summarize(PROP = n() / nrow(talla13_23)*100) %>% 
+  mutate(PROPLOG =log(PROP))
+```
+ Veo los datos crudos  con la linea como media del cuantil de los datos
+
+```r
+indseg <- ggplot(indice_reclutamiento %>% 
+                   filter(Sampling.point %in% c(2, 4, 6)) %>% 
+                   drop_na(), 
+       aes(PROP)) +
+  geom_histogram(bins = 10) +
+  facet_grid(Sampling.point~ANO) +
+  theme_few()+
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+   labs(x = "", 
+        y = "Índice de Reclutamiento")
+indseg
+```
+
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-17-1.jpeg" style="display: block; margin: auto;" />
+Ahora estandarizo entre - y 1
+
+
+```r
+a <- -1  # Límite inferior del rango objetivo
+b <- 1   # Límite superior del rango objetivo
+
+# Calcular el valor mínimo y máximo de tus datos
+min_x <- min(indice_reclutamiento$PROPLOG)
+max_x <- max(indice_reclutamiento$PROPLOG)
+
+# Aplicar la fórmula de normalización
+indice_reclutamiento$PROPLOG2 <- ((indice_reclutamiento$PROPLOG- min_x) / (max_x - min_x)) * (b - a) + a
+```
+
+
+
+```r
+indseg3 <- ggplot(indice_reclutamiento  %>%
+                filter(Sampling.point %in% c(2, 4, 6)) %>% 
+                  drop_na(), 
+       aes(x = factor(MES), 
+           y = PROPLOG2,
+           fill=PROPLOG2 > 0)) +
+  geom_bar(stat = "identity",
+           alpha=0.85)  +
+  scale_fill_manual(values = c("black", "red"),
+                    labels = c("Negativo", "Positivo"),
+                    name="IR") +
+  facet_grid(Sampling.point~ANO) +
+  geom_hline(yintercept = 0, color = "black")+
+  #scale_x_discrete(breaks = seq(from = 1996, to = 2022, by = 4))+
+  theme_few()+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.position = "bottom")+
+  labs(x = "", 
+        y = "IR")+
+  ylim(-1,1)
+indseg3
+```
+
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
 

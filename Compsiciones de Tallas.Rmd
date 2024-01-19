@@ -277,6 +277,7 @@ names(sizep2013) # poblacional hartos meses
 names(sizec12_13) # dic comercial
 names(sizep01_13) #enero
 ```
+
 ```{r}
 size2013 <- bind_rows(sizep01_13,
                   sizec03_13,
