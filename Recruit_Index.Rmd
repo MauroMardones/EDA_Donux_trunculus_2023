@@ -367,7 +367,6 @@ talla13_23 <- readRDS("tallas13_23.Rdata")
  Calculo el imndice
  
 ```{r}
-FUN <- function(x)  (sum(x) / length(x)) * 100
 indice_reclutamiento <- talla13_23 %>%
   filter(sizeE<15,
          rastro=="POBLACIONAL") %>% 
@@ -405,7 +404,7 @@ indice_reclutamiento$PROPLOG2 <- ((indice_reclutamiento$PROPLOG- min_x) / (max_x
 
 
 ```{r}
-indseg3 <- ggplot(indice_reclutamiento  %>%
+indseg3 <- ggplot(indice_reclutamiento %>% 
                 filter(Sampling.point %in% c(2, 4, 6)) %>% 
                   drop_na(), 
        aes(x = factor(MES), 
@@ -416,6 +415,7 @@ indseg3 <- ggplot(indice_reclutamiento  %>%
   scale_fill_manual(values = c("black", "red"),
                     labels = c("Negativo", "Positivo"),
                     name="IR") +
+  #facet_wrap(.~ANO, ncol=10) +
   facet_grid(Sampling.point~ANO) +
   geom_hline(yintercept = 0, color = "black")+
   #scale_x_discrete(breaks = seq(from = 1996, to = 2022, by = 4))+
