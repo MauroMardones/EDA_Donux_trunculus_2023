@@ -64,6 +64,7 @@ library(easystats)
 library(ggpubr)
 ```
 
+
 # YIELD ANALYSIS (Rendimiento)
 
 Aca se trabaja con los datos del muestreo `COMERCIAL`. El objetivo es explorar laas bases de datos desde el 2013.
