@@ -208,7 +208,7 @@ Aqui trataré de replicar los rresultados de los Informes de MD.
 
 Primer calcularemos la proporcion de ind bajo los 15 mm con `sizeall2`
 
-## Data 2020-2023
+## Base Tallas
 
 ```{r}
 size2021 <- read_excel(here("Data", 
@@ -269,6 +269,7 @@ D15 <- size_21_23 %>%
 ```
 representación con barPlot
 
+## Graficas
 
 ```{r}
 D15plot <- ggplot(D15, aes(d15, Sampling.point,
@@ -334,7 +335,7 @@ D15n1 <- left_join(denspobtot2, D15n,
 
 
 
-Calculo el reclutamiento, es decir, n ind /`track_m`* 0.045
+Calculo el reclutamiento, es decir, n ind /`track_m`* 0.045 para el ultimo muestreo
 
 ```{r}
 D15n2 <- D15n1 %>% 
@@ -342,10 +343,16 @@ D15n2 <- D15n1 %>%
   ungroup() %>%
   mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
   arrange(ANO.x, MES.x) %>% 
-  filter(ANO.x==2023,
-         MES.x==12) %>%
+  filter(ANO.x==2024,
+         MES.x==1) %>%
   group_by(Sampling.point.x) %>%
   summarize(across(num_individuos_m2, mean))
+
+```
+
+Obtengo el valor para el informe
+
+```{r}
 D15n2
 ```
 
@@ -368,7 +375,7 @@ kbl(D15n2$Sampling.point.x, D15n2$num_individuos_m2,
 talla13_23 <- readRDS("tallas13_23.Rdata")
 ```
 
- Calculo el imndice
+Cálculo el índice
  
 ```{r}
 indice_reclutamiento <- talla13_23 %>%
