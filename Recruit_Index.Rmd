@@ -79,7 +79,11 @@ dens2022pob <- read_excel(here("Data", "Posterior 2020",
 dens2023pob <- read_excel(here("Data", "Posterior 2020", 
                                "Data_sample_FEMP_04_2023.xlsx"),
                        sheet = "Data_POBL")
+dens2024pob <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2024.xlsx"),
+                       sheet = "Data_POBL")
 ```
+
 
 Visualizo los datos y su estructura. Para replicar los procesos de calculos en las hojas excel, usaremos solo las columnas con datos crudos. Es decir, desde `Date` hasta `MCSWsub`, y algunas columnas finales. La idea es hacer los cálculos en el codigo para tener la secuencia y replicar los resultados informados por @Delgado2023. 
 
