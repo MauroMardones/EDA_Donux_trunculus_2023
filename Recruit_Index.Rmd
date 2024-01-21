@@ -133,13 +133,19 @@ dens2022pobf <- dens2022pob %>%
 dens2023pobf <- dens2023pob %>% 
   select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
   rename(ID_codificado_punto=ID)
+dens2024pobf <- dens2024pob %>% 
+  select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
+  rename(ID_codificado_punto=ID)
 
 #compruebo si hay columnas iguales
 nombres_iguales_pob <- identical(names(dens2021pobf),
                              names(dens2023pobf)) && identical(names(dens2021pobf), 
                                                                names(dens2022pobf))
 #junto la base
-denspob2123f <- rbind(dens2021pobf, dens2022pobf, dens2023pobf)
+denspob2123f <- rbind(dens2021pobf, 
+                      dens2022pobf, 
+                      dens2023pobf,
+                      dens2024pobf)
 ```
 
 
@@ -225,7 +231,12 @@ size2023 <- read_excel(here("Data",
                             "Posterior 2020",
                             "Data_size_Coquina_2023.xlsx"),  
                        sheet = "Coquina_Donax") %>% 
-  select(-c(1, 2))  
+  select(-c(1, 2)) 
+size2024 <- read_excel(here("Data", 
+                            "Posterior 2020",
+                            "Data_size_Coquina_2024.xlsx"),  
+                       sheet = "Coquina_Donax") %>% 
+  select(-c(1, 2)) 
 ```
 
 
@@ -239,7 +250,8 @@ Now, we handling data 2021-2023. Same columns data 2017-2020
 ```{r}
 size_21_23 <- rbind(size2021,
                     size2022,
-                    size2023)
+                    size2023,
+                    size2024)
 ```
 Separate `Date` column
 
@@ -318,7 +330,6 @@ Primero calculo en n de ind medidos y luego junto con base que tiene medida del 
 
 ```{r}
 D15n <- size_21_23 %>% 
-  drop_na() %>%
   group_by(ANO, 
            MES, 
            Sampling.point, 
