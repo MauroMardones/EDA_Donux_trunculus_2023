@@ -2,7 +2,7 @@
 title: "Indice Reclutamiento D. trunculus"
 subtitle: "Datos Monitoreo poblacional FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "19 January, 2024"
+date:  "22 January, 2024"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -82,7 +82,11 @@ dens2022pob <- read_excel(here("Data", "Posterior 2020",
 dens2023pob <- read_excel(here("Data", "Posterior 2020", 
                                "Data_sample_FEMP_04_2023.xlsx"),
                        sheet = "Data_POBL")
+dens2024pob <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2024.xlsx"),
+                       sheet = "Data_POBL")
 ```
+
 
 Visualizo los datos y su estructura. Para replicar los procesos de calculos en las hojas excel, usaremos solo las columnas con datos crudos. Es decir, desde `Date` hasta `MCSWsub`, y algunas columnas finales. La idea es hacer los cálculos en el codigo para tener la secuencia y replicar los resultados informados por @Delgado2023. 
 
@@ -133,13 +137,19 @@ dens2022pobf <- dens2022pob %>%
 dens2023pobf <- dens2023pob %>% 
   select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
   rename(ID_codificado_punto=ID)
+dens2024pobf <- dens2024pob %>% 
+  select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
+  rename(ID_codificado_punto=ID)
 
 #compruebo si hay columnas iguales
 nombres_iguales_pob <- identical(names(dens2021pobf),
                              names(dens2023pobf)) && identical(names(dens2021pobf), 
                                                                names(dens2022pobf))
 #junto la base
-denspob2123f <- rbind(dens2021pobf, dens2022pobf, dens2023pobf)
+denspob2123f <- rbind(dens2021pobf, 
+                      dens2022pobf, 
+                      dens2023pobf,
+                      dens2024pobf)
 ```
 
 
@@ -181,6 +191,7 @@ table(denspob2123f$ANO, denspob2123f$MES)
 ##   2021 12  6  5 12  6  6 11  5  6 11  6 12
 ##   2022  6  6 12  6  6  6 18  6  0  6 12  6
 ##   2023  6  6  5  6  6  6  6  6  6  6  6  6
+##   2024  6  0  0  0  0  0  0  0  0  0  0  0
 ```
 
 
@@ -236,12 +247,12 @@ tail(denspobtot2)
 ## # Groups:   Beach, Sampling.point, ANO, MES, DIA [3]
 ##     ANO   MES   DIA Date                Beach    Sampling.point m_track tow_time
 ##   <dbl> <dbl> <dbl> <dttm>              <chr>             <dbl>   <dbl>    <dbl>
-## 1  2023    12    13 2023-12-13 00:00:00 Donana_…              2     163        5
-## 2  2023    12    13 2023-12-13 00:00:00 Donana_…              2     163        5
-## 3  2023    12    13 2023-12-13 00:00:00 Donana_…              4     195        5
-## 4  2023    12    13 2023-12-13 00:00:00 Donana_…              4     195        5
-## 5  2023    12    13 2023-12-13 00:00:00 Donana_…              6     406        5
-## 6  2023    12    13 2023-12-13 00:00:00 Donana_…              6     406        5
+## 1  2024     1    15 2024-01-15 00:00:00 Donana_…              2      73        5
+## 2  2024     1    15 2024-01-15 00:00:00 Donana_…              2      73        5
+## 3  2024     1    15 2024-01-15 00:00:00 Donana_…              4      76        4
+## 4  2024     1    15 2024-01-15 00:00:00 Donana_…              4      76        4
+## 5  2024     1    15 2024-01-15 00:00:00 Donana_…              6      78        4
+## 6  2024     1    15 2024-01-15 00:00:00 Donana_…              6      78        4
 ## # ℹ 38 more variables: Latº <dbl>, Latmin <dbl>, Longº <dbl>, Longmin <dbl>,
 ## #   Lat <dbl>, Long <dbl>, rastro <chr>, mariscador <chr>, SW <dbl>,
 ## #   SWsub <dbl>, CSWsub <dbl>, MCSWsub <dbl>, DCSWsub <dbl>, Categoria <chr>,
@@ -255,7 +266,7 @@ Aqui trataré de replicar los rresultados de los Informes de MD.
 
 Primer calcularemos la proporcion de ind bajo los 15 mm con `sizeall2`
 
-## Data 2020-2023
+## Base Tallas
 
 
 ```r
@@ -273,7 +284,12 @@ size2023 <- read_excel(here("Data",
                             "Posterior 2020",
                             "Data_size_Coquina_2023.xlsx"),  
                        sheet = "Coquina_Donax") %>% 
-  select(-c(1, 2))  
+  select(-c(1, 2)) 
+size2024 <- read_excel(here("Data", 
+                            "Posterior 2020",
+                            "Data_size_Coquina_2024.xlsx"),  
+                       sheet = "Coquina_Donax") %>% 
+  select(-c(1, 2)) 
 ```
 
 
@@ -288,7 +304,8 @@ Now, we handling data 2021-2023. Same columns data 2017-2020
 ```r
 size_21_23 <- rbind(size2021,
                     size2022,
-                    size2023)
+                    size2023,
+                    size2024)
 ```
 Separate `Date` column
 
@@ -312,7 +329,7 @@ glimpse(size_21_23)
 ```
 
 ```
-## Rows: 48,433
+## Rows: 49,048
 ## Columns: 12
 ## $ Date                   <dttm> 2021-01-12, 2021-01-12, 2021-01-12, 2021-01-12…
 ## $ Beach                  <chr> "Donana_sur", "Donana_sur", "Donana_sur", "Dona…
@@ -338,6 +355,7 @@ table(size_21_23$ANO, size_21_23$MES)
 ##   2021 3103 1600  897 2399  784 1384 2846  819 1384 2389 1552 2814
 ##   2022 1374 1156 2560 1673 1013 1857 2577  868    0  996 2619  733
 ##   2023  915 1040  866  857  732 1068  618  655  639  384  490  772
+##   2024  615    0    0    0    0    0    0    0    0    0    0    0
 ```
 
 ```r
@@ -345,7 +363,7 @@ size_21_23
 ```
 
 ```
-## # A tibble: 48,433 × 12
+## # A tibble: 49,048 × 12
 ##    Date                Beach   Sampling.point rastro   CAT Categoria  size sizeE
 ##    <dttm>              <chr>   <chr>          <chr>  <dbl> <chr>     <dbl> <dbl>
 ##  1 2021-01-12 00:00:00 Donana… 2              POBLA…     2 g          22.4    22
@@ -358,7 +376,7 @@ size_21_23
 ##  8 2021-01-12 00:00:00 Donana… 2              POBLA…     2 g          24.0    24
 ##  9 2021-01-12 00:00:00 Donana… 2              POBLA…     2 g          22.4    22
 ## 10 2021-01-12 00:00:00 Donana… 2              POBLA…     2 g          22.5    22
-## # ℹ 48,423 more rows
+## # ℹ 49,038 more rows
 ## # ℹ 4 more variables: ID_codificado_muestreo <chr>, DIA <int>, MES <dbl>,
 ## #   ANO <dbl>
 ```
@@ -376,6 +394,7 @@ D15 <- size_21_23 %>%
 ```
 representación con barPlot
 
+## Graficas
 
 
 ```r
@@ -431,7 +450,6 @@ Primero calculo en n de ind medidos y luego junto con base que tiene medida del 
 
 ```r
 D15n <- size_21_23 %>% 
-  drop_na() %>%
   group_by(ANO, 
            MES, 
            Sampling.point, 
@@ -448,7 +466,7 @@ D15n1 <- left_join(denspobtot2, D15n,
 
 
 
-Calculo el reclutamiento, es decir, n ind /`track_m`* 0.045
+Calculo el reclutamiento, es decir, n ind /`track_m`* 0.045 para el ultimo muestreo
 
 
 ```r
@@ -457,10 +475,15 @@ D15n2 <- D15n1 %>%
   ungroup() %>%
   mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
   arrange(ANO.x, MES.x) %>% 
-  filter(ANO.x==2023,
-         MES.x==12) %>%
+  filter(ANO.x==2024,
+         MES.x==1) %>%
   group_by(Sampling.point.x) %>%
   summarize(across(num_individuos_m2, mean))
+```
+Obtengo el valor para el informe
+
+
+```r
 D15n2
 ```
 
@@ -468,10 +491,43 @@ D15n2
 ## # A tibble: 3 × 2
 ##   Sampling.point.x num_individuos_m2
 ##              <dbl>             <dbl>
-## 1                2             14.8 
-## 2                4             12.3 
-## 3                6              5.93
+## 1                2              20.8
+## 2                4              20.0
+## 3                6              19.5
 ```
+Ahora una grafica para todos los años meses y puntos
+
+
+```r
+D15n3 <- D15n1 %>% 
+  group_by(ANO.x, MES.x, Sampling.point.x, Categoria.x) %>% 
+  ungroup() %>%
+  mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
+  arrange(ANO.x, MES.x) %>% 
+  group_by(Sampling.point.x, ANO.x, MES.x) %>%
+  summarize(across(num_individuos_m2, mean))
+```
+
+```r
+plotD15 <- ggplot(D15n3 %>% 
+                    drop_na(), 
+                  aes(MES.x,num_individuos_m2, 
+                     
+                      color=Sampling.point.x))+
+  geom_point()+
+  geom_smooth(col=2)+
+  facet_wrap(.~ANO.x, ncol=4)+
+  scale_color_viridis_c()+
+  scale_x_continuous(breaks = seq(from = 1, to = 12, by = 2))+
+  theme_few()+
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 90, hjust = 1))
+plotD15
+```
+
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-16-1.jpeg" style="display: block; margin: auto;" />
+
+
 
 
 
@@ -488,7 +544,7 @@ kbl(D15n2$Sampling.point.x, D15n2$num_individuos_m2,
 
 \begin{table}
 
-\caption{\label{tab:unnamed-chunk-14}D15 Mes de Diciembre 2023}
+\caption{\label{tab:unnamed-chunk-17}D15 Mes de Diciembre 2023}
 \centering
 \resizebox{\linewidth}{!}{
 \fontsize{8}{10}\selectfont
@@ -510,11 +566,10 @@ x\\
 talla13_23 <- readRDS("tallas13_23.Rdata")
 ```
 
- Calculo el imndice
+Cálculo el índice
  
 
 ```r
-FUN <- function(x)  (sum(x) / length(x)) * 100
 indice_reclutamiento <- talla13_23 %>%
   filter(sizeE<15,
          rastro=="POBLACIONAL") %>% 
@@ -538,7 +593,7 @@ indseg <- ggplot(indice_reclutamiento %>%
 indseg
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-17-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
 Ahora estandarizo entre - y 1
 
 
@@ -557,7 +612,7 @@ indice_reclutamiento$PROPLOG2 <- ((indice_reclutamiento$PROPLOG- min_x) / (max_x
 
 
 ```r
-indseg3 <- ggplot(indice_reclutamiento  %>%
+indseg3 <- ggplot(indice_reclutamiento %>% 
                 filter(Sampling.point %in% c(2, 4, 6)) %>% 
                   drop_na(), 
        aes(x = factor(MES), 
@@ -568,6 +623,7 @@ indseg3 <- ggplot(indice_reclutamiento  %>%
   scale_fill_manual(values = c("black", "red"),
                     labels = c("Negativo", "Positivo"),
                     name="IR") +
+  #facet_wrap(.~ANO, ncol=10) +
   facet_grid(Sampling.point~ANO) +
   geom_hline(yintercept = 0, color = "black")+
   #scale_x_discrete(breaks = seq(from = 1996, to = 2022, by = 4))+
@@ -580,5 +636,5 @@ indseg3 <- ggplot(indice_reclutamiento  %>%
 indseg3
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-22-1.jpeg" style="display: block; margin: auto;" />
 

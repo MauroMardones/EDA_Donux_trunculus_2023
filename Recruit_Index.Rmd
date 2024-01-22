@@ -360,12 +360,40 @@ D15n2 <- D15n1 %>%
   summarize(across(num_individuos_m2, mean))
 
 ```
-
 Obtengo el valor para el informe
 
 ```{r}
 D15n2
 ```
+Ahora una grafica para todos los años meses y puntos
+
+```{r}
+D15n3 <- D15n1 %>% 
+  group_by(ANO.x, MES.x, Sampling.point.x, Categoria.x) %>% 
+  ungroup() %>%
+  mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
+  arrange(ANO.x, MES.x) %>% 
+  group_by(Sampling.point.x, ANO.x, MES.x) %>%
+  summarize(across(num_individuos_m2, mean))
+```
+```{r}
+plotD15 <- ggplot(D15n3 %>% 
+                    drop_na(), 
+                  aes(MES.x,num_individuos_m2, 
+                     
+                      color=Sampling.point.x))+
+  geom_point()+
+  geom_smooth(col=2)+
+  facet_wrap(.~ANO.x, ncol=4)+
+  scale_color_viridis_c()+
+  scale_x_continuous(breaks = seq(from = 1, to = 12, by = 2))+
+  theme_few()+
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 90, hjust = 1))
+plotD15
+```
+
+
 
 
 
