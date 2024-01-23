@@ -87,6 +87,7 @@ playas <- st_read('~/IEO/DATA/Shapefiles_Andalucia/playas.shp')
 lito <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_02_Litologia.shp')
 hidro <- st_read('~/IEO/DATA/Shapefiles_Andalucia/red_hidrografica.shp')
 cuencas <- st_read('~/IEO/DATA/Shapefiles_Andalucia/cuencas.shp')
+costa <- st_read('~/IEO/DATA/Shapefiles_Andalucia/costa_proyectada.shp')
 ```
 
 
@@ -102,6 +103,7 @@ portug1 <- st_transform(portug, "+init=epsg:4326")
 cuencas1 <- st_transform(cuencas, "+init=epsg:4326")
 #lmarino1 <- st_transform(lmarino, "+init=epsg:4326")
 hidro1 <- st_transform(hidro, "+init=epsg:4326")
+costa1 <- st_transform(costa, "+init=epsg:4326")
 #chile1 <- st_transform(chile, "+init=epsg:4326")
 ```
 
@@ -109,8 +111,8 @@ Un mapa de prueba
  
 ```{r warning=FALSE}
 mas <- ggplot() +
-  geom_sf(data = spain1) +
-  geom_sf(data = portug1) +
+  geom_sf(data = costa1, fill="white") +
+  geom_sf(data = portug1, fill="white") +
   geom_sf(data = zonapro1, aes(fill=NAME_1)) +
   # geom_sf(data = fisicomar1, alpha=0.1,
   #         linetype=5) +
