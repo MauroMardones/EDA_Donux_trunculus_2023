@@ -32,7 +32,6 @@ rm(list = ls())
 knitr::opts_chunk$set(echo = TRUE,
                       message = FALSE,
                       warning = FALSE,
-                      fig.align = 'center',
                       dev = 'jpeg',
                       dpi = 300, 
                       fig.align='center')
@@ -90,7 +89,7 @@ cuencas <- st_read('~/IEO/DATA/Shapefiles_Andalucia/cuencas.shp')
 costa <- st_read('~/IEO/DATA/Shapefiles_Andalucia/costa_proyectada.shp')
 ```
 
-
+## Transforma data
 ```{r message=FALSE, warning=FALSE}
 costandalucia1 <- st_transform(costandalucia, "+init=epsg:4326")
 zonapro1 <- st_transform(zonapro, "+init=epsg:4326")
@@ -107,13 +106,13 @@ costa1 <- st_transform(costa, "+init=epsg:4326")
 #chile1 <- st_transform(chile, "+init=epsg:4326")
 ```
 
-Un mapa de prueba
+# Mapa
  
 ```{r warning=FALSE}
 mas <- ggplot() +
   geom_sf(data = costa1, fill="white") +
   geom_sf(data = portug1, fill="white") +
-  geom_sf(data = zonapro1, aes(fill=NAME_1)) +
+  geom_sf(data = zonapro1, aes(fill=ZONA)) +
   # geom_sf(data = fisicomar1, alpha=0.1,
   #         linetype=5) +
   scale_fill_viridis_d(option="H",
@@ -123,7 +122,7 @@ mas <- ggplot() +
   ylab(expression(paste(Latitude^o,~'S')))+
   ggrepel::geom_label_repel(
     data = zonapro1,
-    aes(label = NAME_1, geometry = geometry),
+    aes(label = ZONA, geometry = geometry),
     stat = "sf_coordinates",
     min.segment.length = ,
     colour = "black",
@@ -138,7 +137,7 @@ mas <- ggplot() +
 mas
 ```
 
-
+# Agragar indicadores
  
 Agregar Data Frame con Puntos de Muestreo
 
