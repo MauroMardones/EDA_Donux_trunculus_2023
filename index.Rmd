@@ -150,7 +150,7 @@ Cada componente y su rutina de estandarización estan detallas en los siguientes
 - [Rendimiento Pesquero](Rendimiento-Pesquero.html)
 - [Correlaciones ambientales](Correlaciones-variables-poblacionales-y-ambientales.html)
 - [Desembarques](Rendimiento-pesquero.html)
-- [Mapas](Rendimiento-pesuero.html)
+- [Mapas](Mapas.html)
 - [Indice de reclutamiento D15](Recruit_Index.html)
 
 
