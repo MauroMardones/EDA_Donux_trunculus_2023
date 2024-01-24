@@ -478,3 +478,34 @@ indseg3 <- ggplot(indice_reclutamiento %>%
 indseg3
 ```
 
+## Dudas
+
+Existe un archivo que tiene datos de `D15` previos al 2020 y son valores extrañamente menores.
+
+
+```{r}
+D15duda <- read_excel("Data/Anterior a 2020/densidad_reclutamiento_2017_2018_2019_2020.xlsx")
+```
+```{r}
+summary(D15duda$D15)
+
+D15duda <- D15duda %>%
+  mutate(
+    DIA = day(month...7),
+    MES = month(month...7),
+    ANO = year(month...7)
+  )
+```
+
+
+```{r warning=FALSE}
+duda <- ggplot(D15duda,aes(MES, D15))+
+  geom_point()+
+  geom_smooth(method= "lm", col=2,
+              se=FALSE)+
+  facet_grid(ANO~Sampling.point)+
+  theme_few()
+duda
+```
+
+

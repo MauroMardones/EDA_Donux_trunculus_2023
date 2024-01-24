@@ -2,7 +2,7 @@
 title: "Indice Reclutamiento D. trunculus"
 subtitle: "Datos Monitoreo poblacional FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "22 January, 2024"
+date:  "24 January, 2024"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -637,4 +637,47 @@ indseg3
 ```
 
 <img src="Recruit_Index_files/figure-html/unnamed-chunk-22-1.jpeg" style="display: block; margin: auto;" />
+
+## Dudas
+
+Existe un archivo que tiene datos de `D15` previos al 2020 y son valores extrañamente menores.
+
+
+
+```r
+D15duda <- read_excel("Data/Anterior a 2020/densidad_reclutamiento_2017_2018_2019_2020.xlsx")
+```
+
+```r
+summary(D15duda$D15)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+##  0.0000  0.2917  1.4998  5.0384  5.6600 82.8023     231
+```
+
+```r
+D15duda <- D15duda %>%
+  mutate(
+    DIA = day(month...7),
+    MES = month(month...7),
+    ANO = year(month...7)
+  )
+```
+
+
+
+```r
+duda <- ggplot(D15duda,aes(MES, D15))+
+  geom_point()+
+  geom_smooth(method= "lm", col=2,
+              se=FALSE)+
+  facet_grid(ANO~Sampling.point)+
+  theme_few()
+duda
+```
+
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-25-1.jpeg" style="display: block; margin: auto;" />
+
 
