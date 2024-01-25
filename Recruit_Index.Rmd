@@ -67,7 +67,11 @@ En este codigo, se establecen dos formas de estimar el indice de reclutamiento p
 
 ## Bases de Densidades
 
-Recordar que las bases de densidades previas al 2021 estan en la misma base que las longitudes
+Recordar que las bases de densidades previas al 2021 estan en la misma base que las longitudes. pero he encontrado un archivo que tiene una sintesis
+
+```{r}
+dens17_20 <- read_excel("Data/Anterior a 2020/densidad_reclutamiento_2017_2018_2019_2020.xlsx")
+```
 
 ```{r}
 dens2021pob <- read_excel(here("Data", "Posterior 2020", 
