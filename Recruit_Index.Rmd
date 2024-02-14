@@ -359,7 +359,7 @@ D15n2 <- D15n1 %>%
   mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
   arrange(ANO.x, MES.x) %>% 
   filter(ANO.x==2024,
-         MES.x==1) %>%
+         MES.x==2) %>%
   group_by(Sampling.point.x) %>%
   summarize(across(num_individuos_m2, mean))
 
