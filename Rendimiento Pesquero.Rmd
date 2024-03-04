@@ -213,7 +213,7 @@ rend1720
 
 ## 2021 y 2023
 
-```{r}
+```{r warning=FALSE}
 dens2021com <- read_excel(here("Data", "Posterior 2020", 
                                "Data_sample_FEMP_04_2021.xlsx"),
                        sheet = "DATA_COM")
@@ -223,38 +223,44 @@ dens2022com <- read_excel(here("Data", "Posterior 2020",
 dens2023com <- read_excel(here("Data", "Posterior 2020", 
                                "Data_sample_FEMP_04_2023.xlsx"),
                        sheet = "DATA_COM")
+dens2024com <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2024.xlsx"),
+                       sheet = "DATA_COM")
 ```
 
 
 ```{r}
 # Comercial
 dens2021comf <- dens2021com %>% 
-  select(2:19, 24, 28:30, 33, 34, 36, 37:40, 42:43)
+  select(2:19, 24, 28:30, 33, 34, 36, 37, 39, 40, 42:43)
 dens2022comf <- dens2022com %>% 
-  select(2:19, 24, 28:30, 33, 34, 36, 37, 38, 39:42)
+  select(2:19, 24, 28:30, 33, 34, 36, 37, 39:42)
 dens2023comf <- dens2023com %>% 
-  select(2:19, 24, 29:31, 34, 35, 37, 38, 39, 40:43) 
+  select(2:19, 24, 29:31, 34, 35, 37, 38, 40:43) 
+dens2024comf <- dens2024com %>% 
+  select(2:19, 24, 29:31, 34, 35, 37, 38, 40:43) 
 #compruebo si hay columnas iguales
 nombres_iguales_com <- identical(names(dens2021comf),
-                             names(dens2023comf)) && identical(names(dens2021comf), 
-                                                               names(dens2022comf))
+                             names(dens2024comf))
+                                                   
+         
 #junto la base
-dens2123comf <- rbind(dens2021comf, 
-                      dens2022comf, 
-                      dens2023comf)
+dens2124comf <- rbind(dens2021comf, 
+                      dens2022comf,
+                      dens2023comf,
+                      dens2024comf)
 ```
 
 ## Separate `Date` column
 
 ```{r}
-realdate <- as.Date(dens2123comf$Date, format="%Y-%M-%D")
-dfdate <- data.frame(Date=realdate)
-ANO=as.numeric (format(realdate,"%Y"))
-MES=as.numeric (format(realdate,"%m"))
-DIA=as.numeric (format(realdate,"%d"))
-dens2123comf<-cbind(ANO,MES,DIA,dens2123comf)
-colnames(dens2123comf)
-table(dens2123comf$ANO)
+dens2124comf <- dens2124comf %>%
+  mutate(ANO = year(Date),
+         MES = month(Date),
+         DIA = day(Date))
+
+table(dens2124comf$ANO, dens2124comf$MES)
+table(dens2124comf$ANO)
 ```
 
 ## Calculo variables
@@ -277,7 +283,7 @@ Al igual que para `POBLACIONAL`, calculamos algunas variables de acuerdo a la Fi
 pproceder a los calculos para calcular las variables poblacionales de interés, en este caso Densidad, Abundancia y Biomasa;
 
 ```{r}
-denscomtot <- dens2123comf %>% 
+denscomtot <- dens2124comf %>% 
   mutate(fps = SW /SWsub,
          CSW = CSWsub * fps,
          CMSW= CMSWsub * fps,
@@ -329,7 +335,7 @@ rend1 <- ggplot(denscomtot,
     geom_smooth(method= "loess")+
     theme_few()+ 
     facet_grid(MES~Beach)+
-    scale_x_continuous(breaks = seq(from = 2021, to = 2023, by = 1))+
+    scale_x_continuous(breaks = seq(from = 2021, to = 2024, by = 1))+
    theme(axis.text.x = element_text(angle = 90,
                                      hjust = 1,
                                     vjust = 0.5,
@@ -444,7 +450,7 @@ rend1723 <- rbind(denscom1720totf,
 simple y global
 
 
-```{r fig.height=4}
+```{r}
 grurend1723 <- rend1723 %>% 
   group_by(ANO, MES) %>% 
   summarise(MEAN =mean(Rend1))
@@ -537,7 +543,8 @@ rendire <- ggplot(rend1723 %>%
     geom_point(show.legend = T,
                alpha=.7) +
     geom_smooth(method= "loess",
-                alpha=.2)+
+                alpha=.2,
+                se=FALSE)+
     theme_few()+ 
     facet_grid(.~ANO)+
     #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
@@ -547,7 +554,7 @@ rendire <- ggplot(rend1723 %>%
                                      size = 8),
           axis.text.y = element_text(size = 8))+
     guides(fill = guide_legend(reverse=F))+
-    scale_color_viridis_d(option= "H", 
+    scale_color_viridis_d(option= "D", 
                           name="Sampling Point")+
     geom_hline(yintercept=7.6, col="black")+
   geom_hline(yintercept=3.5, col=2)+

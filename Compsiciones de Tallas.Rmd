@@ -613,6 +613,12 @@ size2023 <- read_excel(here("Data",
                             "Data_size_Coquina_2023.xlsx"),  
                        sheet = "Coquina_Donax") %>% 
   select(-c(1, 2))  
+
+size2024 <- read_excel(here("Data", 
+                            "Posterior 2020",
+                            "Data_size_Coquina_2024.xlsx"),  
+                       sheet = "Coquina_Donax") %>% 
+  select(-c(1, 2)) 
 ```
 
 
@@ -624,20 +630,21 @@ Figure \@ref(fig:edaplot1)
 Now, we handling data 2021-2023. Same columns data 2017-2020
 
 ```{r}
-size_21_23 <- rbind(size2021,
+size_21_24 <- rbind(size2021,
                     size2022,
-                    size2023)
+                    size2023,
+                    size2024)
 ```
 Separate `Date` column
 
 ```{r}
-size_21_23<- size_21_23 %>%
+size_21_24<- size_21_24 %>%
   mutate(
     DIA = day(Date),
     MES = month(Date),
     ANO = year(Date)
   )
-unique(size_21_23$rastro)
+unique(size_21_24$rastro)
 ```
 
 ## Unir los datos desde el 2013 al 2023
@@ -648,7 +655,7 @@ sizeall <- rbind(size2013,
                  size14_15,
                  size2016,
                  size_17_20,
-                 size_21_23) 
+                 size_21_24) 
 ```
 
 check dimension. ahora la base completa tiente 21 mil registros
