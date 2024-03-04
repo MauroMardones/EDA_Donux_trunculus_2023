@@ -489,6 +489,7 @@ indseg3 <- ggplot(indice_reclutamiento %>%
         y = "IR")+
   ylim(-1,1)
 indseg3
+
 ```
 
 ## Dudas
