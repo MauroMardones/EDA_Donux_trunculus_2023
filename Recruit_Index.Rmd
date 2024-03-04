@@ -141,6 +141,7 @@ dens2024pobf <- dens2024pob %>%
   select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
   rename(ID_codificado_punto=ID)
 
+
 #compruebo si hay columnas iguales
 nombres_iguales_pob <- identical(names(dens2021pobf),
                              names(dens2023pobf)) && identical(names(dens2021pobf), 
