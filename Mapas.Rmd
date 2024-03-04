@@ -137,6 +137,7 @@ mas <- ggplot() +
 mas
 ```
 
+
 # Agragar indicadores
  
 Agregar Data Frame con Puntos de Muestreo
