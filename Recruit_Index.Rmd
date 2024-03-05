@@ -423,6 +423,7 @@ kbl(D15n2$Sampling.point.x, D15n2$num_individuos_m2,
 # RECRUIT PROPORTION (from sea urchin, Chile)
 
 
+
 ```{r}
 talla13_23 <- readRDS("tallas13_23.Rdata")
 ```
