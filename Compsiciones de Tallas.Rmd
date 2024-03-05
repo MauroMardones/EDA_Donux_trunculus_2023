@@ -595,7 +595,7 @@ unique(size_17_20$ANO)
 a qui tengo diferencias con los nombres. Verificar cuando se junten todos los años
 
 
-## Data 2020-2023
+## Data 2020-2024
 
 ```{r}
 size2021 <- read_excel(here("Data", 
@@ -712,7 +712,7 @@ table(sizeall2$ANO, sizeall2$rastro)
 ## Save data
 
 ```{r eval=FALSE}
-saveRDS(sizeall2, "tallas13_23.Rdata")
+saveRDS(sizeall2, "tallas_13_24.RData")
 ```
 
 
@@ -753,8 +753,8 @@ nallbeach <- ggplot(sizeall2,
                aes(x=sizeE, 
                    y = as.factor(MES),
                   fill= as.factor(Sampling.point)))+
-  geom_density_ridges(stat = "binline", 
-                      bins = 40, 
+  geom_density_ridges2(stat = "density_ridges",
+                       position = "points_sina", 
                       scale = 1.2,
                       alpha=0.7)+
   facet_wrap(.~ANO, ncol=7) +
