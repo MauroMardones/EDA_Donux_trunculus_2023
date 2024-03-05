@@ -2,7 +2,7 @@
 title: "Composiciones de Tallas D. trunculus"
 subtitle: "Datos Monitoreo poblacional FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "04 December, 2023"
+date:  "05 March, 2024"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -363,6 +363,7 @@ names(sizep01_13) #enero
 ## [4] "rastro"                 "CAT"                    "Categoria"             
 ## [7] "size"                   "ID_codificado_muestreo" "Date"
 ```
+
 
 ```r
 size2013 <- bind_rows(sizep01_13,
@@ -726,7 +727,7 @@ unique(size_17_20$ANO)
 a qui tengo diferencias con los nombres. Verificar cuando se junten todos los años
 
 
-## Data 2020-2023
+## Data 2020-2024
 
 
 ```r
@@ -745,6 +746,12 @@ size2023 <- read_excel(here("Data",
                             "Data_size_Coquina_2023.xlsx"),  
                        sheet = "Coquina_Donax") %>% 
   select(-c(1, 2))  
+
+size2024 <- read_excel(here("Data", 
+                            "Posterior 2020",
+                            "Data_size_Coquina_2024.xlsx"),  
+                       sheet = "Coquina_Donax") %>% 
+  select(-c(1, 2)) 
 ```
 
 
@@ -757,25 +764,26 @@ Now, we handling data 2021-2023. Same columns data 2017-2020
 
 
 ```r
-size_21_23 <- rbind(size2021,
+size_21_24 <- rbind(size2021,
                     size2022,
-                    size2023)
+                    size2023,
+                    size2024)
 ```
 Separate `Date` column
 
 
 ```r
-size_21_23<- size_21_23 %>%
+size_21_24<- size_21_24 %>%
   mutate(
     DIA = day(Date),
     MES = month(Date),
     ANO = year(Date)
   )
-unique(size_21_23$rastro)
+unique(size_21_24$rastro)
 ```
 
 ```
-## [1] "POBLACIONAL" "COMERCIAL"   NA
+## [1] "POBLACIONAL" "COMERCIAL"
 ```
 
 ## Unir los datos desde el 2013 al 2023
@@ -787,7 +795,7 @@ sizeall <- rbind(size2013,
                  size14_15,
                  size2016,
                  size_17_20,
-                 size_21_23) 
+                 size_21_24) 
 ```
 
 check dimension. ahora la base completa tiente 21 mil registros
@@ -798,7 +806,7 @@ dim(sizeall)
 ```
 
 ```
-## [1] 210672     12
+## [1] 212416     12
 ```
 
 ```r
@@ -807,8 +815,8 @@ table(sizeall$ANO)
 
 ```
 ## 
-##  2013  2014  2015  2016  2017  2018  2019  2020  2021  2022  2023 
-##  6179 71147 22972   386 10121 20418 18109 13435 21971 17426  8264
+##  2013  2014  2015  2016  2017  2018  2019  2020  2021  2022  2023  2024 
+##  6179 71147 22972   386 10121 20418 18109 13435 21971 17426  9036   989
 ```
 
 ```r
@@ -818,7 +826,7 @@ table(sizeall$Beach)
 ```
 ## 
 ##       Donana      Donana  Donana_norte   Donana_sur       Huelva  Isla_Canela 
-##       105673          285        23538        14128        40841        14435 
+##       105673          285        24350        15077        40841        14435 
 ##      La_Bota       LaBota     Malandar Matalascanas      Mazagon 
 ##         3043         1266            7          382          265
 ```
@@ -830,9 +838,9 @@ table(sizeall$Sampling.point)
 ```
 ## 
 ##     1    10    11    12    13     2     3     4    4R     5     6     7     8 
-## 12221 35089 15306   265     7 30975 11911 48502   221  3544 26564  9813  5182 
+## 12221 35089 15306   265     7 31924 11911 48975   221  3544 26853  9813  5182 
 ##     9     M 
-##  4310   410
+##  4310   460
 ```
 
 ```r
@@ -842,7 +850,7 @@ table(sizeall$rastro)
 ```
 ## 
 ##     COMERCIAL    COMERCIAL  COMERCIAL NEW   POBLACIONAL  POBLACIONAL  
-##         53377            16           873        156350            39
+##         53801            16           873        157687            39
 ```
 
 Rename values
@@ -926,13 +934,14 @@ table(sizeall2$ANO, sizeall2$rastro)
 ##   2020      3596        9839
 ##   2021      7124       14847
 ##   2022      5732       11694
-##   2023      2505        5759
+##   2023      2627        6409
+##   2024       302         687
 ```
 ## Save data
 
 
 ```r
-saveRDS(sizeall2, "tallas13_23.Rdata")
+saveRDS(sizeall2, "tallas_13_24.RData")
 ```
 
 
@@ -977,8 +986,8 @@ nallbeach <- ggplot(sizeall2,
                aes(x=sizeE, 
                    y = as.factor(MES),
                   fill= as.factor(Sampling.point)))+
-  geom_density_ridges(stat = "binline", 
-                      bins = 40, 
+  geom_density_ridges2(stat = "density_ridges",
+                       position = "points_sina", 
                       scale = 1.2,
                       alpha=0.7)+
   facet_wrap(.~ANO, ncol=7) +
@@ -1060,7 +1069,7 @@ Ahora plotear el ultimo mes para el informe
 
 ```r
 combeachago23 <- ggplot(sizeall2 %>% 
-                      filter(ANO==2023), 
+                      filter(ANO==2024), 
                aes(x=sizeE, y=Beach, fill=as.character(rastro)))+
   geom_density_ridges(stat = "binline", 
                       bins = 40, 
@@ -1074,7 +1083,7 @@ combeachago23 <- ggplot(sizeall2 %>%
   xlab("Longitud (cm.)")+
   ylab("")+
   xlim(0,40)+
-  labs(title= "Survey 2023")
+  labs(title= "Survey 2024")
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
 combeachago23
 ```
@@ -1093,7 +1102,7 @@ sizemean <-sizeall2 %>%
 #kableExtra::kable(coutlength, format = "html")
 ```
 
-Mean length in time series by Subarea.
+Promedio por tipo de rastro.
 
 
 ```r
@@ -1130,13 +1139,13 @@ comprobar tendencia estadisticamente para las tendencias de ambos sistemas de mu
 ```r
 # comercial
 sizemeanc <- sizemean %>% 
-  filter(rastro!="COMERCIAL")
+  filter(rastro =="COMERCIAL")
 
 modelc <- lm(avg ~ANO, data=sizemeanc)
 
 # poblacional
 sizemeanp <- sizemean %>% 
-  filter(rastro!="POBLACIONAL")
+  filter(rastro =="POBLACIONAL")
 
 modelp <- lm(avg ~ANO, data=sizemeanp)
 ```
@@ -1146,9 +1155,11 @@ usamees la función `gtsummary` [@gtsummary] para visualizar los resultados de l
 
 ```r
 tp <- tbl_regression(modelp, 
-                     estimate_fun = function(x) style_number(x, digits = 3))
+                     estimate_fun = function(x) 
+                       style_number(x, digits = 3))
 tc <- tbl_regression(modelc, 
-                     estimate_fun = function(x) style_number(x, digits = 3))
+                     estimate_fun = function(x) 
+                       style_number(x, digits = 3))
 ```
 
 Tabla de cada tendencia de tallas por años
@@ -1159,23 +1170,23 @@ tp
 ```
 
 ```{=html}
-<div id="qgcrlpomyi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#qgcrlpomyi table {
+<div id="upoqaanyog" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#upoqaanyog table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#qgcrlpomyi thead, #qgcrlpomyi tbody, #qgcrlpomyi tfoot, #qgcrlpomyi tr, #qgcrlpomyi td, #qgcrlpomyi th {
+#upoqaanyog thead, #upoqaanyog tbody, #upoqaanyog tfoot, #upoqaanyog tr, #upoqaanyog td, #upoqaanyog th {
   border-style: none;
 }
 
-#qgcrlpomyi p {
+#upoqaanyog p {
   margin: 0;
   padding: 0;
 }
 
-#qgcrlpomyi .gt_table {
+#upoqaanyog .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1201,12 +1212,12 @@ tp
   border-left-color: #D3D3D3;
 }
 
-#qgcrlpomyi .gt_caption {
+#upoqaanyog .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#qgcrlpomyi .gt_title {
+#upoqaanyog .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1218,7 +1229,7 @@ tp
   border-bottom-width: 0;
 }
 
-#qgcrlpomyi .gt_subtitle {
+#upoqaanyog .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1230,7 +1241,7 @@ tp
   border-top-width: 0;
 }
 
-#qgcrlpomyi .gt_heading {
+#upoqaanyog .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1242,13 +1253,13 @@ tp
   border-right-color: #D3D3D3;
 }
 
-#qgcrlpomyi .gt_bottom_border {
+#upoqaanyog .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#qgcrlpomyi .gt_col_headings {
+#upoqaanyog .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1263,7 +1274,7 @@ tp
   border-right-color: #D3D3D3;
 }
 
-#qgcrlpomyi .gt_col_heading {
+#upoqaanyog .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1283,7 +1294,7 @@ tp
   overflow-x: hidden;
 }
 
-#qgcrlpomyi .gt_column_spanner_outer {
+#upoqaanyog .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1295,15 +1306,15 @@ tp
   padding-right: 4px;
 }
 
-#qgcrlpomyi .gt_column_spanner_outer:first-child {
+#upoqaanyog .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#qgcrlpomyi .gt_column_spanner_outer:last-child {
+#upoqaanyog .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#qgcrlpomyi .gt_column_spanner {
+#upoqaanyog .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1315,11 +1326,11 @@ tp
   width: 100%;
 }
 
-#qgcrlpomyi .gt_spanner_row {
+#upoqaanyog .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#qgcrlpomyi .gt_group_heading {
+#upoqaanyog .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1345,7 +1356,7 @@ tp
   text-align: left;
 }
 
-#qgcrlpomyi .gt_empty_group_heading {
+#upoqaanyog .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1360,15 +1371,15 @@ tp
   vertical-align: middle;
 }
 
-#qgcrlpomyi .gt_from_md > :first-child {
+#upoqaanyog .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#qgcrlpomyi .gt_from_md > :last-child {
+#upoqaanyog .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#qgcrlpomyi .gt_row {
+#upoqaanyog .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1387,7 +1398,7 @@ tp
   overflow-x: hidden;
 }
 
-#qgcrlpomyi .gt_stub {
+#upoqaanyog .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1400,7 +1411,7 @@ tp
   padding-right: 5px;
 }
 
-#qgcrlpomyi .gt_stub_row_group {
+#upoqaanyog .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1414,15 +1425,15 @@ tp
   vertical-align: top;
 }
 
-#qgcrlpomyi .gt_row_group_first td {
+#upoqaanyog .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#qgcrlpomyi .gt_row_group_first th {
+#upoqaanyog .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#qgcrlpomyi .gt_summary_row {
+#upoqaanyog .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1432,16 +1443,16 @@ tp
   padding-right: 5px;
 }
 
-#qgcrlpomyi .gt_first_summary_row {
+#upoqaanyog .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#qgcrlpomyi .gt_first_summary_row.thick {
+#upoqaanyog .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#qgcrlpomyi .gt_last_summary_row {
+#upoqaanyog .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1451,7 +1462,7 @@ tp
   border-bottom-color: #D3D3D3;
 }
 
-#qgcrlpomyi .gt_grand_summary_row {
+#upoqaanyog .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1461,7 +1472,7 @@ tp
   padding-right: 5px;
 }
 
-#qgcrlpomyi .gt_first_grand_summary_row {
+#upoqaanyog .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1471,7 +1482,7 @@ tp
   border-top-color: #D3D3D3;
 }
 
-#qgcrlpomyi .gt_last_grand_summary_row_top {
+#upoqaanyog .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1481,11 +1492,11 @@ tp
   border-bottom-color: #D3D3D3;
 }
 
-#qgcrlpomyi .gt_striped {
+#upoqaanyog .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#qgcrlpomyi .gt_table_body {
+#upoqaanyog .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1494,7 +1505,7 @@ tp
   border-bottom-color: #D3D3D3;
 }
 
-#qgcrlpomyi .gt_footnotes {
+#upoqaanyog .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1508,7 +1519,7 @@ tp
   border-right-color: #D3D3D3;
 }
 
-#qgcrlpomyi .gt_footnote {
+#upoqaanyog .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1517,7 +1528,7 @@ tp
   padding-right: 5px;
 }
 
-#qgcrlpomyi .gt_sourcenotes {
+#upoqaanyog .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1531,7 +1542,7 @@ tp
   border-right-color: #D3D3D3;
 }
 
-#qgcrlpomyi .gt_sourcenote {
+#upoqaanyog .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1539,63 +1550,63 @@ tp
   padding-right: 5px;
 }
 
-#qgcrlpomyi .gt_left {
+#upoqaanyog .gt_left {
   text-align: left;
 }
 
-#qgcrlpomyi .gt_center {
+#upoqaanyog .gt_center {
   text-align: center;
 }
 
-#qgcrlpomyi .gt_right {
+#upoqaanyog .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#qgcrlpomyi .gt_font_normal {
+#upoqaanyog .gt_font_normal {
   font-weight: normal;
 }
 
-#qgcrlpomyi .gt_font_bold {
+#upoqaanyog .gt_font_bold {
   font-weight: bold;
 }
 
-#qgcrlpomyi .gt_font_italic {
+#upoqaanyog .gt_font_italic {
   font-style: italic;
 }
 
-#qgcrlpomyi .gt_super {
+#upoqaanyog .gt_super {
   font-size: 65%;
 }
 
-#qgcrlpomyi .gt_footnote_marks {
+#upoqaanyog .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#qgcrlpomyi .gt_asterisk {
+#upoqaanyog .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#qgcrlpomyi .gt_indent_1 {
+#upoqaanyog .gt_indent_1 {
   text-indent: 5px;
 }
 
-#qgcrlpomyi .gt_indent_2 {
+#upoqaanyog .gt_indent_2 {
   text-indent: 10px;
 }
 
-#qgcrlpomyi .gt_indent_3 {
+#upoqaanyog .gt_indent_3 {
   text-indent: 15px;
 }
 
-#qgcrlpomyi .gt_indent_4 {
+#upoqaanyog .gt_indent_4 {
   text-indent: 20px;
 }
 
-#qgcrlpomyi .gt_indent_5 {
+#upoqaanyog .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1611,9 +1622,9 @@ tp
   </thead>
   <tbody class="gt_table_body">
     <tr><td headers="label" class="gt_row gt_left">ANO</td>
-<td headers="estimate" class="gt_row gt_center">-0.102</td>
-<td headers="ci" class="gt_row gt_center">-0.160, -0.044</td>
-<td headers="p.value" class="gt_row gt_center"><0.001</td></tr>
+<td headers="estimate" class="gt_row gt_center">-0.068</td>
+<td headers="ci" class="gt_row gt_center">-0.225, 0.090</td>
+<td headers="p.value" class="gt_row gt_center">0.4</td></tr>
   </tbody>
   
   <tfoot class="gt_footnotes">
@@ -1632,23 +1643,23 @@ tc
 ```
 
 ```{=html}
-<div id="eeelpponhp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#eeelpponhp table {
+<div id="aekxnivymb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#aekxnivymb table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#eeelpponhp thead, #eeelpponhp tbody, #eeelpponhp tfoot, #eeelpponhp tr, #eeelpponhp td, #eeelpponhp th {
+#aekxnivymb thead, #aekxnivymb tbody, #aekxnivymb tfoot, #aekxnivymb tr, #aekxnivymb td, #aekxnivymb th {
   border-style: none;
 }
 
-#eeelpponhp p {
+#aekxnivymb p {
   margin: 0;
   padding: 0;
 }
 
-#eeelpponhp .gt_table {
+#aekxnivymb .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1674,12 +1685,12 @@ tc
   border-left-color: #D3D3D3;
 }
 
-#eeelpponhp .gt_caption {
+#aekxnivymb .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#eeelpponhp .gt_title {
+#aekxnivymb .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1691,7 +1702,7 @@ tc
   border-bottom-width: 0;
 }
 
-#eeelpponhp .gt_subtitle {
+#aekxnivymb .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1703,7 +1714,7 @@ tc
   border-top-width: 0;
 }
 
-#eeelpponhp .gt_heading {
+#aekxnivymb .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1715,13 +1726,13 @@ tc
   border-right-color: #D3D3D3;
 }
 
-#eeelpponhp .gt_bottom_border {
+#aekxnivymb .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#eeelpponhp .gt_col_headings {
+#aekxnivymb .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1736,7 +1747,7 @@ tc
   border-right-color: #D3D3D3;
 }
 
-#eeelpponhp .gt_col_heading {
+#aekxnivymb .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1756,7 +1767,7 @@ tc
   overflow-x: hidden;
 }
 
-#eeelpponhp .gt_column_spanner_outer {
+#aekxnivymb .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1768,15 +1779,15 @@ tc
   padding-right: 4px;
 }
 
-#eeelpponhp .gt_column_spanner_outer:first-child {
+#aekxnivymb .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#eeelpponhp .gt_column_spanner_outer:last-child {
+#aekxnivymb .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#eeelpponhp .gt_column_spanner {
+#aekxnivymb .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1788,11 +1799,11 @@ tc
   width: 100%;
 }
 
-#eeelpponhp .gt_spanner_row {
+#aekxnivymb .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#eeelpponhp .gt_group_heading {
+#aekxnivymb .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1818,7 +1829,7 @@ tc
   text-align: left;
 }
 
-#eeelpponhp .gt_empty_group_heading {
+#aekxnivymb .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1833,15 +1844,15 @@ tc
   vertical-align: middle;
 }
 
-#eeelpponhp .gt_from_md > :first-child {
+#aekxnivymb .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#eeelpponhp .gt_from_md > :last-child {
+#aekxnivymb .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#eeelpponhp .gt_row {
+#aekxnivymb .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1860,7 +1871,7 @@ tc
   overflow-x: hidden;
 }
 
-#eeelpponhp .gt_stub {
+#aekxnivymb .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1873,7 +1884,7 @@ tc
   padding-right: 5px;
 }
 
-#eeelpponhp .gt_stub_row_group {
+#aekxnivymb .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1887,15 +1898,15 @@ tc
   vertical-align: top;
 }
 
-#eeelpponhp .gt_row_group_first td {
+#aekxnivymb .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#eeelpponhp .gt_row_group_first th {
+#aekxnivymb .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#eeelpponhp .gt_summary_row {
+#aekxnivymb .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1905,16 +1916,16 @@ tc
   padding-right: 5px;
 }
 
-#eeelpponhp .gt_first_summary_row {
+#aekxnivymb .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#eeelpponhp .gt_first_summary_row.thick {
+#aekxnivymb .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#eeelpponhp .gt_last_summary_row {
+#aekxnivymb .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1924,7 +1935,7 @@ tc
   border-bottom-color: #D3D3D3;
 }
 
-#eeelpponhp .gt_grand_summary_row {
+#aekxnivymb .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1934,7 +1945,7 @@ tc
   padding-right: 5px;
 }
 
-#eeelpponhp .gt_first_grand_summary_row {
+#aekxnivymb .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1944,7 +1955,7 @@ tc
   border-top-color: #D3D3D3;
 }
 
-#eeelpponhp .gt_last_grand_summary_row_top {
+#aekxnivymb .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1954,11 +1965,11 @@ tc
   border-bottom-color: #D3D3D3;
 }
 
-#eeelpponhp .gt_striped {
+#aekxnivymb .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#eeelpponhp .gt_table_body {
+#aekxnivymb .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1967,7 +1978,7 @@ tc
   border-bottom-color: #D3D3D3;
 }
 
-#eeelpponhp .gt_footnotes {
+#aekxnivymb .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1981,7 +1992,7 @@ tc
   border-right-color: #D3D3D3;
 }
 
-#eeelpponhp .gt_footnote {
+#aekxnivymb .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1990,7 +2001,7 @@ tc
   padding-right: 5px;
 }
 
-#eeelpponhp .gt_sourcenotes {
+#aekxnivymb .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2004,7 +2015,7 @@ tc
   border-right-color: #D3D3D3;
 }
 
-#eeelpponhp .gt_sourcenote {
+#aekxnivymb .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2012,63 +2023,63 @@ tc
   padding-right: 5px;
 }
 
-#eeelpponhp .gt_left {
+#aekxnivymb .gt_left {
   text-align: left;
 }
 
-#eeelpponhp .gt_center {
+#aekxnivymb .gt_center {
   text-align: center;
 }
 
-#eeelpponhp .gt_right {
+#aekxnivymb .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#eeelpponhp .gt_font_normal {
+#aekxnivymb .gt_font_normal {
   font-weight: normal;
 }
 
-#eeelpponhp .gt_font_bold {
+#aekxnivymb .gt_font_bold {
   font-weight: bold;
 }
 
-#eeelpponhp .gt_font_italic {
+#aekxnivymb .gt_font_italic {
   font-style: italic;
 }
 
-#eeelpponhp .gt_super {
+#aekxnivymb .gt_super {
   font-size: 65%;
 }
 
-#eeelpponhp .gt_footnote_marks {
+#aekxnivymb .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#eeelpponhp .gt_asterisk {
+#aekxnivymb .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#eeelpponhp .gt_indent_1 {
+#aekxnivymb .gt_indent_1 {
   text-indent: 5px;
 }
 
-#eeelpponhp .gt_indent_2 {
+#aekxnivymb .gt_indent_2 {
   text-indent: 10px;
 }
 
-#eeelpponhp .gt_indent_3 {
+#aekxnivymb .gt_indent_3 {
   text-indent: 15px;
 }
 
-#eeelpponhp .gt_indent_4 {
+#aekxnivymb .gt_indent_4 {
   text-indent: 20px;
 }
 
-#eeelpponhp .gt_indent_5 {
+#aekxnivymb .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -2084,9 +2095,9 @@ tc
   </thead>
   <tbody class="gt_table_body">
     <tr><td headers="label" class="gt_row gt_left">ANO</td>
-<td headers="estimate" class="gt_row gt_center">-0.077</td>
-<td headers="ci" class="gt_row gt_center">-0.243, 0.089</td>
-<td headers="p.value" class="gt_row gt_center">0.4</td></tr>
+<td headers="estimate" class="gt_row gt_center">-0.106</td>
+<td headers="ci" class="gt_row gt_center">-0.161, -0.050</td>
+<td headers="p.value" class="gt_row gt_center"><0.001</td></tr>
   </tbody>
   
   <tfoot class="gt_footnotes">
@@ -2098,6 +2109,131 @@ tc
 </div>
 ```
 
+# Prepara data para modelacion
+
+
+en este caso definimos dos tipos de estructura de tallas, dependientes (rastro comercial) e independientes (rastro poblacional) a la pesquería.
+
+Generamos dos matrces por separado para fines del template de `SS3`
+
+
+```r
+# poblacional
+tallapob <- sizeall2 %>% 
+  filter(rastro=="POBLACIONAL")
+tallapob$CATL <- as.numeric(as.character(cut(x = tallapob$sizeE, 
+                                                    breaks = seq(0,50,1), 
+                                                  labels = seq(0,49,1), 
+                                                  right = FALSE)))
+# comercial
+tallacom <- sizeall2 %>% 
+  filter(rastro=="COMERCIAL")
+tallacom$CATL <- as.numeric(as.character(cut(x = tallacom$sizeE, 
+                                                    breaks = seq(0,50,1), 
+                                                  labels = seq(0,49,1), 
+                                                  right = FALSE)))
+
+
+tallapob2<- table(tallapob$ANO, tallapob$CATL)
+tallacom2<- table(tallacom$ANO, tallacom$CATL)
+
+tail(tallapob2, 10)
+```
+
+```
+##       
+##           2    3    4    5    6    7    8    9   10   11   12   13   14   15
+##   2015    0    0   10   25   78  179  327  644  749  822  838  946 1097 1139
+##   2016    0    0    0    0    0    0    2    1   13   19   21   14    9    1
+##   2017    0    0    1   11   30   58  136  167  267  312  327  382  383  398
+##   2018    1    1   11  120  248  324  429  531  588  677  830  799  775  774
+##   2019    0    3   10  107  130  114  140  222  289  346  371  447  493  487
+##   2020    0    1    9   71  138  169  207  255  262  333  380  476  467  516
+##   2021    0    1   15  104  190  248  416  543  558  581  612  610  632  727
+##   2022    0    0   27  127   93   99  120  206  236  345  380  410  468  522
+##   2023    0    0    4   36   63   79   98  148  196  212  202  193  220  232
+##   2024    0    0    0    0    0    1    5    6   12   20   29   24   33   37
+##       
+##          16   17   18   19   20   21   22   23   24   25   26   27   28   29
+##   2015 1312 1212 1139 1098 1219 1138 1020 1251 1184 1080 1093  772  485  404
+##   2016    0    1    2    2    8    3   13   12   14   10    7    7   17   10
+##   2017  414  406  454  459  461  417  337  294  240  216  152  113   93   32
+##   2018  739  674  699  784  865  856  780  680  704  597  513  384  287  173
+##   2019  523  556  522  641  727  811  876  862  827  670  597  423  326  200
+##   2020  612  602  546  555  575  546  520  482  439  419  343  270  232  169
+##   2021  669  602  673  781  831  893 1033 1048  857  701  550  366  254  180
+##   2022  558  594  559  607  630  687  681  770  899  797  638  482  306  225
+##   2023  227  264  314  358  388  428  490  450  438  348  334  241  178   95
+##   2024   34   35   29   37   32   49   63   48   69   41   31   23   19    5
+##       
+##          30   31   32   33   34   35   36   37   38   49
+##   2015  309  181  136   42   39   29   13    6    0    0
+##   2016    8    6    4    2    0    2    0    0    0    0
+##   2017   19    8    4    1    0    0    0    0    0    0
+##   2018  127   64   25   16    8    5    0    0    0    0
+##   2019  119   75   31   11   10    5    2    0    0    0
+##   2020  110   67   44   13    8    2    1    0    0    0
+##   2021   92   42   16   15    4    2    1    0    0    0
+##   2022  117   60   37    8    2    1    1    1    1    0
+##   2023   84   42   29   11    5    1    1    0    0    0
+##   2024    2    3    0    0    0    0    0    0    0    0
+```
+
+```r
+tail(tallacom2, 10)
+```
+
+```
+##       
+##          11   12   13   14   15   16   17   18   19   20   21   22   23   24
+##   2015    0    0    0    0    0    0    0    0    0    0    0    1   14   52
+##   2016    0    0    0    0    0    0    0    0    0    0    0    0    1    7
+##   2017    1    1    7    7    5    6   13   26   47  115  148  208  294  521
+##   2018    0    0    0    1    0    0    1    0    2    1   10   24   82  458
+##   2019    0    0    0    1    1    8   10   11   18   27   38   35  109  501
+##   2020    0    0    0    0    0    0    0    0    0    4    4    9   56  296
+##   2021    0    0    0    0    0    0    0    0    1    0    4   11  115  711
+##   2022    0    0    0    0    0    0    0    0    0    2    8   24  117  549
+##   2023    0    0    0    0    0    0    0    0    0    0    0    2   26  184
+##   2024    0    0    0    0    0    0    0    0    0    0    1    2    9   38
+##       
+##          25   26   27   28   29   30   31   32   33   34   35   36   37   38
+##   2015  122  163  148  144   95  103   49   31   17    8    4    4    1    0
+##   2016   22   31   17   13   19   16    7    5    3    0    1    0    0    0
+##   2017  704  574  370  223  139   69   31   11    6    2    0    1    0    0
+##   2018 1025 1183  920  671  433  239  145   74   34   20    4    2    0    0
+##   2019 1291 1291 1024  711  463  281  160   87   42   18    4    2    1    1
+##   2020  643  729  625  444  308  211  126   69   30    7    6    2    1    0
+##   2021 1643 1703 1246  758  505  251  105   28   15   24    1    1    1    0
+##   2022 1193 1283  986  714  417  233  123   55   14   11    2    0    1    0
+##   2023  513  569  432  321  212  157   98   53   33   18    7    2    0    0
+##   2024   77   58   51   32   20    7    5    1    1    0    0    0    0    0
+##       
+##          39   42   44   45   47   49
+##   2015    0    0    0    0    0    0
+##   2016    0    0    0    0    0    0
+##   2017    0    0    0    0    0    0
+##   2018    0    0    0    0    0    0
+##   2019    0    0    0    1    0    0
+##   2020    1    1    1    0    1    1
+##   2021    0    1    0    0    0    0
+##   2022    0    0    0    0    0    0
+##   2023    0    0    0    0    0    0
+##   2024    0    0    0    0    0    0
+```
+Ahora escribo los datos en un `csv`
+
+
+```r
+tatodos <-  list(tallacom2, tallapob2)
+# Especifica los nombres de los archivos CSV
+ttnames <- c("tallacom.csv", "tallapob.csv")
+# Guarda cada dataframe en un archivo CSV
+for (i in seq_along(tatodos)) {
+  write.csv(tatodos[[i]], 
+            file = ttnames[i])
+}
+```
 
 # Dudas.
 
