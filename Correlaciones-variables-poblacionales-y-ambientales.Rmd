@@ -138,9 +138,12 @@ Primero el comportamiento. de la variabe y luego su tendencia por sitios y por t
 histo1 <- ggplot(ChlData %>% 
                    drop_na(), aes(CONCETR))+
   geom_histogram(stat = "bin",
-                 binwidth = 0.5)+
+                 binwidth = 0.1,
+                 fill="white",
+                 color=1)+
   facet_wrap(ANO~., ncol=5)+
-  theme_few() 
+  theme_few()+
+  coord_flip()
 histo1
 ```
 
@@ -183,7 +186,8 @@ meach <- ggplot(meanchl %>%
           legend.position = "none")+
     ylab("Concentration (ug/ml)") +
     xlab("")+
-  ggtitle("Media de concentración Chla por Sitio de Muestreo y Trimestre")
+  ggtitle("Media de concentración Chla por Sitio de Muestreo y Trimestre")+
+  ylim(0,5)
 meach
 ```
 
@@ -192,7 +196,7 @@ varch <- ggplot(meanchl %>%
                   drop_na(), 
                aes(ANO, VARCON))+
     geom_point(alpha=.7) +
-    geom_smooth(method= "lm",
+    geom_smooth(method= "loess",
                 col="red")+
     theme_few()+ 
    # scale_x_continuous(breaks = seq(from = 2018, to = 2023, by = 1))+
