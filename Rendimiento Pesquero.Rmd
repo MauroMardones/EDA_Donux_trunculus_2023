@@ -87,7 +87,11 @@ Dens1415com <- read_excel(here("Data",
 
 
 ```
+```{r}
+names(Dens1415com)
+```
 
+Estos datos tienen registros de abundancia y biomasa por estación, pero no son utiles para conocer rendiiento pesquero
 
 ## 2015
 
@@ -207,7 +211,7 @@ rend1720 <- ggplot(denscom1720g,
     ylab("CPUE (Kg/hr)") +
     xlab("") +
   ylim(0,6)+
-  ggtitle("Rendimiento coquina 2023 por mes y punto de muestreo")
+  ggtitle("Rendimiento coquina 2017-2020 por mes y punto de muestreo")
 rend1720
 ```
 
@@ -379,14 +383,14 @@ rend2 <- ggplot(denscomtot,
     ggtitle("Rendimiento coquina por año, mes y muestreador")
 rend2
 ```
-solo el ultimo Año
+por meses
 
 ```{r warning=FALSE}
 rend2023 <- ggplot(denscomtot, 
                aes(MES,Rend1,
                 group=MES))+
     geom_point(alpha=.7) +
-    geom_smooth(method= "loess",
+    geom_smooth(method= "lm",
                 level=0.5,
                 span=3)+
     theme_few()+ 
@@ -416,8 +420,8 @@ rend2023
 En este caso las bases del `denscom1720tot` y `denscomtot` con las variables mas relevantes.
 
 ```{r}
-names(denscom1720g)
-names(denscomtot)
+names(denscom1720g) # 2017-2020
+names(denscomtot) # 2021-2023
 ```
 
 
@@ -658,6 +662,13 @@ rendiresep <- ggplot(rend1723 %>%
   ylim(0, 25)+
     ggtitle("Rendimiento coquina por año, mes y Punto de Muestreo")
 rendiresep
+```
+Saco  el dato de CPUE total
+
+```{r}
+cpuess3 <- rend1723 %>% 
+   group_by(ANO) %>% 
+  summarise(CPUE = mean(Rend1, na.rm=TRUE))
 ```
 
 
