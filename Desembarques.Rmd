@@ -65,7 +65,7 @@ Leo los datos entregados por E. Marco. Actualizar pedida con Junta Andalucia.
 
 ```{r}
 Landings <- read_excel("Data/Desembarques/Data_13_23_Landings.xlsx")
-View(Landings)
+#View(Landings)
 ```
 
 Identifico las columnas necesarias para el analisis, que en este caso,
@@ -102,7 +102,10 @@ Hay valores cercanos a las 14 t. Identificar si esto tiene sentido. Preguntar a 
 plotlam <- ggplot(landings3,aes(ANO, LANDINGS))+
   geom_bar(stat = "identity")+
   facet_grid(MES~ESTABLECIMIENTO)+
-  theme_few()
+  theme_few()+
+  theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     vjust= 0.5))
 plotlam
 ```
 
@@ -117,25 +120,32 @@ landpop <- ggplot(landings3 %>%
                   colour=ESTABLECIMIENTO), 
               size=0.9)+
   scale_colour_viridis_d(option="H")+
+  scale_x_continuous(breaks = seq(from = 2013, 
+                                  to = 2024, 
+                                  by = 1))+
   theme_few() +
   theme(
     legend.position = "none",
     panel.border = element_blank(),
     panel.spacing = unit(0.1, "lines"),
     strip.text.x = element_text(size = 6),
-    axis.text.x = element_text(size = 5),
+    axis.text.x = element_text(angle = 90,
+                               size = 5,
+                               hjust = 1,
+                                     vjust= 0.5),
     axis.text.y = element_text(size = 5)) +
   xlab("") +
   ylab("Desembarque (t) por Establecimiento") +
-  facet_wrap(.~ESTABLECIMIENTO, ncol=4, scale="free_y")
+  facet_wrap(.~ESTABLECIMIENTO, ncol=4)+
+  ylim(0, 15)
 landpop
 ```
-Los datos fueron solicitados con información hasta Febrero del 2022, por lo mismo es necesario actualizar
+
 
 
 ```{r fig.width=10, fig.height=5}
 orderland <-   ggplot(landings3 %>% 
-         group_by(ESTABLECIMIENTO) %>% 
+         group_by(ANO, ESTABLECIMIENTO) %>% 
          summarise(LANDINGS1 =sum(LANDINGS)) %>% 
            arrange(LANDINGS1) %>% 
            mutate(ESTABLECIMIENTO=factor(ESTABLECIMIENTO,
@@ -143,13 +153,14 @@ orderland <-   ggplot(landings3 %>%
          aes(x=ESTABLECIMIENTO, 
              y=LANDINGS1) ) +
     geom_bar(stat="identity", fill="#69b3a2") +
+    facet_wrap(.~ANO)+
     coord_flip() +
     theme_ipsum() +
     theme(
       panel.grid.minor.y = element_blank(),
       panel.grid.major.y = element_blank(),
       legend.position="none",
-      axis.text.y = element_text(size = 10)
+      axis.text.y = element_text(size = 7)
     ) +
     xlab("") +
     ylab("Desembarque total aculumado por Establecimiento")
@@ -158,9 +169,46 @@ orderland
 
 
 ```{r}
+
+table(landings2$MES, landings2$ANO)
+
+
 kbl(table(landings2$MES, landings2$ANO), 
     longtable = T, 
     booktabs = T, 
     caption = "Registros de Desembarque por año y mes") %>% 
    kable_styling(latex_options = c("striped",  "hold_position"))
 ```
+Ahora un resumido por año
+
+
+```{r fig.width=10, fig.height=5}
+totalanual<-   ggplot(landings3 %>% 
+         group_by(ANO) %>% 
+         summarise(LANDINGS1 =sum(LANDINGS)) %>% 
+          mutate(ANO=factor(ANO,ANO)), 
+         aes(x=ANO, 
+             y=LANDINGS1) ) +
+    geom_bar(stat="identity", fill="#69b3a2") +
+  geom_smooth(method = "loess")+
+    theme_ipsum() +
+    theme(
+      panel.grid.minor.y = element_blank(),
+      panel.grid.major.y = element_blank(),
+      legend.position="none",
+      axis.text.y = element_text(size = 10)
+    ) +
+    xlab("") +
+    ylab("Desembarque (t) total aculumado por a traves de los años")
+totalanual
+```
+
+write `.csv`
+
+```{r}
+total <- landings3 %>% 
+  group_by(ANO) %>%
+  summarise(LANDINGS1 =sum(LANDINGS))
+write_csv(total, "Landingscoquina.csv")
+```
+

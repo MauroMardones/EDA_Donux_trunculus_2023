@@ -82,8 +82,8 @@ A coninuación se describen los principales componentes de información de la co
 | EDAD MÁXIMA | | EM= log(0.01)/M | Revisar | 
 | Parámetros gravimetricos | | a;b |  Revisar | 
 | DENSIDAD | 2017-2023 | g/m2/  | Mes, Playa, Rastro |
-| RENDIMIENTO (CPUE) | 2018-2023 | hora/mariscador/dia. (60 min*peso coquina>25mm*5min) | Por Mes, playa, rastro |
-| INDICE RECLUTAMIENTO (D15) | 2017-2022 | ind/m2 < 15mm | Por Mes, playa, rastro |
+| RENDIMIENTO (CPUE) | 2013-2023 | hora/mariscador/dia. (60 min*peso coquina>25mm*5min) | Por Mes, playa, rastro |
+| INDICE RECLUTAMIENTO (D15) | 2013-2022 | ind/m2 < 15mm | Por Mes, playa, rastro |
 | TALLA PRIMERA MADUREZ |  | L50=10.8mm | L95= pendiente |
 
 A continuación se describen los componentes de cada pieza de información disponible para el recurso coquina.
@@ -143,8 +143,58 @@ Si bien los modelos de evaluación no suelen incorporar variables ambientales de
 
 ## Desembarques oficiales
 
+Mediante canales oficiales, se solicitaron las cifras oficiales de desembarque de coquina en el Golfo de Cádiz para coquina. estos datos esn disponibpes desde el 2013. Si bien la pesqueria tiene sus inicios previo a este periodo, es vital contar con información de remoción por parte de la flota para posteriores ajustes de magnitudes en la estimación del modelo. 
+
+A modo general, la serie historica de desembarques varia entre 1 y 15 t y estan repartidas entre distintas lonjas de comercialización. anualmente se puede ver en La Figura \@ref(fig:dese) representa el ciclo vital interanual de coquina [@Delgado2017].
+
+
+<div class="figure" style="text-align: center">
+<img src="Fig/Desembarques.png" alt="Desembarques oficiales para coquina en el Golfo de Cádiz entre los años 2013 y 2023"  />
+<p class="caption">(\#fig:dese)Desembarques oficiales para coquina en el Golfo de Cádiz entre los años 2013 y 2023</p>
+</div>
+
 - [Desembarques](Rendimiento-pesquero.html)
 
+# Modelo de stock assessment
+
+El modelo de la dinámica poblacional de coquina es implementado en Stock Synthesis (SS3)
+(Versión 3.30.10) [@Methot2013]. SS3 es un modelo de evaluación
+estructurado por edad con datos en talla de la clase de modelos denominada
+*modelos de análisis integrados*. SS3 tiene un submodelo de población que simula
+el crecimiento de una cohorte, desplazamiento, y procesos de mortalidad; un submodelo
+de observación estima valores esperados para varios tipos de datos; un
+submodelo estadístico caracteriza la bondad de ajuste de los datos y obtiene el
+mejor ajuste de parámetros con varianza asociada; y un proceso de alimentación
+para niveles necesarios para el manejo. SS produce las cantidades, con intervalos
+de confianza, necesarias para implementar aversión al riesgo y reglas de control de
+la pesca. El modelo está codificado en C++ con la estimación de parámetros
+habilitada por diferenciación automática (ADMB) [@Fournier2012]. Las salidas
+y análisis posteriores de visualización de los resultados son realizadas mediante la
+librería *r4ss* [@Taylor2019]. SS3 está disponible en el laboratorio de
+modelación numérica para poblaciones marinas explotadas de la National Oceanic
+and Atmospheric Administration [NOAA](https://vlab.ncep.noaa.gov/web/stocksynthesis).
+
+Los principales supuestos del modelo edad-estructurado con datos en talla de SS3 son:
+
+- El stock de coquina está constituido por sub-unidades de stock que son parte
+de un pool común (stock) dentro de la zona marisquera del Golfo de Cádiz.
+- La mortalidad natural es conocida y constante entre años y edades.
+- La mortalidad natural y por pesca son simultáneas (función de Baranov).
+- El patrón de vulnerabilidad de los individuos es a la edad y sigue un modelo
+logístico.
+- El modelo supone que la almeja presenta en cada unidad de análisis un
+stock cerrado y una población compuesta por no más de 5 grupos de
+edades.
+- El reclutamiento (segundo año de edad) es el resultado del “desove”
+de conjunto de bancos vecinos y su sobrevivencia es modulada principalmente por cuestiones ambientales, lo que significa que los reclutamientos responden a procesos principalmente estocásticos donde la
+función stock-recluta es difusa.
+
+Este modelo y sus flujo de estimación se puede esquematizar como lo indica la  Figura \@ref(fig:ss3)
+
+<div class="figure" style="text-align: center">
+<img src="Fig/Diagrama_Modelo.png" alt="Diagrama del flujo de datos, modelo y asesoría para coquina en el Golfo de Cádiz" width="80%" />
+<p class="caption">(\#fig:ss3)Diagrama del flujo de datos, modelo y asesoría para coquina en el Golfo de Cádiz</p>
+</div>
 # Consideraciones generales
 
 - Este AED permite registrar rutinas y análisis reproducibles por cualquier investigador que requiera información complementarios respecto a la pesquería de coquina.

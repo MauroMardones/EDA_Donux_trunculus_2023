@@ -862,11 +862,12 @@ Promedio por tipo de rastro.
 ```{r, fig.align="center", warning=FALSE}
 pmea <- ggplot(sizemean %>% 
                  drop_na(avg), 
-               aes(ANO, avg,
+               aes(as.factor(ANO), avg,
                color=rastro))+
-    geom_point(show.legend = T,
+    geom_boxplot(show.legend = T,
                alpha=.7) +
-    geom_smooth(method= "glm")+
+  geom_jitter()+
+    geom_smooth(method= "loess")+
     theme_few()+ 
     scale_y_continuous(breaks = seq(from = 2013, to = 2023, by = 1))+
     theme(axis.text.x = element_text(angle = 90,
