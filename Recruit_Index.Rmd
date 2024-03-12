@@ -514,8 +514,8 @@ D15duda <- D15duda %>%
 
 
 ```{r warning=FALSE}
-duda <- ggplot(D15duda,aes(MES, D15))+
-  geom_point()+
+duda <- ggplot(D15duda)+
+  geom_point(aes(MES, Densidad))+
   geom_smooth(method= "lm", col=2,
               se=FALSE)+
   facet_grid(ANO~Sampling.point)+
