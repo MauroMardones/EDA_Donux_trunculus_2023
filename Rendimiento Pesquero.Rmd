@@ -668,7 +668,15 @@ Saco  el dato de CPUE total
 ```{r}
 cpuess3 <- rend1723 %>% 
    group_by(ANO) %>% 
-  summarise(CPUE = mean(Rend1, na.rm=TRUE))
+  summarise(CPUE = round(mean(Rend1, na.rm=TRUE),3),
+            SD = sd(Rend1, na.rm=TRUE),
+            CV = (SD/ CPUE))
+```
+
+ahora escribo los oputputs
+
+```{r eval=FALSE}
+write.csv(cpuess3, "CPUE_Coquina_SS3.csv")
 ```
 
 

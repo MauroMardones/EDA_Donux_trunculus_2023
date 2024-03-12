@@ -196,23 +196,33 @@ pproceder a los calculos para calcular las variables poblacionales de interes, e
 denspobtot <- denspob2124f %>% 
   mutate(fps = SW /SWsub,
          CSW = CSWsub * fps,
-         fpm = CSW * CSWsub,
+         fpm = CSW / CSWsub,
          MCSW = MCSWsub * fpm,
          DCSW = DCSWsub * fps,
          TCSW = CSW + DCSW)
 
 denspobtot2 <- denspobtot %>% 
   group_by(Beach, Sampling.point, ANO, MES, DIA) %>% 
-  mutate(Btotal=sum(TCSW),
-         fpn = MCSWsub/CSW,
+  summarise(Btotal=sum(TCSW)) %>% 
+  mutate(fpn = MCSWsub/CSW,
          NtotalCSW  = Nmedida * fpn, 
          Ndaños = Ndañossub * fps, 
          Ntotal = sum(NtotalCSW) + Ndaños * fps,
          area = m_track * 0.445,
          bio= Btotal * area,
          dens = Ntotal * area)
-tail(denspobtot2)
+head(denspobtot2)
 ```
+saco un grafico de datos de densidad 
+
+```{r}
+plotdens2124 <- ggplot(denspobtot2 %>% 
+                         filter(Categoria== "g") %>% 
+                         group_by(ANO, Sampling.point),
+                       aes(ANO, dens))+
+  geom_point()
+```
+
 
 Aqui trataré de replicar los rresultados de los Informes de MD.
 
@@ -293,7 +303,7 @@ D15plot <- ggplot(D15, aes(d15, Sampling.point,
   geom_col(position = "dodge")+
   scale_fill_viridis_d(option = "A",
                        name= "Punto")+
-  facet_grid(MES~ANO)+
+  facet_grid(.~ANO)+
   geom_vline(xintercept = 8,
              col="red",
              linetype=2)+
@@ -339,7 +349,8 @@ D15n <- size_21_23 %>%
            Sampling.point, 
            ID_codificado_muestreo, 
            Beach,
-           Categoria) %>% 
+           Categoria,
+           ) %>% 
   summarize(num_individuos = n(), .groups = "drop") 
 
 D15n$Sampling.point <- as.double(D15n$Sampling.point)
@@ -380,16 +391,17 @@ D15n3 <- D15n1 %>%
   group_by(Sampling.point.x, ANO.x, MES.x) %>%
   summarize(across(num_individuos_m2, mean))
 ```
-```{r}
+
+
+```{r warning=FALSE}
 plotD15 <- ggplot(D15n3 %>% 
                     drop_na(), 
-                  aes(MES.x,num_individuos_m2, 
-                     
-                      color=Sampling.point.x))+
+                  aes(MES.x,num_individuos_m2,
+                      color=as.factor(Sampling.point.x)))+
   geom_point()+
   geom_smooth(col=2)+
   facet_wrap(.~ANO.x, ncol=4)+
-  scale_color_viridis_b()+
+  scale_color_viridis_d(name="Sampling point")+
   scale_x_continuous(breaks = seq(from = 1, 
                                   to = 12, 
                                   by = 2))+
@@ -514,15 +526,49 @@ D15duda <- D15duda %>%
 
 
 ```{r warning=FALSE}
-duda <- ggplot(D15duda)+
-  geom_point(aes(MES, Densidad))+
-  geom_smooth(method= "lm", col=2,
+duda <- ggplot(D15duda,aes(MES, Densidad))+
+  geom_point()+
+  geom_smooth(method= "lm", col=4,
               se=FALSE)+
-  facet_grid(ANO~Sampling.point)+
+  #facet_grid(ANO~Sampling.point)+
   theme_few()
 duda
 ```
+D15 previo al 2020
 
+```{r}
+D15_17_20 <- ggplot(D15duda , 
+                  aes(MES,D15, 
+                  color=as.factor(Sampling.point)))+
+  geom_point()+
+  geom_smooth(col=2)+
+  facet_wrap(.~ANO, ncol=4)+
+  scale_color_viridis_d(name="Sampling Points")+
+  theme_few()+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))+
+  ylim(0,150)+
+  labs(y="Indice de Reclutamiemto",
+       x="MES")
+D15_17_20
+```
+Ambos graficos (2017-2020 y 2021.2024)
+
+
+```{r warning=FALSE}
+ggarrange(D15_17_20, plotD15, common.legend=TRUE, legend="bottom")
+
+combined <- D15_17_20 + plotD15 & theme(legend.position = "bottom")
+combined + plot_layout(guides = "collect")
+```
+
+
+# INDICE DE DENSIDAD
+
+Ahora construyo un indice de densidad, por que es mas *ad-hoc* para los modelos de stock assessment (Caddy, 2004). 
 
 
 
