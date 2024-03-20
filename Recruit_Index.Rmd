@@ -392,7 +392,7 @@ D151720 <- D151720 %>%
 duda <- ggplot(D151720 %>% 
                  drop_na(D15))+
   geom_histogram(aes(x=D15),
-                 bins=10)+
+                 bins=50)+
   facet_wrap(.~ANO)+
     scale_x_continuous(breaks = seq(from = 0, 
                                   to = 90, 
@@ -622,14 +622,16 @@ dens1724 <- rbind(dens1720,
 ```
 
 
-```{r}
+```{r warning=FALSE}
 plot_dens <- ggplot(dens1724 %>% 
+                      group_by(ANO,MES, Sampling.point) %>% 
+                      summarize(mead =mean(Densidad)) %>% 
                       drop_na(), 
-                  aes(MES,Densidad))+
+                  aes(MES,mead))+
   geom_point()+
   geom_smooth(col=2, 
               method = "lm")+
-  facet_wrap(.~ANO, ncol=8)+
+  facet_grid(Sampling.point~ANO)+
   scale_color_viridis_d(name="Sampling Points")+
   theme_few()+
   geom_hline(yintercept = 8,
@@ -642,7 +644,8 @@ plot_dens <- ggplot(dens1724 %>%
                                   by = 1,
                                   size=2))+
    labs(y="Densidad (ind/mt2)",
-       x="MES")
+       x="MES")+
+  ylim(0, 75)
 plot_dens
 ```
 

@@ -75,13 +75,7 @@ A coninuación se describen los principales componentes de información de la co
 | Item | Periodo | Observación | Agregación  |
 |:-------:|:------:|:-----------:|:---------:|
 | DESEMBARQUE | 2013-2022 | kg/mariscador o barco/mes | Por playa |
-| ESTRUCTURA TALLAS | 2017-2023 | Datos previos al 2020 deben ser revisados | Por playa, por tipo de rastro |
-| vB Linf | | 46 mm | Revisar |
-| vB k || 0.48 | Revisar | 
-| M | | M=2k | Revisar | 
-| EDAD MÁXIMA | | EM= log(0.01)/M | Revisar | 
-| Parámetros gravimetricos | | a;b |  Revisar | 
-| DENSIDAD | 2017-2023 | g/m2/  | Mes, Playa, Rastro |
+| ESTRUCTURA TALLAS | 2017-2023 | Datos previos al 2020 deben ser revisados | Por playa, por tipo de rastro | DENSIDAD | 2017-2023 | g/m2/  | Mes, Playa, Rastro |
 | RENDIMIENTO (CPUE) | 2013-2023 | hora/mariscador/dia. (60 min*peso coquina>25mm*5min) | Por Mes, playa, rastro |
 | INDICE RECLUTAMIENTO (D15) | 2013-2022 | ind/m2 < 15mm | Por Mes, playa, rastro |
 | TALLA PRIMERA MADUREZ |  | L50=10.8mm | L95= pendiente |
@@ -112,9 +106,11 @@ Uno de los principales elementos de información proviene de los estudios reprod
 
 | Item | Observación | Agregación  |
 |:-------:|:------:|:-----------:|:---------:|
-| vB Linf |  46 mm | Revisar |
-| vB k | 0.48 | Revisar | 
-| M |  M=2k | Revisar | 
+| vB Linf |  46.7 mm | [@Delgado2017] |
+| vB k | 0.47 | [@Delgado2017] |
+| M |  0.99 | [@Colakoglu2014] | 
+| t0 | 0.29 | [@Colakoglu2014] |
+| t0 | -0.59 | [@Delgado2017] |
 | EDAD MÁXIMA |  EM= log(0.01)/M | Revisar | 
 | Parámetros gravimetricos |  a;b |  Revisar | 
 | TALLA PRIMERA MADUREZ |   L50=10.8mm | L95= pendiente |
