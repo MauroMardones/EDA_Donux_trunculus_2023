@@ -558,8 +558,14 @@ Ambos graficos (2017-2020 y 2021.2024) para comparar metodologías. Estas no tie
 
 
 ```r
-joinpl <- ggarrange(D15_17_20, plotD15, ncol = 2,  legend="bottom")
+joinpl <- ggarrange(D15_17_20, 
+                    plotD15, 
+                    ncol = 2,
+                    legend="bottom")
+joinpl
 ```
+
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
 
 
 Tabla con los datos del año
@@ -575,7 +581,7 @@ kbl(D15n2$Sampling.point.x, D15n2$num_individuos_m2,
 ```
 
 
-# Alternativas para identificar el Indice
+# ALTERNATIVAS DE CALCULO DEL INDICE DE RECLUTAMIENTO
 
 ## Porcentaje Individuos < 15 mm
 
@@ -601,8 +607,6 @@ D15 <- tallas13_24 %>%
   summarize(d15 = FUN(sizeE<15), rm.na=T) 
 ```
 representación con barPlot
-
-## Graficas
 
 
 ```r
@@ -656,7 +660,7 @@ landpop
 
 <img src="Recruit_Index_files/figure-html/unnamed-chunk-25-1.jpeg" style="display: block; margin: auto;" />
 
-## RECRUIT INDEX (from sea urchin, Chile)
+## Recruit Index size Based (from sea urchin, Chile)
 
 Cálculo el índice
  
