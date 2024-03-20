@@ -1,8 +1,8 @@
 ---
-title: "AED FEMP_AND_04 Proyecto"
+title: "Evaluación de Stock de coquina. AED, modelos y supuestos utilizados"
 subtitle: "Análisis Exploratorio de Datos (AED) para el manejo, asesoría y evaluación de stock de D. trunculus"
 author: "Mardones, M; Delgado, M"
-date:  "06 March, 2024"
+date:  "20 March, 2024"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -152,6 +152,8 @@ A modo general, la serie historica de desembarques varia entre 1 y 15 t y estan 
 <img src="Fig/Desembarques.png" alt="Desembarques oficiales para coquina en el Golfo de Cádiz entre los años 2013 y 2023"  />
 <p class="caption">(\#fig:dese)Desembarques oficiales para coquina en el Golfo de Cádiz entre los años 2013 y 2023</p>
 </div>
+
+El detalle de los datos y otras agrupaciones temporales y espaciales puede ser visto en el siguiente enlace;
 
 - [Desembarques](Rendimiento-pesquero.html)
 

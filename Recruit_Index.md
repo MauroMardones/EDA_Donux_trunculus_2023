@@ -2,7 +2,7 @@
 title: "Indice Reclutamiento D. trunculus"
 subtitle: "Datos Monitoreo poblacional FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "24 January, 2024"
+date:  "20 March, 2024"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -56,9 +56,8 @@ library(hrbrthemes)
 library(viridis)
 library(kableExtra)
 library(ggalt)
-library(rnaturalearth)
-library(sf)
 library(psych)
+library(ggpubr)
 ```
 
 # CONTEXTO
@@ -69,7 +68,12 @@ En este codigo, se establecen dos formas de estimar el indice de reclutamiento p
 
 ## Bases de Densidades
 
-Recordar que las bases de densidades previas al 2021 estan en la misma base que las longitudes
+Recordar que las bases de densidades previas al 2021 estan en la misma base que las longitudes. pero he encontrado un archivo que tiene una sintesis
+
+
+```r
+dens17_20 <- read_excel("Data/Anterior a 2020/densidad_reclutamiento_2017_2018_2019_2020.xlsx")
+```
 
 
 ```r
@@ -141,12 +145,13 @@ dens2024pobf <- dens2024pob %>%
   select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
   rename(ID_codificado_punto=ID)
 
+
 #compruebo si hay columnas iguales
 nombres_iguales_pob <- identical(names(dens2021pobf),
                              names(dens2023pobf)) && identical(names(dens2021pobf), 
                                                                names(dens2022pobf))
 #junto la base
-denspob2123f <- rbind(dens2021pobf, 
+denspob2124f <- rbind(dens2021pobf, 
                       dens2022pobf, 
                       dens2023pobf,
                       dens2024pobf)
@@ -158,31 +163,12 @@ denspob2123f <- rbind(dens2021pobf,
 
 
 ```r
-realdate <- as.Date(denspob2123f$Date, format="%Y-%M-%D")
-dfdate <- data.frame(Date=realdate)
-ANO=as.numeric (format(realdate,"%Y"))
-MES=as.numeric (format(realdate,"%m"))
-DIA=as.numeric (format(realdate,"%d"))
-denspob2123f<-cbind(ANO,MES,DIA,denspob2123f)
-colnames(denspob2123f)
-```
+denspob2124f <- denspob2124f %>%
+  mutate(ANO = year(Date),
+         MES = month(Date),
+         DIA = day(Date))
 
-```
-##  [1] "ANO"                    "MES"                    "DIA"                   
-##  [4] "Date"                   "Beach"                  "Sampling.point"        
-##  [7] "m_track"                "tow_time"               "Latº"                  
-## [10] "Latmin"                 "Longº"                  "Longmin"               
-## [13] "Lat"                    "Long"                   "rastro"                
-## [16] "mariscador"             "SW"                     "SWsub"                 
-## [19] "CSWsub"                 "MCSWsub"                "DCSWsub"               
-## [22] "Categoria"              "CAT"                    "Nmedida"               
-## [25] "Ndañossub"              "Tide_coef"              "Low_tide_hour"         
-## [28] "Catch_hour"             "species"                "Temp"                  
-## [31] "ID_codificado_punto"    "ID_codificado_muestreo"
-```
-
-```r
-table(denspob2123f$ANO, denspob2123f$MES)
+table(denspob2124f$ANO, denspob2124f$MES)
 ```
 
 ```
@@ -191,7 +177,7 @@ table(denspob2123f$ANO, denspob2123f$MES)
 ##   2021 12  6  5 12  6  6 11  5  6 11  6 12
 ##   2022  6  6 12  6  6  6 18  6  0  6 12  6
 ##   2023  6  6  5  6  6  6  6  6  6  6  6  6
-##   2024  6  0  0  0  0  0  0  0  0  0  0  0
+##   2024  6  6  6  0  0  0  0  0  0  0  0  0
 ```
 
 
@@ -212,7 +198,7 @@ Ahora calculamos las siguientes variables para `POBLACIONAL`;
 - `Ndaños`= `Ndañossub` * `fps`      
 - `Ntotal` = `NtotalCSW (g)`+`NtotalCSW (p)` + `Ndaños` * `fps` (Grande y pequeña, Usar como referencia el `Sampling.point`)
 - `area` = `m_track`* 0.445 (preguntar valor!)
-- `bio` = `Btotal`* `area`
+- `bio` = `Btotal`/ `area`
 - `dens` =  `Ntotal` * `area` (ind/m2)
 
 
@@ -221,10 +207,10 @@ pproceder a los calculos para calcular las variables poblacionales de interes, e
 
 
 ```r
-denspobtot <- denspob2123f %>% 
+denspobtot <- denspob2124f %>% 
   mutate(fps = SW /SWsub,
          CSW = CSWsub * fps,
-         fpm = CSW * CSWsub,
+         fpm = CSW / CSWsub,
          MCSW = MCSWsub * fpm,
          DCSW = DCSWsub * fps,
          TCSW = CSW + DCSW)
@@ -232,39 +218,64 @@ denspobtot <- denspob2123f %>%
 denspobtot2 <- denspobtot %>% 
   group_by(Beach, Sampling.point, ANO, MES, DIA) %>% 
   mutate(Btotal=sum(TCSW),
-         fpn = MCSWsub/CSW,
+         fpn = CSW/MCSWsub,
          NtotalCSW  = Nmedida * fpn, 
          Ndaños = Ndañossub * fps, 
-         Ntotal = sum(NtotalCSW) + Ndaños * fps,
+         Ntotal = (sum(NtotalCSW) + Ndaños) * fps,
          area = m_track * 0.445,
-         bio= Btotal * area,
-         dens = Ntotal * area)
+         bio= Btotal / area,
+         dens = Ntotal / area)
 tail(denspobtot2)
 ```
 
 ```
 ## # A tibble: 6 × 46
 ## # Groups:   Beach, Sampling.point, ANO, MES, DIA [3]
-##     ANO   MES   DIA Date                Beach    Sampling.point m_track tow_time
-##   <dbl> <dbl> <dbl> <dttm>              <chr>             <dbl>   <dbl>    <dbl>
-## 1  2024     1    15 2024-01-15 00:00:00 Donana_…              2      73        5
-## 2  2024     1    15 2024-01-15 00:00:00 Donana_…              2      73        5
-## 3  2024     1    15 2024-01-15 00:00:00 Donana_…              4      76        4
-## 4  2024     1    15 2024-01-15 00:00:00 Donana_…              4      76        4
-## 5  2024     1    15 2024-01-15 00:00:00 Donana_…              6      78        4
-## 6  2024     1    15 2024-01-15 00:00:00 Donana_…              6      78        4
-## # ℹ 38 more variables: Latº <dbl>, Latmin <dbl>, Longº <dbl>, Longmin <dbl>,
-## #   Lat <dbl>, Long <dbl>, rastro <chr>, mariscador <chr>, SW <dbl>,
-## #   SWsub <dbl>, CSWsub <dbl>, MCSWsub <dbl>, DCSWsub <dbl>, Categoria <chr>,
-## #   CAT <dbl>, Nmedida <dbl>, Ndañossub <dbl>, Tide_coef <dbl>,
-## #   Low_tide_hour <dttm>, Catch_hour <dttm>, species <chr>, Temp <dbl>,
-## #   ID_codificado_punto <chr>, ID_codificado_muestreo <chr>, fps <dbl>,
-## #   CSW <dbl>, fpm <dbl>, MCSW <dbl>, DCSW <dbl>, TCSW <dbl>, Btotal <dbl>, …
+##   Date                Beach   Sampling.point m_track tow_time  Latº Latmin Longº
+##   <dttm>              <chr>            <dbl>   <dbl>    <dbl> <dbl>  <dbl> <dbl>
+## 1 2024-03-13 00:00:00 Donana…              2      52        5    36   50.3     6
+## 2 2024-03-13 00:00:00 Donana…              2      52        5    36   50.3     6
+## 3 2024-03-13 00:00:00 Donana…              4      62        5    36   53.4     6
+## 4 2024-03-13 00:00:00 Donana…              4      62        5    36   53.4     6
+## 5 2024-03-13 00:00:00 Donana…              6      90        6    36   57.1     6
+## 6 2024-03-13 00:00:00 Donana…              6      90        6    36   57.1     6
+## # ℹ 38 more variables: Longmin <dbl>, Lat <dbl>, Long <dbl>, rastro <chr>,
+## #   mariscador <chr>, SW <dbl>, SWsub <dbl>, CSWsub <dbl>, MCSWsub <dbl>,
+## #   DCSWsub <dbl>, Categoria <chr>, CAT <dbl>, Nmedida <dbl>, Ndañossub <dbl>,
+## #   Tide_coef <dbl>, Low_tide_hour <dttm>, Catch_hour <dttm>, species <chr>,
+## #   Temp <dbl>, ID_codificado_punto <chr>, ID_codificado_muestreo <chr>,
+## #   ANO <dbl>, MES <dbl>, DIA <int>, fps <dbl>, CSW <dbl>, fpm <dbl>,
+## #   MCSW <dbl>, DCSW <dbl>, TCSW <dbl>, Btotal <dbl>, fpn <dbl>, …
+```
+saco un grafico de datos de densidad 
+
+
+```r
+plotdens2124 <- ggplot(denspobtot2 %>% 
+                         filter(Categoria== "g") %>% 
+                         group_by(ANO, Sampling.point),
+                       aes(ANO, dens, group=ANO))+
+  geom_boxplot()+
+  theme_few()
+plotdens2124 
 ```
 
-Aqui trataré de replicar los rresultados de los Informes de MD.
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-7-1.jpeg" style="display: block; margin: auto;" />
 
-Primer calcularemos la proporcion de ind bajo los 15 mm con `sizeall2`
+```r
+plotdens2124p <- ggplot(denspobtot2 %>% 
+                         filter(Categoria== "p") %>% 
+                         group_by(ANO, Sampling.point),
+                       aes(ANO, dens, group=ANO))+
+  geom_boxplot()+
+  theme_few()
+ggarrange(plotdens2124p, plotdens2124, ncol=2)
+```
+
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-7-2.jpeg" style="display: block; margin: auto;" />
+
+
+Aqui trataré de replicar los rresultados de los Informes de MD en los codes `Pondera1.R` y `Pondera2.R` alojados en este folder. Este hace un cruce con los datos de  tallas. 
 
 ## Base Tallas
 
@@ -293,12 +304,8 @@ size2024 <- read_excel(here("Data",
 ```
 
 
-
 Este aspecto se trabaja de forma de ponderación ad-hoc descrita en la
 Figure \@ref(fig:edaplot1)
-
-
-Now, we handling data 2021-2023. Same columns data 2017-2020
 
 
 ```r
@@ -329,7 +336,7 @@ glimpse(size_21_23)
 ```
 
 ```
-## Rows: 49,048
+## Rows: 50,390
 ## Columns: 12
 ## $ Date                   <dttm> 2021-01-12, 2021-01-12, 2021-01-12, 2021-01-12…
 ## $ Beach                  <chr> "Donana_sur", "Donana_sur", "Donana_sur", "Dona…
@@ -355,7 +362,7 @@ table(size_21_23$ANO, size_21_23$MES)
 ##   2021 3103 1600  897 2399  784 1384 2846  819 1384 2389 1552 2814
 ##   2022 1374 1156 2560 1673 1013 1857 2577  868    0  996 2619  733
 ##   2023  915 1040  866  857  732 1068  618  655  639  384  490  772
-##   2024  615    0    0    0    0    0    0    0    0    0    0    0
+##   2024  615  374  968    0    0    0    0    0    0    0    0    0
 ```
 
 ```r
@@ -363,7 +370,7 @@ size_21_23
 ```
 
 ```
-## # A tibble: 49,048 × 12
+## # A tibble: 50,390 × 12
 ##    Date                Beach   Sampling.point rastro   CAT Categoria  size sizeE
 ##    <dttm>              <chr>   <chr>          <chr>  <dbl> <chr>     <dbl> <dbl>
 ##  1 2021-01-12 00:00:00 Donana… 2              POBLA…     2 g          22.4    22
@@ -376,76 +383,15 @@ size_21_23
 ##  8 2021-01-12 00:00:00 Donana… 2              POBLA…     2 g          24.0    24
 ##  9 2021-01-12 00:00:00 Donana… 2              POBLA…     2 g          22.4    22
 ## 10 2021-01-12 00:00:00 Donana… 2              POBLA…     2 g          22.5    22
-## # ℹ 49,038 more rows
+## # ℹ 50,380 more rows
 ## # ℹ 4 more variables: ID_codificado_muestreo <chr>, DIA <int>, MES <dbl>,
 ## #   ANO <dbl>
 ```
 
 
-Creo la función para estimar el `%`
+Ahora por la cantidad de individuos bajo los 15 mm. Si bien hemos visualizado la base usando los datos desde el 2017, previo al 2020 no se puede asignar un area a los datos. Por lo que trabajo con los datos del 2020 al 2023.
 
-
-```r
-FUN <- function(x)  (sum(x) / length(x)) * 100
-
-D15 <- size_21_23 %>%
-  group_by(ANO, MES, Sampling.point) %>%
-  summarize(d15 = FUN(sizeE<15), rm.na=T) 
-```
-representación con barPlot
-
-## Graficas
-
-
-```r
-D15plot <- ggplot(D15, aes(d15, Sampling.point,
-                  fill=Sampling.point))+
-  geom_col(position = "dodge")+
-  scale_fill_viridis_d(option = "A",
-                       name= "Punto")+
-  facet_grid(MES~ANO)+
-  geom_vline(xintercept = 8,
-             col="red",
-             linetype=2)+
-  coord_flip()+
-  theme_few()+
-  xlim(0,60)
-D15plot
-```
-
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-10-1.jpeg" style="display: block; margin: auto;" />
-
-
-
-```r
-landpop <- ggplot(D15) +
-  geom_lollipop(aes(y=d15, 
-                  x=Sampling.point,
-                  colour=Sampling.point), 
-              size=0.9)+
-  scale_colour_viridis_d(option = "C",
-                       name= "Punto")+
-  geom_hline(yintercept = 8,
-             col="red",
-             linetype=2)+
-  theme_bw() +
-  theme(
-    legend.position = "none",
-    panel.border = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text.x = element_text(size = 6),
-    axis.text.x = element_text(size = 5),
-    axis.text.y = element_text(size = 5)) +
-  xlab("") +
-  ylab("D15") +
-  facet_grid(ANO~MES)
-landpop
-```
-
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-11-1.jpeg" style="display: block; margin: auto;" />
-Ahora por la cantidad de individuos bajo los 15 mm. Si bien hemos visualizado la base usando los datos desde el 2017, previo al 2020 no se puede asignar un area a los datos. Por lo que trabajo con los datos del 2020 al 2023 `size3`
-
-Primero calculo en n de ind medidos y luego junto con base que tiene medida del area `track_m`
+Primero calculo en n de ind medidos y luego junto con base que tiene medida del area `track_m`, que es una variable para estimar `D15` q es en función del área, de acuerdo a lo comentado por MD.
 
 
 ```r
@@ -455,7 +401,8 @@ D15n <- size_21_23 %>%
            Sampling.point, 
            ID_codificado_muestreo, 
            Beach,
-           Categoria) %>% 
+           Categoria,
+           ) %>% 
   summarize(num_individuos = n(), .groups = "drop") 
 
 D15n$Sampling.point <- as.double(D15n$Sampling.point)
@@ -465,12 +412,12 @@ D15n1 <- left_join(denspobtot2, D15n,
 ```
 
 
-
 Calculo el reclutamiento, es decir, n ind /`track_m`* 0.045 para el ultimo muestreo
 
 
 ```r
 D15n2 <- D15n1 %>% 
+  filter(Categoria.x=="p") %>% 
   group_by(ANO.x, MES.x, Sampling.point.x, Categoria.x) %>% 
   ungroup() %>%
   mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
@@ -500,6 +447,7 @@ Ahora una grafica para todos los años meses y puntos
 
 ```r
 D15n3 <- D15n1 %>% 
+  filter(Categoria.x=="p") %>% 
   group_by(ANO.x, MES.x, Sampling.point.x, Categoria.x) %>% 
   ungroup() %>%
   mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
@@ -508,30 +456,114 @@ D15n3 <- D15n1 %>%
   summarize(across(num_individuos_m2, mean))
 ```
 
+
+
 ```r
 plotD15 <- ggplot(D15n3 %>% 
                     drop_na(), 
-                  aes(MES.x,num_individuos_m2, 
-                     
-                      color=Sampling.point.x))+
+                  aes(MES.x,num_individuos_m2,
+                      color=as.factor(Sampling.point.x)))+
   geom_point()+
   geom_smooth(col=2)+
   facet_wrap(.~ANO.x, ncol=4)+
-  scale_color_viridis_c()+
-  scale_x_continuous(breaks = seq(from = 1, to = 12, by = 2))+
+  scale_color_viridis_d(name="Sampling point")+
+  scale_x_continuous(breaks = seq(from = 1, 
+                                  to = 12, 
+                                  by = 1,
+                                  size=2))+
   theme_few()+
-  theme(legend.position = "none",
-        axis.text.x = element_text(angle = 90, hjust = 1))
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))+
+  ylim(0,150)+
+  labs(y="Indice de Reclutamiemto",
+       x="MES")
 plotD15
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-16-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-15-1.jpeg" style="display: block; margin: auto;" />
+
+Esto debemos tratarlo como grupo dado que de acuerdo a la replica de cálculos los valores son mayores que los registrados en los ITAs de los años 2021 y 2023 [@Delgado2021; @Delgado2023].
+
+
+Existe un archivo que tiene datos de `D15` previos al 2020 y son valores menores.
 
 
 
+```r
+D151720 <- read_excel("Data/Anterior a 2020/densidad_reclutamiento_2017_2018_2019_2020.xlsx")
+```
 
 
-Tabla con los datos de Diciembre
+
+```r
+D151720 <- D151720 %>%
+  mutate(
+    DIA = day(month...7),
+    MES = month(month...7),
+    ANO = year(month...7)
+  )
+```
+
+
+
+```r
+duda <- ggplot(D151720 %>% 
+                 drop_na(D15))+
+  geom_histogram(aes(x=D15),
+                 bins=10)+
+  facet_wrap(.~ANO)+
+    scale_x_continuous(breaks = seq(from = 0, 
+                                  to = 90, 
+                                  by = 5,
+                                  size=2))+
+  theme_few()
+duda
+```
+
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-18-1.jpeg" style="display: block; margin: auto;" />
+
+Ahora lo veo como un plot similar al de los años 2021-2024
+
+
+```r
+D15_17_20 <- ggplot(D151720 , 
+                  aes(MES,D15, 
+                  color=as.factor(Sampling.point)))+
+  geom_point()+
+  geom_smooth(col=2)+
+  facet_wrap(.~ANO, ncol=4)+
+  scale_color_viridis_d(name="Sampling Points")+
+  theme_few()+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))+
+    scale_x_continuous(breaks = seq(from = 1, 
+                                  to = 12, 
+                                  by = 1,
+                                  size=2))+
+  ylim(0,150)+
+  labs(y="Indice de Reclutamiemto",
+       x="MES")
+D15_17_20
+```
+
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
+Ambos graficos (2017-2020 y 2021.2024) para comparar metodologías. Estas no tienen os mismos puntos muestreados
+
+
+
+```r
+joinpl <- ggarrange(D15_17_20, plotD15, ncol = 2,  legend="bottom")
+```
+
+
+Tabla con los datos del año
+
 
 ```r
 kbl(D15n2$Sampling.point.x, D15n2$num_individuos_m2, 
@@ -542,39 +574,99 @@ kbl(D15n2$Sampling.point.x, D15n2$num_individuos_m2,
                 full_width = FALSE,font_size=8)
 ```
 
-\begin{table}
 
-\caption{\label{tab:unnamed-chunk-17}D15 Mes de Diciembre 2023}
-\centering
-\resizebox{\linewidth}{!}{
-\fontsize{8}{10}\selectfont
-\begin{tabular}[t]{r}
-\toprule
-x\\
-\midrule
-\cellcolor{gray!6}{2}\\
-4\\
-\cellcolor{gray!6}{6}\\
-\bottomrule
-\end{tabular}}
-\end{table}
+# Alternativas para identificar el Indice
 
-# RECRUIT PROPORTION (from sea urchin, Chile)
+## Porcentaje Individuos < 15 mm
+
+Este es una forma mas simple calculando la proporción de ind bajo  los 15 mm, en la zona y tiempo (AÑO y MES). Al ser proporcional, no importa el valor absoluto de individuos. Aca habría que identificar  un nivel de referencia asociado a este porcentaje es necesario para caultelar la sustentabilidad del reclutamiento.
+Cargo data total de las estructuiras de tallas 
 
 
 ```r
-talla13_23 <- readRDS("tallas13_23.Rdata")
+tallas13_24 <- readRDS("~/IEO/DATA/EDA_Donux_truculus_2023/tallas13_24.RDS")
 ```
+
+
+
+Creo la función para estimar el `%`
+
+
+```r
+FUN <- function(x)  (sum(x) / length(x)) * 100
+
+D15 <- tallas13_24 %>%
+  filter(rastro=="POBLACIONAL") %>% 
+  group_by(ANO, MES, Sampling.point) %>%
+  summarize(d15 = FUN(sizeE<15), rm.na=T) 
+```
+representación con barPlot
+
+## Graficas
+
+
+```r
+D15plot <- ggplot(D15 %>% 
+                    drop_na(d15, Sampling.point),
+                  aes(d15, Sampling.point,
+                  fill=Sampling.point))+
+  geom_col(position = "dodge")+
+  scale_fill_viridis_d(option = "A",
+                       name= "Punto")+
+  facet_wrap(.~ANO)+
+  geom_vline(xintercept = 8,
+             col="red",
+             linetype=2)+
+  coord_flip()+
+  theme_few()+
+  xlim(0,60)+
+  ylab("Punto de Muestreo")
+D15plot
+```
+
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-24-1.jpeg" style="display: block; margin: auto;" />
+
+
+
+```r
+landpop <- ggplot(D15 %>% 
+                    drop_na(d15, Sampling.point)) +
+  geom_lollipop(aes(y=d15, 
+                  x=Sampling.point,
+                  colour=Sampling.point), 
+              size=0.9)+
+  scale_colour_viridis_d(option = "C",
+                       name= "Punto")+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme_bw() +
+  theme(
+    legend.position = "none",
+    panel.border = element_blank(),
+    panel.spacing = unit(0.1, "lines"),
+    strip.text.x = element_text(size = 6),
+    axis.text.x = element_text(size = 5),
+    axis.text.y = element_text(size = 5)) +
+  xlab("") +
+  ylab("D15") +
+  facet_grid(ANO~MES)
+landpop
+```
+
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-25-1.jpeg" style="display: block; margin: auto;" />
+
+## RECRUIT INDEX (from sea urchin, Chile)
 
 Cálculo el índice
  
 
 ```r
-indice_reclutamiento <- talla13_23 %>%
+indice_reclutamiento <- tallas13_24 %>%
   filter(sizeE<15,
          rastro=="POBLACIONAL") %>% 
   group_by(ANO, MES, Sampling.point) %>%
-  summarize(PROP = n() / nrow(talla13_23)*100) %>% 
+  summarize(PROP = n() / nrow(tallas13_24)*100) %>% 
   mutate(PROPLOG =log(PROP))
 ```
  Veo los datos crudos  con la linea como media del cuantil de los datos
@@ -593,7 +685,7 @@ indseg <- ggplot(indice_reclutamiento %>%
 indseg
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-27-1.jpeg" style="display: block; margin: auto;" />
 Ahora estandarizo entre - y 1
 
 
@@ -636,48 +728,120 @@ indseg3 <- ggplot(indice_reclutamiento %>%
 indseg3
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-22-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-29-1.jpeg" style="display: block; margin: auto;" />
 
-## Dudas
 
-Existe un archivo que tiene datos de `D15` previos al 2020 y son valores extrañamente menores.
+# INDICE DE DENSIDAD
+
+Considerando los asuntos pendientes para la construccion de un indice poblacional desdee el 2013, extraeremos un  un indice de densidad, por que es mas *ad-hoc* para los modelos de stock assessment [@Caddy2004]. 
+
+llamo los objetos con la base  2017-2020 y 2021- 2023, que serían `denspobtot2` y `D151720`. Identifico los valores a utilizar y uno bases.
+
+
+```r
+names(denspobtot2)
+```
+
+```
+##  [1] "Date"                   "Beach"                  "Sampling.point"        
+##  [4] "m_track"                "tow_time"               "Latº"                  
+##  [7] "Latmin"                 "Longº"                  "Longmin"               
+## [10] "Lat"                    "Long"                   "rastro"                
+## [13] "mariscador"             "SW"                     "SWsub"                 
+## [16] "CSWsub"                 "MCSWsub"                "DCSWsub"               
+## [19] "Categoria"              "CAT"                    "Nmedida"               
+## [22] "Ndañossub"              "Tide_coef"              "Low_tide_hour"         
+## [25] "Catch_hour"             "species"                "Temp"                  
+## [28] "ID_codificado_punto"    "ID_codificado_muestreo" "ANO"                   
+## [31] "MES"                    "DIA"                    "fps"                   
+## [34] "CSW"                    "fpm"                    "MCSW"                  
+## [37] "DCSW"                   "TCSW"                   "Btotal"                
+## [40] "fpn"                    "NtotalCSW"              "Ndaños"                
+## [43] "Ntotal"                 "area"                   "bio"                   
+## [46] "dens"
+```
+
+```r
+names(D151720)
+```
+
+```
+##  [1] "month...1"      "Sampling.point" "Talla media"    "sd"            
+##  [5] "Densidad"       "D15"            "month...7"      "Rendimiento"   
+##  [9] "...9"           "...10"          "DIA"            "MES"           
+## [13] "ANO"
+```
+
+
+```r
+dens1720 <- D151720 %>% 
+  select(c(2, 12, 13, 5))
+
+dens2123 <- denspobtot2 %>% 
+  select(c(3, 30, 31, 46)) %>% 
+  rename("Densidad"="dens") %>% 
+  as.data.frame()
+
+dens2124 <- dens2123 %>% 
+  select(-c("Beach", "DIA"))
+
+
+dens1724 <- rbind(dens1720,
+                      dens2124)
+```
 
 
 
 ```r
-D15duda <- read_excel("Data/Anterior a 2020/densidad_reclutamiento_2017_2018_2019_2020.xlsx")
-```
-
-```r
-summary(D15duda$D15)
-```
-
-```
-##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
-##  0.0000  0.2917  1.4998  5.0384  5.6600 82.8023     231
-```
-
-```r
-D15duda <- D15duda %>%
-  mutate(
-    DIA = day(month...7),
-    MES = month(month...7),
-    ANO = year(month...7)
-  )
-```
-
-
-
-```r
-duda <- ggplot(D15duda,aes(MES, D15))+
+plot_dens <- ggplot(dens1724 %>% 
+                      drop_na(), 
+                  aes(MES,Densidad))+
   geom_point()+
-  geom_smooth(method= "lm", col=2,
-              se=FALSE)+
-  facet_grid(ANO~Sampling.point)+
-  theme_few()
-duda
+  geom_smooth(col=2, 
+              method = "lm")+
+  facet_wrap(.~ANO, ncol=8)+
+  scale_color_viridis_d(name="Sampling Points")+
+  theme_few()+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))+
+    scale_x_continuous(breaks = seq(from = 1, 
+                                  to = 12, 
+                                  by = 1,
+                                  size=2))+
+   labs(y="Densidad (ind/mt2)",
+       x="MES")
+plot_dens
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-25-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-32-1.jpeg" style="display: block; margin: auto;" />
+
+
+ahora creo vector con desviación 
+
+
+```r
+CV <- function(x) {
+  sd_value <- sd(x, na.rm = TRUE)  # Calcular la desviación estándar, ignorando NA
+  mean_value <- mean(x, na.rm = TRUE)  # Calcular la media, ignorando NA
+  cv <- sd_value / mean_value
+  # Calcular el coeficiente de variación
+  return(cv)
+}
+
+vectordens <- dens1724 %>% 
+  group_by(ANO) %>% 
+  summarize(MEAND =mean(Densidad, na.rm=TRUE),
+            SDD = sd(Densidad, na.rm = TRUE)/100,
+            CV = CV(Densidad))
+
+
+# escribo la salida
+write_csv(vectordens, "DENSIDADPOBLACIONAL")
+```
+
+# REFERENCIAS
 
 

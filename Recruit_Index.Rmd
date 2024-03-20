@@ -54,9 +54,8 @@ library(hrbrthemes)
 library(viridis)
 library(kableExtra)
 library(ggalt)
-library(rnaturalearth)
-library(sf)
 library(psych)
+library(ggpubr)
 ```
 
 # CONTEXTO
@@ -69,7 +68,7 @@ En este codigo, se establecen dos formas de estimar el indice de reclutamiento p
 
 Recordar que las bases de densidades previas al 2021 estan en la misma base que las longitudes. pero he encontrado un archivo que tiene una sintesis
 
-```{r}
+```{r eval=FALSE}
 dens17_20 <- read_excel("Data/Anterior a 2020/densidad_reclutamiento_2017_2018_2019_2020.xlsx")
 ```
 
@@ -185,7 +184,7 @@ Ahora calculamos las siguientes variables para `POBLACIONAL`;
 - `Ndaños`= `Ndañossub` * `fps`      
 - `Ntotal` = `NtotalCSW (g)`+`NtotalCSW (p)` + `Ndaños` * `fps` (Grande y pequeña, Usar como referencia el `Sampling.point`)
 - `area` = `m_track`* 0.445 (preguntar valor!)
-- `bio` = `Btotal`* `area`
+- `bio` = `Btotal`/ `area`
 - `dens` =  `Ntotal` * `area` (ind/m2)
 
 
@@ -203,15 +202,15 @@ denspobtot <- denspob2124f %>%
 
 denspobtot2 <- denspobtot %>% 
   group_by(Beach, Sampling.point, ANO, MES, DIA) %>% 
-  summarise(Btotal=sum(TCSW)) %>% 
-  mutate(fpn = MCSWsub/CSW,
+  mutate(Btotal=sum(TCSW),
+         fpn = CSW/MCSWsub,
          NtotalCSW  = Nmedida * fpn, 
          Ndaños = Ndañossub * fps, 
-         Ntotal = sum(NtotalCSW) + Ndaños * fps,
+         Ntotal = (sum(NtotalCSW) + Ndaños) * fps,
          area = m_track * 0.445,
-         bio= Btotal * area,
-         dens = Ntotal * area)
-head(denspobtot2)
+         bio= Btotal / area,
+         dens = Ntotal / area)
+tail(denspobtot2)
 ```
 saco un grafico de datos de densidad 
 
@@ -219,14 +218,22 @@ saco un grafico de datos de densidad
 plotdens2124 <- ggplot(denspobtot2 %>% 
                          filter(Categoria== "g") %>% 
                          group_by(ANO, Sampling.point),
-                       aes(ANO, dens))+
-  geom_point()
+                       aes(ANO, dens, group=ANO))+
+  geom_boxplot()+
+  theme_few()
+plotdens2124 
+
+plotdens2124p <- ggplot(denspobtot2 %>% 
+                         filter(Categoria== "p") %>% 
+                         group_by(ANO, Sampling.point),
+                       aes(ANO, dens, group=ANO))+
+  geom_boxplot()+
+  theme_few()
+ggarrange(plotdens2124p, plotdens2124, ncol=2)
 ```
 
 
-Aqui trataré de replicar los rresultados de los Informes de MD.
-
-Primer calcularemos la proporcion de ind bajo los 15 mm con `sizeall2`
+Aqui trataré de replicar los rresultados de los Informes de MD en los codes `Pondera1.R` y `Pondera2.R` alojados en este folder. Este hace un cruce con los datos de  tallas. 
 
 ## Base Tallas
 
@@ -254,12 +261,8 @@ size2024 <- read_excel(here("Data",
 ```
 
 
-
 Este aspecto se trabaja de forma de ponderación ad-hoc descrita en la
 Figure \@ref(fig:edaplot1)
-
-
-Now, we handling data 2021-2023. Same columns data 2017-2020
 
 ```{r}
 size_21_23 <- rbind(size2021,
@@ -284,12 +287,188 @@ size_21_23
 ```
 
 
+Ahora por la cantidad de individuos bajo los 15 mm. Si bien hemos visualizado la base usando los datos desde el 2017, previo al 2020 no se puede asignar un area a los datos. Por lo que trabajo con los datos del 2020 al 2023.
+
+Primero calculo en n de ind medidos y luego junto con base que tiene medida del area `track_m`, que es una variable para estimar `D15` q es en función del área, de acuerdo a lo comentado por MD.
+
+```{r}
+D15n <- size_21_23 %>% 
+  group_by(ANO, 
+           MES, 
+           Sampling.point, 
+           ID_codificado_muestreo, 
+           Beach,
+           Categoria,
+           ) %>% 
+  summarize(num_individuos = n(), .groups = "drop") 
+
+D15n$Sampling.point <- as.double(D15n$Sampling.point)
+
+D15n1 <- left_join(denspobtot2, D15n,
+             by = "ID_codificado_muestreo")
+```
+
+
+Calculo el reclutamiento, es decir, n ind /`track_m`* 0.045 para el ultimo muestreo
+
+```{r}
+D15n2 <- D15n1 %>% 
+  filter(Categoria.x=="p") %>% 
+  group_by(ANO.x, MES.x, Sampling.point.x, Categoria.x) %>% 
+  ungroup() %>%
+  mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
+  arrange(ANO.x, MES.x) %>% 
+  filter(ANO.x==2024,
+         MES.x==1) %>%
+  group_by(Sampling.point.x) %>%
+  summarize(across(num_individuos_m2, mean))
+```
+Obtengo el valor para el informe
+
+```{r}
+D15n2
+```
+Ahora una grafica para todos los años meses y puntos
+
+```{r}
+D15n3 <- D15n1 %>% 
+  filter(Categoria.x=="p") %>% 
+  group_by(ANO.x, MES.x, Sampling.point.x, Categoria.x) %>% 
+  ungroup() %>%
+  mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
+  arrange(ANO.x, MES.x) %>% 
+  group_by(Sampling.point.x, ANO.x, MES.x) %>%
+  summarize(across(num_individuos_m2, mean))
+```
+
+
+```{r warning=FALSE}
+plotD15 <- ggplot(D15n3 %>% 
+                    drop_na(), 
+                  aes(MES.x,num_individuos_m2,
+                      color=as.factor(Sampling.point.x)))+
+  geom_point()+
+  geom_smooth(col=2)+
+  facet_wrap(.~ANO.x, ncol=4)+
+  scale_color_viridis_d(name="Sampling point")+
+  scale_x_continuous(breaks = seq(from = 1, 
+                                  to = 12, 
+                                  by = 1,
+                                  size=2))+
+  theme_few()+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))+
+  ylim(0,150)+
+  labs(y="Indice de Reclutamiemto",
+       x="MES")
+plotD15
+```
+
+Esto debemos tratarlo como grupo dado que de acuerdo a la replica de cálculos los valores son mayores que los registrados en los ITAs de los años 2021 y 2023 [@Delgado2021; @Delgado2023].
+
+
+Existe un archivo que tiene datos de `D15` previos al 2020 y son valores menores.
+
+
+```{r}
+D151720 <- read_excel("Data/Anterior a 2020/densidad_reclutamiento_2017_2018_2019_2020.xlsx")
+```
+
+
+```{r}
+D151720 <- D151720 %>%
+  mutate(
+    DIA = day(month...7),
+    MES = month(month...7),
+    ANO = year(month...7)
+  )
+```
+
+
+```{r warning=FALSE}
+duda <- ggplot(D151720 %>% 
+                 drop_na(D15))+
+  geom_histogram(aes(x=D15),
+                 bins=10)+
+  facet_wrap(.~ANO)+
+    scale_x_continuous(breaks = seq(from = 0, 
+                                  to = 90, 
+                                  by = 5,
+                                  size=2))+
+  theme_few()
+duda
+```
+
+Ahora lo veo como un plot similar al de los años 2021-2024
+
+```{r warning = FALSE}
+D15_17_20 <- ggplot(D151720 , 
+                  aes(MES,D15, 
+                  color=as.factor(Sampling.point)))+
+  geom_point()+
+  geom_smooth(col=2)+
+  facet_wrap(.~ANO, ncol=4)+
+  scale_color_viridis_d(name="Sampling Points")+
+  theme_few()+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))+
+    scale_x_continuous(breaks = seq(from = 1, 
+                                  to = 12, 
+                                  by = 1,
+                                  size=2))+
+  ylim(0,150)+
+  labs(y="Indice de Reclutamiemto",
+       x="MES")
+D15_17_20
+```
+Ambos graficos (2017-2020 y 2021.2024) para comparar metodologías. Estas no tienen os mismos puntos muestreados
+
+
+```{r warning=FALSE}
+joinpl <- ggarrange(D15_17_20, plotD15, ncol = 2,  legend="bottom")
+
+```
+
+
+Tabla con los datos del año
+
+```{r eval=FALSE}
+kbl(D15n2$Sampling.point.x, D15n2$num_individuos_m2, 
+    booktabs = T,format = "latex",
+    caption = "D15 Mes de Diciembre 2023") %>%
+    kable_styling(latex_options = c("striped",
+                                  "condensed","scale_down"),
+                full_width = FALSE,font_size=8)
+
+```
+
+
+# Alternativas para identificar el Indice
+
+## Porcentaje Individuos < 15 mm
+
+Este es una forma mas simple calculando la proporción de ind bajo  los 15 mm, en la zona y tiempo (AÑO y MES). Al ser proporcional, no importa el valor absoluto de individuos. Aca habría que identificar  un nivel de referencia asociado a este porcentaje es necesario para caultelar la sustentabilidad del reclutamiento.
+Cargo data total de las estructuiras de tallas 
+
+```{r}
+tallas13_24 <- readRDS("~/IEO/DATA/EDA_Donux_truculus_2023/tallas13_24.RDS")
+```
+
+
+
 Creo la función para estimar el `%`
 
 ```{r}
 FUN <- function(x)  (sum(x) / length(x)) * 100
 
-D15 <- size_21_23 %>%
+D15 <- tallas13_24 %>%
+  filter(rastro=="POBLACIONAL") %>% 
   group_by(ANO, MES, Sampling.point) %>%
   summarize(d15 = FUN(sizeE<15), rm.na=T) 
 ```
@@ -298,24 +477,28 @@ representación con barPlot
 ## Graficas
 
 ```{r}
-D15plot <- ggplot(D15, aes(d15, Sampling.point,
+D15plot <- ggplot(D15 %>% 
+                    drop_na(d15, Sampling.point),
+                  aes(d15, Sampling.point,
                   fill=Sampling.point))+
   geom_col(position = "dodge")+
   scale_fill_viridis_d(option = "A",
                        name= "Punto")+
-  facet_grid(.~ANO)+
+  facet_wrap(.~ANO)+
   geom_vline(xintercept = 8,
              col="red",
              linetype=2)+
   coord_flip()+
   theme_few()+
-  xlim(0,60)
+  xlim(0,60)+
+  ylab("Punto de Muestreo")
 D15plot
 ```
 
 
 ```{r}
-landpop <- ggplot(D15) +
+landpop <- ggplot(D15 %>% 
+                    drop_na(d15, Sampling.point)) +
   geom_lollipop(aes(y=d15, 
                   x=Sampling.point,
                   colour=Sampling.point), 
@@ -338,116 +521,17 @@ landpop <- ggplot(D15) +
   facet_grid(ANO~MES)
 landpop
 ```
-Ahora por la cantidad de individuos bajo los 15 mm. Si bien hemos visualizado la base usando los datos desde el 2017, previo al 2020 no se puede asignar un area a los datos. Por lo que trabajo con los datos del 2020 al 2023 `size3`
 
-Primero calculo en n de ind medidos y luego junto con base que tiene medida del area `track_m`
-
-```{r}
-D15n <- size_21_23 %>% 
-  group_by(ANO, 
-           MES, 
-           Sampling.point, 
-           ID_codificado_muestreo, 
-           Beach,
-           Categoria,
-           ) %>% 
-  summarize(num_individuos = n(), .groups = "drop") 
-
-D15n$Sampling.point <- as.double(D15n$Sampling.point)
-
-D15n1 <- left_join(denspobtot2, D15n,
-             by = "ID_codificado_muestreo")
-```
-
-
-
-Calculo el reclutamiento, es decir, n ind /`track_m`* 0.045 para el ultimo muestreo
-
-```{r}
-D15n2 <- D15n1 %>% 
-  group_by(ANO.x, MES.x, Sampling.point.x, Categoria.x) %>% 
-  ungroup() %>%
-  mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
-  arrange(ANO.x, MES.x) %>% 
-  filter(ANO.x==2024,
-         MES.x==2) %>%
-  group_by(Sampling.point.x) %>%
-  summarize(across(num_individuos_m2, mean))
-
-```
-Obtengo el valor para el informe
-
-```{r}
-D15n2
-```
-Ahora una grafica para todos los años meses y puntos
-
-```{r}
-D15n3 <- D15n1 %>% 
-  group_by(ANO.x, MES.x, Sampling.point.x, Categoria.x) %>% 
-  ungroup() %>%
-  mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
-  arrange(ANO.x, MES.x) %>% 
-  group_by(Sampling.point.x, ANO.x, MES.x) %>%
-  summarize(across(num_individuos_m2, mean))
-```
-
-
-```{r warning=FALSE}
-plotD15 <- ggplot(D15n3 %>% 
-                    drop_na(), 
-                  aes(MES.x,num_individuos_m2,
-                      color=as.factor(Sampling.point.x)))+
-  geom_point()+
-  geom_smooth(col=2)+
-  facet_wrap(.~ANO.x, ncol=4)+
-  scale_color_viridis_d(name="Sampling point")+
-  scale_x_continuous(breaks = seq(from = 1, 
-                                  to = 12, 
-                                  by = 2))+
-  theme_few()+
-  geom_hline(yintercept = 8,
-             col="red",
-             linetype=2)+
-  theme(axis.text.x = element_text(angle = 90, 
-                                   hjust = 1))+
-  ylim(0,150)+
-  labs(y="Indice de Reclutamiemto",
-       x="MES")
-plotD15
-```
-
-
-
-
-
-Tabla con los datos de Diciembre
-```{r}
-kbl(D15n2$Sampling.point.x, D15n2$num_individuos_m2, 
-    booktabs = T,format = "latex",
-    caption = "D15 Mes de Diciembre 2023") %>%
-    kable_styling(latex_options = c("striped",
-                                  "condensed","scale_down"),
-                full_width = FALSE,font_size=8)
-
-```
-
-# RECRUIT PROPORTION (from sea urchin, Chile)
-
-
-
-```{r}
-talla13_23 <- readRDS("tallas13_23.Rdata")
-```
+## RECRUIT INDEX (from sea urchin, Chile)
 
 Cálculo el índice
  
 ```{r}
-indice_reclutamiento <- talla13_23 %>%
+indice_reclutamiento <- tallas13_24 %>%
   filter(sizeE<15,
          rastro=="POBLACIONAL") %>% 
   group_by(ANO, MES, Sampling.point) %>%
-  summarize(PROP = n() / nrow(talla13_23)*100) %>% 
+  summarize(PROP = n() / nrow(tallas13_24)*100) %>% 
   mutate(PROPLOG =log(PROP))
 ```
  Veo los datos crudos  con la linea como media del cuantil de los datos
@@ -505,44 +589,46 @@ indseg3
 
 ```
 
-## Dudas
 
-Existe un archivo que tiene datos de `D15` previos al 2020 y son valores extrañamente menores.
+# INDICE DE DENSIDAD
+
+Considerando los asuntos pendientes para la construccion de un indice poblacional desdee el 2013, extraeremos un  un indice de densidad, por que es mas *ad-hoc* para los modelos de stock assessment [@Caddy2004]. 
+
+llamo los objetos con la base  2017-2020 y 2021- 2023, que serían `denspobtot2` y `D151720`. Identifico los valores a utilizar y uno bases.
+
+```{r}
+names(denspobtot2)
+names(D151720)
+```
+
+```{r}
+
+dens1720 <- D151720 %>% 
+  select(c(2, 12, 13, 5))
+
+dens2123 <- denspobtot2 %>% 
+  select(c(3, 30, 31, 46)) %>% 
+  rename("Densidad"="dens") %>% 
+  as.data.frame()
+
+dens2124 <- dens2123 %>% 
+  select(-c("Beach", "DIA"))
+
+
+dens1724 <- rbind(dens1720,
+                      dens2124)
+
+```
 
 
 ```{r}
-D15duda <- read_excel("Data/Anterior a 2020/densidad_reclutamiento_2017_2018_2019_2020.xlsx")
-```
-```{r}
-summary(D15duda$D15)
-
-D15duda <- D15duda %>%
-  mutate(
-    DIA = day(month...7),
-    MES = month(month...7),
-    ANO = year(month...7)
-  )
-```
-
-
-```{r warning=FALSE}
-duda <- ggplot(D15duda,aes(MES, Densidad))+
+plot_dens <- ggplot(dens1724 %>% 
+                      drop_na(), 
+                  aes(MES,Densidad))+
   geom_point()+
-  geom_smooth(method= "lm", col=4,
-              se=FALSE)+
-  #facet_grid(ANO~Sampling.point)+
-  theme_few()
-duda
-```
-D15 previo al 2020
-
-```{r}
-D15_17_20 <- ggplot(D15duda , 
-                  aes(MES,D15, 
-                  color=as.factor(Sampling.point)))+
-  geom_point()+
-  geom_smooth(col=2)+
-  facet_wrap(.~ANO, ncol=4)+
+  geom_smooth(col=2, 
+              method = "lm")+
+  facet_wrap(.~ANO, ncol=8)+
   scale_color_viridis_d(name="Sampling Points")+
   theme_few()+
   geom_hline(yintercept = 8,
@@ -550,25 +636,38 @@ D15_17_20 <- ggplot(D15duda ,
              linetype=2)+
   theme(axis.text.x = element_text(angle = 90, 
                                    hjust = 1))+
-  ylim(0,150)+
-  labs(y="Indice de Reclutamiemto",
+    scale_x_continuous(breaks = seq(from = 1, 
+                                  to = 12, 
+                                  by = 1,
+                                  size=2))+
+   labs(y="Densidad (ind/mt2)",
        x="MES")
-D15_17_20
-```
-Ambos graficos (2017-2020 y 2021.2024)
-
-
-```{r warning=FALSE}
-ggarrange(D15_17_20, plotD15, common.legend=TRUE, legend="bottom")
-
-combined <- D15_17_20 + plotD15 & theme(legend.position = "bottom")
-combined + plot_layout(guides = "collect")
+plot_dens
 ```
 
 
-# INDICE DE DENSIDAD
+ahora creo vector con desviación 
 
-Ahora construyo un indice de densidad, por que es mas *ad-hoc* para los modelos de stock assessment (Caddy, 2004). 
+```{r eval=FALSE}
+CV <- function(x) {
+  sd_value <- sd(x, na.rm = TRUE)  # Calcular la desviación estándar, ignorando NA
+  mean_value <- mean(x, na.rm = TRUE)  # Calcular la media, ignorando NA
+  cv <- sd_value / mean_value
+  # Calcular el coeficiente de variación
+  return(cv)
+}
 
+vectordens <- dens1724 %>% 
+  group_by(ANO) %>% 
+  summarize(MEAND =mean(Densidad, na.rm=TRUE),
+            SDD = sd(Densidad, na.rm = TRUE)/100,
+            CV = CV(Densidad))
+
+
+# escribo la salida
+write_csv(vectordens, "DENSIDADPOBLACIONAL")
+```
+
+# REFERENCIAS
 
 
