@@ -57,10 +57,12 @@ library(ggalt)
 library(rnaturalearth)
 library(sf)
 library(psych)
+library(ggpubr)
 ```
 
 # DESEMBARQUES OFICIALES
 
+## Data Oficial
 Leo los datos entregados por E. Marco. Actualizar pedida con Junta Andalucia.
 
 ```{r}
@@ -68,8 +70,7 @@ Landings <- read_excel("Data/Desembarques/Data_13_23_Landings.xlsx")
 #View(Landings)
 ```
 
-Identifico las columnas necesarias para el analisis, que en este caso,
-serían las columnas condato crudo.
+Identifico las columnas necesarias para el análisis, que en este caso, serían las columnas con dato crudo.
 
 ```{r}
 # Fecha original en formato "año-mes-día"
@@ -96,7 +97,7 @@ landings3 <- landings2 %>%
 hist(landings3$LANDINGS)
 quantile(landings3$LANDINGS)
 ```
-Hay valores cercanos a las 14 t. Identificar si esto tiene sentido. Preguntar a MD.
+Hay valores cercanos a las 14 t. por registro. Identificar si esto tiene sentido. Preguntar a MD.
 
 ```{r}
 plotlam <- ggplot(landings3,aes(ANO, LANDINGS))+
@@ -167,7 +168,6 @@ orderland <-   ggplot(landings3 %>%
 orderland
 ```
 
-
 ```{r}
 
 table(landings2$MES, landings2$ANO)
@@ -199,7 +199,8 @@ totalanual<-   ggplot(landings3 %>%
       axis.text.y = element_text(size = 10)
     ) +
     xlab("") +
-    ylab("Desembarque (t) total aculumado por a traves de los años")
+    ylab("Desembarque (t) total aculumado por a traves de los años")+
+  ylim(0,250)
 totalanual
 ```
 
@@ -210,5 +211,98 @@ total <- landings3 %>%
   group_by(ANO) %>%
   summarise(LANDINGS1 =sum(LANDINGS))
 write_csv(total, "Landingscoquina.csv")
+```
+
+
+## Correccion 
+
+
+sin embargo, acá es necesario identificar las lonjas que reciben coquina desde el Parque Doñana. De acuerdo a esto, MD indica lo sig:
+
+
+| Lonja  | Observación | 
+|:-------|:------|
+| "AYAMONTE (Lonja)"     |  Podría recibir + procedente de Isla Canela |
+|"CALETA DE VELEZ (Lonja)" | Mediterraneo Andaluz. NO creo |
+|"ESTEPONA (Lonja)"       | Mediterraneo Andaluz. NO creo |
+| "FUENGIROLA (Lonja)"      | Mediterraneo Andaluz. NO creo |
+| "ISLA CRISTINA (Lonja)" |  Podría recibir + procedente de Isla Canela |
+|"LA ATUNARA (Lonja)"    | Cerca de Algeciras, DUDAS |
+| "MALAGA (Lonja)"        | Mediterraneo Andaluz. NO creo |
+| "MARBELLA (Lonja)"     |  Mediterraneo Andaluz. NO creo |
+| "BONANZA (Lonja)"       | Seguro que recibe  |
+| "BONANZA (Lonja)"  | Podría recibir + procedente de Isla Canela |
+| "ALGECIRAS (Lonja)"      |       DUDAS |
+
+procedo ahora a generar un vector anual con los datos filtrados 
+
+```{r}
+
+landcorr <- landings3 %>% 
+  filter(ESTABLECIMIENTO %in% c ("AYAMONTE (Lonja)",
+                              "ISLA CRISTINA (Lonja)",
+                              "LA ATUNARA (Lonja)" ,
+                              "BONANZA (Lonja)",
+                              "BONANZA (Lonja)",
+                              "ALGECIRAS (Lonja)"))
+
+```
+
+saco el plot con los datos filtrados relativos solo al Parque Doñana
+
+
+
+```{r fig.width=10, fig.height=5}
+filtrapd<-   ggplot(landcorr %>% 
+         group_by(ANO, ESTABLECIMIENTO) %>% 
+         summarise(LANDINGS1 =sum(LANDINGS)) %>% 
+           arrange(LANDINGS1) %>% 
+           mutate(ESTABLECIMIENTO=factor(ESTABLECIMIENTO,
+                                         ESTABLECIMIENTO)), 
+         aes(x=ESTABLECIMIENTO, 
+             y=LANDINGS1) ) +
+    geom_bar(stat="identity", fill="#69b3a2") +
+    facet_wrap(.~ANO)+
+    coord_flip() +
+    theme_ipsum() +
+    theme(
+      panel.grid.minor.y = element_blank(),
+      panel.grid.major.y = element_blank(),
+      legend.position="none",
+      axis.text.y = element_text(size = 7)
+    ) +
+    xlab("") +
+    ylab("Desembarque total aculumado por Establecimiento")
+filtrapd
+```
+ ahora resumido por año y comparo con el no filtrado
+ 
+ 
+```{r fig.width=10, fig.height=5}
+totalanualfil<-   ggplot(landcorr %>% 
+         group_by(ANO) %>% 
+         summarise(LANDINGS1 =sum(LANDINGS)) %>% 
+          mutate(ANO=factor(ANO,ANO)), 
+         aes(x=ANO, 
+             y=LANDINGS1) ) +
+    geom_bar(stat="identity", fill="#69b3a2") +
+  geom_smooth(method = "loess")+
+    theme_ipsum() +
+    theme(
+      panel.grid.minor.y = element_blank(),
+      panel.grid.major.y = element_blank(),
+      legend.position="none",
+      axis.text.y = element_text(size = 10)
+    ) +
+    xlab("") +
+    ylab("Desembarque (t) filtrado aculumado por a traves de los años")+
+  ylim(0,250)
+
+```
+
+
+```{r}
+ggarrange(totalanual , totalanualfil,
+          ncol = 1)
 ```
 
