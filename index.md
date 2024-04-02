@@ -151,7 +151,7 @@ A modo general, la serie historica de desembarques varia entre 1 y 15 t y estan 
 
 El detalle de los datos y otras agrupaciones temporales y espaciales puede ser visto en el siguiente enlace;
 
-- [Desembarques](Rendimiento-pesquero.html)
+- [Desembarques](Desembarques.html)
 
 # Modelo de stock assessment
 
