@@ -212,6 +212,22 @@ denspobtot2 <- denspobtot %>%
          dens = Ntotal / area)
 tail(denspobtot2)
 ```
+
+```{r}
+bio <- ggplot(denspobtot2 %>% 
+                group_by(ANO) %>% 
+                summarize(BIO =sum(bio, 
+                                   na.rm=TRUE)))+
+  geom_line(aes(ANO, BIO))+
+  geom_point(aes(ANO, BIO))+
+  #facet_wrap(.~Sampling.point)+
+  theme_few()+
+  xlim(2020, 2023)
+bio                       
+            
+    
+```
+
 saco un grafico de datos de densidad 
 
 ```{r}
@@ -318,8 +334,8 @@ D15n2 <- D15n1 %>%
   ungroup() %>%
   mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
   arrange(ANO.x, MES.x) %>% 
-  filter(ANO.x==2024,
-         MES.x==1) %>%
+  filter(ANO.x==2023,
+         MES.x==12) %>%
   group_by(Sampling.point.x) %>%
   summarize(across(num_individuos_m2, mean))
 ```
