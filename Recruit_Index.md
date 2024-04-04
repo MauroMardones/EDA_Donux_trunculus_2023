@@ -2,7 +2,7 @@
 title: "Indice Reclutamiento D. trunculus"
 subtitle: "Datos Monitoreo poblacional FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "20 March, 2024"
+date:  "04 April, 2024"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -64,16 +64,18 @@ library(ggpubr)
 
 En este codigo, se establecen dos formas de estimar el indice de reclutamiento para coquina. El primero es la forma que se ha estado usando desde @Delgado2015. El segundo es una nueva propuesta basada en la prorporcionalidad de individuos basados en los muestreos poblacionales
 
-# INDICE DE RECLUTAMIENTO POBLACIONAL (D15)
+# INDICE DE RECLUTAMIENTO POBLACIONAL (`D15`)
 
 ## Bases de Densidades
 
-Recordar que las bases de densidades previas al 2021 estan en la misma base que las longitudes. pero he encontrado un archivo que tiene una sintesis
+Recordar que las bases de densidades previas al 2021 estan en la misma base que las longitudes. pero he encontrado un archivo que tiene una síntesis.
 
 
 ```r
 dens17_20 <- read_excel("Data/Anterior a 2020/densidad_reclutamiento_2017_2018_2019_2020.xlsx")
 ```
+
+Llamo las bases con el formato último, es decir desde el año 2021.
 
 
 ```r
@@ -157,9 +159,7 @@ denspob2124f <- rbind(dens2021pobf,
                       dens2024pobf)
 ```
 
-
-
- Separate `Date` column
+Separate `Date` column
 
 
 ```r
@@ -247,6 +247,8 @@ tail(denspobtot2)
 ## #   ANO <dbl>, MES <dbl>, DIA <int>, fps <dbl>, CSW <dbl>, fpm <dbl>,
 ## #   MCSW <dbl>, DCSW <dbl>, TCSW <dbl>, Btotal <dbl>, fpn <dbl>, …
 ```
+
+
 saco un grafico de datos de densidad 
 
 
@@ -257,12 +259,6 @@ plotdens2124 <- ggplot(denspobtot2 %>%
                        aes(ANO, dens, group=ANO))+
   geom_boxplot()+
   theme_few()
-plotdens2124 
-```
-
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-7-1.jpeg" style="display: block; margin: auto;" />
-
-```r
 plotdens2124p <- ggplot(denspobtot2 %>% 
                          filter(Categoria== "p") %>% 
                          group_by(ANO, Sampling.point),
@@ -272,7 +268,7 @@ plotdens2124p <- ggplot(denspobtot2 %>%
 ggarrange(plotdens2124p, plotdens2124, ncol=2)
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-7-2.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-7-1.jpeg" style="display: block; margin: auto;" />
 
 
 Aqui trataré de replicar los rresultados de los Informes de MD en los codes `Pondera1.R` y `Pondera2.R` alojados en este folder. Este hace un cruce con los datos de  tallas. 
@@ -395,6 +391,9 @@ Primero calculo en n de ind medidos y luego junto con base que tiene medida del 
 
 
 ```r
+# para calcular una proporcion de ind < 15
+FUN <- function(x) (sum(x < 15, na.rm = TRUE) / length(x)) * 100
+
 D15n <- size_21_23 %>% 
   group_by(ANO, 
            MES, 
@@ -403,12 +402,14 @@ D15n <- size_21_23 %>%
            Beach,
            Categoria,
            ) %>% 
-  summarize(num_individuos = n(), .groups = "drop") 
+  summarize(
+    d15 = FUN(sizeE),
+    total = sum(sizeE < 15, na.rm = TRUE),
+    .groups = "drop")
 
 D15n$Sampling.point <- as.double(D15n$Sampling.point)
 
-D15n1 <- left_join(denspobtot2, D15n,
-             by = "ID_codificado_muestreo")
+D15n1 <- right_join(denspobtot2, D15n)
 ```
 
 
@@ -417,56 +418,36 @@ Calculo el reclutamiento, es decir, n ind /`track_m`* 0.045 para el ultimo muest
 
 ```r
 D15n2 <- D15n1 %>% 
-  filter(Categoria.x=="p") %>% 
-  group_by(ANO.x, MES.x, Sampling.point.x, Categoria.x) %>% 
+  filter(Categoria=="p") %>% 
+  group_by(ANO, MES, Sampling.point, Categoria) %>% 
   ungroup() %>%
-  mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
-  arrange(ANO.x, MES.x) %>% 
-  filter(ANO.x==2024,
-         MES.x==1) %>%
-  group_by(Sampling.point.x) %>%
-  summarize(across(num_individuos_m2, mean))
-```
-Obtengo el valor para el informe
+  mutate(num_individuos_m2 = total / 
+           (m_track*0.045))
 
 
-```r
-D15n2
-```
 
-```
-## # A tibble: 3 × 2
-##   Sampling.point.x num_individuos_m2
-##              <dbl>             <dbl>
-## 1                2              20.8
-## 2                4              20.0
-## 3                6              19.5
-```
-Ahora una grafica para todos los años meses y puntos
-
-
-```r
-D15n3 <- D15n1 %>% 
-  filter(Categoria.x=="p") %>% 
-  group_by(ANO.x, MES.x, Sampling.point.x, Categoria.x) %>% 
+D15n4 <- D15n1 %>% 
+  filter(Categoria == "p") %>% 
+  group_by(ANO, MES, Sampling.point, Categoria) %>% 
   ungroup() %>%
-  mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
-  arrange(ANO.x, MES.x) %>% 
-  group_by(Sampling.point.x, ANO.x, MES.x) %>%
-  summarize(across(num_individuos_m2, mean))
+  mutate(
+    multiplicador = ifelse(fpn > 1 & !is.infinite(total / (m_track * 0.045)), 1, 0),  # Condición
+    num_individuos_m2 = ifelse(multiplicador == 1, total / (m_track * 0.045), NA)  # Evitar valores inf
+  )
 ```
-
+Ploteo columnas por año y Sampling point
 
 
 ```r
-plotD15 <- ggplot(D15n3 %>% 
-                    drop_na(), 
-                  aes(MES.x,num_individuos_m2,
-                      color=as.factor(Sampling.point.x)))+
+plotD15 <- ggplot(D15n2, 
+                  aes(MES,num_individuos_m2,
+                      color=as.factor(Sampling.point),
+                  group=as.factor(Sampling.point)))+
   geom_point()+
-  geom_smooth(col=2)+
-  facet_wrap(.~ANO.x, ncol=4)+
-  scale_color_viridis_d(name="Sampling point")+
+  geom_smooth(method="lm")+
+  facet_wrap(.~ANO, ncol=4)+
+  scale_color_viridis_d(option="H",
+                        name="Sampling point")+
   scale_x_continuous(breaks = seq(from = 1, 
                                   to = 12, 
                                   by = 1,
@@ -477,13 +458,42 @@ plotD15 <- ggplot(D15n3 %>%
              linetype=2)+
   theme(axis.text.x = element_text(angle = 90, 
                                    hjust = 1))+
-  ylim(0,150)+
   labs(y="Indice de Reclutamiemto",
-       x="MES")
+       x="MES")+
+  ylim(0,200)
 plotD15
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-15-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-13-1.jpeg" style="display: block; margin: auto;" />
+
+Obtengo el valor para el informe de acuerdo al mes
+
+
+
+```r
+D15n3 <- D15n1 %>% 
+  filter(Categoria=="p") %>% 
+  group_by(ANO, MES, Sampling.point, Categoria) %>% 
+  ungroup() %>%
+  mutate(num_individuos_m2 = total / 
+           (m_track*0.045)) %>% 
+  arrange(ANO, MES) %>% 
+  filter(ANO==2023,
+         MES==7) %>%
+  group_by(Sampling.point) %>%
+  summarize(across(num_individuos_m2, mean))
+D15n3
+```
+
+```
+## # A tibble: 3 × 2
+##   Sampling.point num_individuos_m2
+##            <dbl>             <dbl>
+## 1              2            22.8  
+## 2              4             0.803
+## 3              6            36.4
+```
+
 
 Esto debemos tratarlo como grupo dado que de acuerdo a la replica de cálculos los valores son mayores que los registrados en los ITAs de los años 2021 y 2023 [@Delgado2021; @Delgado2023].
 
@@ -513,7 +523,7 @@ D151720 <- D151720 %>%
 duda <- ggplot(D151720 %>% 
                  drop_na(D15))+
   geom_histogram(aes(x=D15),
-                 bins=10)+
+                 bins=50)+
   facet_wrap(.~ANO)+
     scale_x_continuous(breaks = seq(from = 0, 
                                   to = 90, 
@@ -523,7 +533,7 @@ duda <- ggplot(D151720 %>%
 duda
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-18-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-17-1.jpeg" style="display: block; margin: auto;" />
 
 Ahora lo veo como un plot similar al de los años 2021-2024
 
@@ -552,7 +562,7 @@ D15_17_20 <- ggplot(D151720 ,
 D15_17_20
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-18-1.jpeg" style="display: block; margin: auto;" />
 Ambos graficos (2017-2020 y 2021.2024) para comparar metodologías. Estas no tienen os mismos puntos muestreados
 
 
@@ -565,7 +575,7 @@ joinpl <- ggarrange(D15_17_20,
 joinpl
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
 
 
 Tabla con los datos del año
@@ -601,10 +611,23 @@ Creo la función para estimar el `%`
 ```r
 FUN <- function(x)  (sum(x) / length(x)) * 100
 
-D15 <- tallas13_24 %>%
+D151 <- tallas13_24 %>%
   filter(rastro=="POBLACIONAL") %>% 
   group_by(ANO, MES, Sampling.point) %>%
-  summarize(d15 = FUN(sizeE<15), rm.na=T) 
+  summarize(d15 = FUN(sizeE<15), rm.na=T,
+            total=n())
+
+
+FUN <- function(x) (sum(x < 15, na.rm = TRUE) / length(x)) * 100
+
+D15 <- tallas13_24 %>%
+  filter(rastro == "POBLACIONAL") %>% 
+  group_by(ANO, MES, Sampling.point) %>%
+  summarize(
+    d15 = FUN(sizeE),
+    total = sum(sizeE < 15, na.rm = TRUE),
+    .groups = "drop"
+  )
 ```
 representación con barPlot
 
@@ -628,7 +651,7 @@ D15plot <- ggplot(D15 %>%
 D15plot
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-24-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-23-1.jpeg" style="display: block; margin: auto;" />
 
 
 
@@ -658,7 +681,7 @@ landpop <- ggplot(D15 %>%
 landpop
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-25-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-24-1.jpeg" style="display: block; margin: auto;" />
 
 ## Recruit Index size Based (from sea urchin, Chile)
 
@@ -689,7 +712,7 @@ indseg <- ggplot(indice_reclutamiento %>%
 indseg
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-27-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-26-1.jpeg" style="display: block; margin: auto;" />
 Ahora estandarizo entre - y 1
 
 
@@ -732,7 +755,7 @@ indseg3 <- ggplot(indice_reclutamiento %>%
 indseg3
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-29-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-28-1.jpeg" style="display: block; margin: auto;" />
 
 
 # INDICE DE DENSIDAD
@@ -775,7 +798,7 @@ names(D151720)
 ##  [9] "...9"           "...10"          "DIA"            "MES"           
 ## [13] "ANO"
 ```
-
+Datos previos al 2020 solo tienen `D15`, `Densidad`y `Rendimiento`. 
 
 ```r
 dens1720 <- D151720 %>% 
@@ -798,12 +821,14 @@ dens1724 <- rbind(dens1720,
 
 ```r
 plot_dens <- ggplot(dens1724 %>% 
+                      group_by(ANO,MES, Sampling.point) %>% 
+                      summarize(mead =mean(Densidad)) %>% 
                       drop_na(), 
-                  aes(MES,Densidad))+
+                  aes(MES,mead))+
   geom_point()+
   geom_smooth(col=2, 
               method = "lm")+
-  facet_wrap(.~ANO, ncol=8)+
+  facet_grid(Sampling.point~ANO)+
   scale_color_viridis_d(name="Sampling Points")+
   theme_few()+
   geom_hline(yintercept = 8,
@@ -816,11 +841,12 @@ plot_dens <- ggplot(dens1724 %>%
                                   by = 1,
                                   size=2))+
    labs(y="Densidad (ind/mt2)",
-       x="MES")
+       x="MES")+
+  ylim(0, 75)
 plot_dens
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-32-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-31-1.jpeg" style="display: block; margin: auto;" />
 
 
 ahora creo vector con desviación 
@@ -845,7 +871,28 @@ vectordens <- dens1724 %>%
 # escribo la salida
 write_csv(vectordens, "DENSIDADPOBLACIONAL")
 ```
+# BIOMASAS 
 
+Grafico de biomasas de acuerdo a las planillas 
+
+
+
+```r
+bio <- ggplot(denspobtot2 %>% 
+                group_by(ANO) %>% 
+                summarize(BIO =sum(bio, 
+                                   na.rm=TRUE)), 
+              aes(ANO, BIO))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  #facet_wrap(.~Sampling.point)+
+  theme_few()+
+  xlim(2020, 2023)+
+  labs(y="Biomasas (kg)")
+bio                       
+```
+
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-33-1.jpeg" style="display: block; margin: auto;" />
 # REFERENCIAS
 
 

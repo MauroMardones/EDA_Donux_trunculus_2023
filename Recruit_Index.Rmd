@@ -380,44 +380,7 @@ D15n3 <- D15n1 %>%
   summarize(across(num_individuos_m2, mean))
 D15n3
 ```
-Ahora una grafica para todos los años meses y puntos
 
-```{r}
-D15n3 <- D15n1 %>% 
-  filter(Categoria.x=="p") %>% 
-  group_by(ANO.x, MES.x, Sampling.point.x, Categoria.x) %>% 
-  ungroup() %>%
-  mutate(num_individuos_m2 = num_individuos / (m_track*0.045)) %>% 
-  arrange(ANO.x, MES.x) %>% 
-  group_by(Sampling.point.x, ANO.x, MES.x) %>%
-  summarize(across(num_individuos_m2, mean))
-```
-
-
-```{r warning=FALSE}
-plotD15 <- ggplot(D15n3 %>% 
-                    drop_na(), 
-                  aes(MES.x,num_individuos_m2,
-                      color=as.factor(Sampling.point.x)))+
-  geom_point()+
-  geom_smooth(col=2)+
-  facet_wrap(.~ANO.x, ncol=4)+
-  scale_color_viridis_d(name="Sampling point")+
-  scale_x_continuous(breaks = seq(from = 1, 
-                                  to = 12, 
-                                  by = 1,
-                                  size=2))+
-  theme_few()+
-  geom_hline(yintercept = 8,
-             col="red",
-             linetype=2)+
-  theme(axis.text.x = element_text(angle = 90, 
-                                   hjust = 1))+
-  ylim(0,150)+
-  labs(y="Indice de Reclutamiemto",
-       x="MES")
-plotD15
-```
 
 Esto debemos tratarlo como grupo dado que de acuerdo a la replica de cálculos los valores son mayores que los registrados en los ITAs de los años 2021 y 2023 [@Delgado2021; @Delgado2023].
 
