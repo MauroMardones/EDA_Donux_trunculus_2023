@@ -213,20 +213,6 @@ denspobtot2 <- denspobtot %>%
 tail(denspobtot2)
 ```
 
-```{r}
-bio <- ggplot(denspobtot2 %>% 
-                group_by(ANO) %>% 
-                summarize(BIO =sum(bio, 
-                                   na.rm=TRUE)))+
-  geom_line(aes(ANO, BIO))+
-  geom_point(aes(ANO, BIO))+
-  #facet_wrap(.~Sampling.point)+
-  theme_few()+
-  xlim(2020, 2023)
-bio                       
-            
-    
-```
 
 saco un grafico de datos de densidad 
 
@@ -237,8 +223,6 @@ plotdens2124 <- ggplot(denspobtot2 %>%
                        aes(ANO, dens, group=ANO))+
   geom_boxplot()+
   theme_few()
-plotdens2124 
-
 plotdens2124p <- ggplot(denspobtot2 %>% 
                          filter(Categoria== "p") %>% 
                          group_by(ANO, Sampling.point),
@@ -687,7 +671,25 @@ vectordens <- dens1724 %>%
 # escribo la salida
 write_csv(vectordens, "DENSIDADPOBLACIONAL")
 ```
+# BIOMASAS 
 
+Grafico de biomasas de acuerdo a las planillas 
+
+
+```{r}
+bio <- ggplot(denspobtot2 %>% 
+                group_by(ANO) %>% 
+                summarize(BIO =sum(bio, 
+                                   na.rm=TRUE)), 
+              aes(ANO, BIO))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  #facet_wrap(.~Sampling.point)+
+  theme_few()+
+  xlim(2020, 2023)+
+  labs(y="Biomasas (kg)")
+bio                       
+```
 # REFERENCIAS
 
 
