@@ -713,6 +713,7 @@ table(sizeall2$ANO, sizeall2$rastro)
 
 ```{r eval=FALSE}
 saveRDS(sizeall2, "tallas_13_24.RData")
+sizeall2<- readRDS("~/IEO/DATA/EDA_Donux_truculus_2023/tallas13_24.RDS")
 ```
 
 
@@ -749,7 +750,8 @@ nall
 
 
 ```{r}
-nallbeach <- ggplot(sizeall2, 
+nallbeach <- ggplot(sizeall2%>% 
+                      filter(rastro!="COMERCIAL"), 
                aes(x=sizeE, 
                    y = as.factor(MES),
                   fill= as.factor(Sampling.point)))+
@@ -780,7 +782,7 @@ pobeach <- ggplot(sizeall2 %>%
                    y = as.factor(MES),
                   fill= as.factor(Sampling.point)))+
   geom_density_ridges(stat = "binline", 
-                      bins = 30, 
+                      bins = 10, 
                       scale = 1.2,
                       alpha=0.7)+
   facet_wrap(.~ANO, ncol=7) +
@@ -852,7 +854,8 @@ another way to viz is a scatter plot
 sizemean <-sizeall2 %>% 
   dplyr::group_by(ANO, 
                   MES, 
-                  rastro) %>%
+                  rastro,
+                  Sampling.point) %>%
   dplyr::summarise(avg=mean(sizeE))
 #kableExtra::kable(coutlength, format = "html")
 ```
@@ -867,7 +870,6 @@ pmea <- ggplot(sizemean %>%
     geom_boxplot(show.legend = T,
                alpha=.7) +
   geom_jitter()+
-    geom_smooth(method= "loess")+
     theme_few()+ 
     scale_y_continuous(breaks = seq(from = 2013, to = 2023, by = 1))+
     theme(axis.text.x = element_text(angle = 90,
@@ -881,9 +883,41 @@ pmea <- ggplot(sizemean %>%
                           name="")+
     ylab("Tallas Medias (mm)") +
     xlab("") +
+  ylim(5,35)+
     ggtitle("Tallas medias coquina por año")
 pmea
 ```
+por playa
+
+```{r, fig.align="center", warning=FALSE}
+ppla <- ggplot(sizemean %>%
+                 filter(rastro!="COMERCIAL") %>% 
+                 arrange(Sampling.point) %>%
+                 drop_na(avg, Sampling.point), 
+               aes(as.character(Sampling.point), avg,
+               color=Sampling.point))+
+    geom_boxplot(show.legend = T,
+               alpha=.7) +
+  geom_jitter()+
+    theme_few()+ 
+  #facet_wrap(.~ANO, ncol=3)+
+    scale_y_continuous(breaks = seq(from = 2013, to = 2023, by = 1))+
+    theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     vjust= 0.5,
+                                     size = 8),
+          axis.text.y = element_text(size = 8),
+          legend.position = "bottom")+
+    guides(fill = guide_legend(reverse=F))+
+    scale_color_viridis_d(option="H",
+                          name="")+
+    ylab("Tallas Medias (mm)") +
+    xlab("") +
+  ylim(5,35)+
+    ggtitle("Tallas medias coquina por playa")
+ppla
+```
+
 
 ## Modelos 
 comprobar tendencia estadisticamente para las tendencias de ambos sistemas de muestreo en las tallas.
