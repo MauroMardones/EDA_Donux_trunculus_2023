@@ -2,7 +2,7 @@
 title: "Rendimiento Pesquero (CPUE) D. trunculus"
 subtitle: "Datos Monitoreo poblacional FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "18 January, 2024"
+date:  "07 April, 2024"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -66,6 +66,7 @@ library(easystats)
 library(ggpubr)
 ```
 
+
 # YIELD ANALYSIS (Rendimiento)
 
 Aca se trabaja con los datos del muestreo `COMERCIAL`. El objetivo es explorar laas bases de datos desde el 2013.
@@ -88,6 +89,18 @@ Dens1415com <- read_excel(here("Data",
                             "ABUNDANCIAS_Com_2014_2015.xlsx"))
 ```
 
+```r
+names(Dens1415com)
+```
+
+```
+##  [1] "Beach"             "Station"           "Subsample"        
+##  [4] "Date"              "Longitud"          "Latitud"          
+##  [7] "Abundance (nº/m2)" "Biomass (nº/m2)"   "Obs"              
+## [10] "...10"             "...11"
+```
+
+Estos datos tienen registros de abundancia y biomasa por estación, pero no son utiles para conocer rendiiento pesquero
 
 ## 2015
 
@@ -212,11 +225,11 @@ rend1720 <- ggplot(denscom1720g,
     ylab("CPUE (Kg/hr)") +
     xlab("") +
   ylim(0,6)+
-  ggtitle("Rendimiento coquina 2023 por mes y punto de muestreo")
+  ggtitle("Rendimiento coquina 2017-2020 por mes y punto de muestreo")
 rend1720
 ```
 
-<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-8-1.jpeg" style="display: block; margin: auto;" />
+<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-9-1.jpeg" style="display: block; margin: auto;" />
 
 ## 2021 y 2023
 
@@ -231,6 +244,9 @@ dens2022com <- read_excel(here("Data", "Posterior 2020",
 dens2023com <- read_excel(here("Data", "Posterior 2020", 
                                "Data_sample_FEMP_04_2023.xlsx"),
                        sheet = "DATA_COM")
+dens2024com <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2024.xlsx"),
+                       sheet = "DATA_COM")
 ```
 
 
@@ -238,57 +254,54 @@ dens2023com <- read_excel(here("Data", "Posterior 2020",
 ```r
 # Comercial
 dens2021comf <- dens2021com %>% 
-  select(2:19, 24, 28:30, 33, 34, 36, 37:40, 42:43)
+  select(2:19, 24, 28:30, 33, 34, 36, 37, 39, 40, 42:43)
 dens2022comf <- dens2022com %>% 
-  select(2:19, 24, 28:30, 33, 34, 36, 37, 38, 39:42)
+  select(2:19, 24, 28:30, 33, 34, 36, 37, 39:42)
 dens2023comf <- dens2023com %>% 
-  select(2:19, 24, 29:31, 34, 35, 37, 38, 39, 40:43) 
+  select(2:19, 24, 29:31, 34, 35, 37, 38, 40:43) 
+dens2024comf <- dens2024com %>% 
+  select(2:19, 24, 29:31, 34, 35, 37, 38, 40:43) 
 #compruebo si hay columnas iguales
 nombres_iguales_com <- identical(names(dens2021comf),
-                             names(dens2023comf)) && identical(names(dens2021comf), 
-                                                               names(dens2022comf))
+                             names(dens2024comf))
+                                                   
+         
 #junto la base
-dens2123comf <- rbind(dens2021comf, 
-                      dens2022comf, 
-                      dens2023comf)
+dens2124comf <- rbind(dens2021comf, 
+                      dens2022comf,
+                      dens2023comf,
+                      dens2024comf)
 ```
 
 ## Separate `Date` column
 
 
 ```r
-realdate <- as.Date(dens2123comf$Date, format="%Y-%M-%D")
-dfdate <- data.frame(Date=realdate)
-ANO=as.numeric (format(realdate,"%Y"))
-MES=as.numeric (format(realdate,"%m"))
-DIA=as.numeric (format(realdate,"%d"))
-dens2123comf<-cbind(ANO,MES,DIA,dens2123comf)
-colnames(dens2123comf)
+dens2124comf <- dens2124comf %>%
+  mutate(ANO = year(Date),
+         MES = month(Date),
+         DIA = day(Date))
+
+table(dens2124comf$ANO, dens2124comf$MES)
 ```
 
 ```
-##  [1] "ANO"                    "MES"                    "DIA"                   
-##  [4] "Date"                   "Beach"                  "Sampling.point"        
-##  [7] "m_track"                "tow_time"               "Latº"                  
-## [10] "Latmin"                 "Longº"                  "Longmin"               
-## [13] "Lat"                    "Long"                   "rastro"                
-## [16] "mariscador"             "SW"                     "SWsub"                 
-## [19] "CSWsub"                 "CMSWsub"                "MCSWsub"               
-## [22] "DCSWsub"                "Categoria"              "CAT"                   
-## [25] "Nmedida"                "Ndañossub"              "Ndaños"                
-## [28] "Tide_coef"              "Low_tide_hour"          "Catch_hour"            
-## [31] "species"                "Temp"                   "ID_codificado_punto"   
-## [34] "ID_codificado_muestreo"
+##       
+##        1 2 3 4 5 6 7 8 9 10 11 12
+##   2021 9 3 3 6 3 3 6 3 3  6  3  6
+##   2022 0 3 6 3 3 3 9 3 0  3  6  3
+##   2023 4 4 4 4 4 4 4 4 4  3  5  4
+##   2024 4 4 4 0 0 0 0 0 0  0  0  0
 ```
 
 ```r
-table(dens2123comf$ANO)
+table(dens2124comf$ANO)
 ```
 
 ```
 ## 
-## 2021 2022 2023 
-##   54   42   48
+## 2021 2022 2023 2024 
+##   54   42   48   12
 ```
 
 ## Calculo variables
@@ -312,7 +325,7 @@ pproceder a los calculos para calcular las variables poblacionales de interés, 
 
 
 ```r
-denscomtot <- dens2123comf %>% 
+denscomtot <- dens2124comf %>% 
   mutate(fps = SW /SWsub,
          CSW = CSWsub * fps,
          CMSW= CMSWsub * fps,
@@ -365,7 +378,7 @@ rend1 <- ggplot(denscomtot,
     geom_smooth(method= "loess")+
     theme_few()+ 
     facet_grid(MES~Beach)+
-    scale_x_continuous(breaks = seq(from = 2021, to = 2023, by = 1))+
+    scale_x_continuous(breaks = seq(from = 2021, to = 2024, by = 1))+
    theme(axis.text.x = element_text(angle = 90,
                                      hjust = 1,
                                     vjust = 0.5,
@@ -383,7 +396,7 @@ rend1 <- ggplot(denscomtot,
 rend1
 ```
 
-<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-13-1.jpeg" style="display: block; margin: auto;" />
+<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-14-1.jpeg" style="display: block; margin: auto;" />
 
 
 ```r
@@ -413,8 +426,8 @@ rend2 <- ggplot(denscomtot,
 rend2
 ```
 
-<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-14-1.jpeg" style="display: block; margin: auto;" />
-solo el ultimo Año
+<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-15-1.jpeg" style="display: block; margin: auto;" />
+por meses
 
 
 ```r
@@ -422,7 +435,7 @@ rend2023 <- ggplot(denscomtot,
                aes(MES,Rend1,
                 group=MES))+
     geom_point(alpha=.7) +
-    geom_smooth(method= "loess",
+    geom_smooth(method= "lm",
                 level=0.5,
                 span=3)+
     theme_few()+ 
@@ -444,7 +457,7 @@ rend2023 <- ggplot(denscomtot,
 rend2023
 ```
 
-<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-15-1.jpeg" style="display: block; margin: auto;" />
+<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-16-1.jpeg" style="display: block; margin: auto;" />
 
 
 ## Unir bases
@@ -455,7 +468,7 @@ En este caso las bases del `denscom1720tot` y `denscomtot` con las variables mas
 
 
 ```r
-names(denscom1720g)
+names(denscom1720g) # 2017-2020
 ```
 
 ```
@@ -464,25 +477,25 @@ names(denscom1720g)
 ```
 
 ```r
-names(denscomtot)
+names(denscomtot) # 2021-2023
 ```
 
 ```
-##  [1] "ANO"                    "MES"                    "DIA"                   
-##  [4] "Date"                   "Beach"                  "Sampling.point"        
-##  [7] "m_track"                "tow_time"               "Latº"                  
-## [10] "Latmin"                 "Longº"                  "Longmin"               
-## [13] "Lat"                    "Long"                   "rastro"                
-## [16] "mariscador"             "SW"                     "SWsub"                 
-## [19] "CSWsub"                 "CMSWsub"                "MCSWsub"               
-## [22] "DCSWsub"                "Categoria"              "CAT"                   
-## [25] "Nmedida"                "Ndañossub"              "Ndaños"                
-## [28] "Tide_coef"              "Low_tide_hour"          "Catch_hour"            
-## [31] "species"                "Temp"                   "ID_codificado_punto"   
-## [34] "ID_codificado_muestreo" "fps"                    "CSW"                   
-## [37] "CMSW"                   "MCSW"                   "DCSW"                  
-## [40] "TCSW"                   "Rend"                   "Rend1"                 
-## [43] "fpn"                    "NtotalCSW"              "Ntotal"
+##  [1] "Date"                   "Beach"                  "Sampling.point"        
+##  [4] "m_track"                "tow_time"               "Latº"                  
+##  [7] "Latmin"                 "Longº"                  "Longmin"               
+## [10] "Lat"                    "Long"                   "rastro"                
+## [13] "mariscador"             "SW"                     "SWsub"                 
+## [16] "CSWsub"                 "CMSWsub"                "MCSWsub"               
+## [19] "DCSWsub"                "Categoria"              "CAT"                   
+## [22] "Nmedida"                "Ndañossub"              "Ndaños"                
+## [25] "Tide_coef"              "Low_tide_hour"          "species"               
+## [28] "Temp"                   "ID_codificado_punto"    "ID_codificado_muestreo"
+## [31] "ANO"                    "MES"                    "DIA"                   
+## [34] "fps"                    "CSW"                    "CMSW"                  
+## [37] "MCSW"                   "DCSW"                   "TCSW"                  
+## [40] "Rend"                   "Rend1"                  "fpn"                   
+## [43] "NtotalCSW"              "Ntotal"
 ```
 
 
@@ -544,7 +557,7 @@ rendgru <- ggplot(grurend1723 %>%
 rendgru
 ```
 
-<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-18-1.jpeg" style="display: block; margin: auto;" />
+<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
 
 
 
@@ -571,7 +584,7 @@ boxCPUE <- ggplot(rend1723,
 boxCPUE
 ```
 
-<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
+<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
 
 Plots distintos sampling points
 
@@ -603,7 +616,7 @@ rendire <- ggplot(rend1723,
 rendire
 ```
 
-<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
+<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-21-1.jpeg" style="display: block; margin: auto;" />
 
 Plots distintos solo con 2, 4 , 6 y M
 
@@ -617,7 +630,8 @@ rendire <- ggplot(rend1723 %>%
     geom_point(show.legend = T,
                alpha=.7) +
     geom_smooth(method= "loess",
-                alpha=.2)+
+                alpha=.2,
+                se=FALSE)+
     theme_few()+ 
     facet_grid(.~ANO)+
     #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
@@ -627,7 +641,7 @@ rendire <- ggplot(rend1723 %>%
                                      size = 8),
           axis.text.y = element_text(size = 8))+
     guides(fill = guide_legend(reverse=F))+
-    scale_color_viridis_d(option= "H", 
+    scale_color_viridis_d(option= "D", 
                           name="Sampling Point")+
     geom_hline(yintercept=7.6, col="black")+
   geom_hline(yintercept=3.5, col=2)+
@@ -638,7 +652,7 @@ rendire <- ggplot(rend1723 %>%
 rendire
 ```
 
-<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-21-1.jpeg" style="display: block; margin: auto;" />
+<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-22-1.jpeg" style="display: block; margin: auto;" />
 
 con rendimiento de 3 horas
 
@@ -675,7 +689,7 @@ rendire3 <- ggplot(rend1723 %>%
 rendire3
 ```
 
-<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-22-1.jpeg" style="display: block; margin: auto;" />
+<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-23-1.jpeg" style="display: block; margin: auto;" />
 
 ```r
 rendire3 <- ggplot(rend1723 %>% 
@@ -707,7 +721,7 @@ rendire3 <- ggplot(rend1723 %>%
 rendire3
 ```
 
-<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-23-1.jpeg" style="display: block; margin: auto;" />
+<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-24-1.jpeg" style="display: block; margin: auto;" />
 Por Sampling  point separados
 
 Plots distintos solo con 2, 4 , 6 y M
@@ -742,14 +756,31 @@ rendiresep <- ggplot(rend1723 %>%
 rendiresep
 ```
 
-<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-24-1.jpeg" style="display: block; margin: auto;" />
+<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-25-1.jpeg" style="display: block; margin: auto;" />
+Saco  el dato de CPUE total
+
+
+```r
+cpuess3 <- rend1723 %>% 
+   group_by(ANO) %>% 
+  summarise(CPUE = round(mean(Rend1, na.rm=TRUE),3),
+            SD = sd(Rend1, na.rm=TRUE),
+            CV = (SD/ CPUE))
+```
+
+ahora escribo los oputputs
+
+
+```r
+write.csv(cpuess3, "CPUE_Coquina_SS3.csv")
+```
 
 
 # Estandarización de la CPUE
 
 
 ```r
-Cloro <- readRDS("~/IEO/DATA/EDA_Donux_truculus_2023/Cloro.RDS")
+Cloro <- readRDS("Cloro.RDS")
 head(Cloro) 
 ```
 
@@ -862,7 +893,7 @@ shapiro.test(baserend1$logrend1)
 ## 	Shapiro-Wilk normality test
 ## 
 ## data:  baserend1$logrend1
-## W = 0.96562, p-value = 2.175e-07
+## W = 0.96296, p-value = 5.542e-08
 ```
 
 Ahora lo aplicamos a nuestros datos.
@@ -876,7 +907,7 @@ result %>%
   theme_bw()
 ```
 
-<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-31-1.jpeg" style="display: block; margin: auto;" />
+<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-34-1.jpeg" style="display: block; margin: auto;" />
 ## Modelos
 
 
@@ -938,7 +969,7 @@ resultados <- resultados %>%
 check_model(mod2)
 ```
 
-<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-35-1.jpeg" style="display: block; margin: auto;" />
+<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-38-1.jpeg" style="display: block; margin: auto;" />
 
 ```r
 res_glm<-as.numeric(mod2$residuals)
@@ -968,7 +999,7 @@ ggarrange(res_hist,  res_density, res_points,
           ncol = 3)
 ```
 
-<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-36-1.jpeg" style="display: block; margin: auto;" />
+<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-39-1.jpeg" style="display: block; margin: auto;" />
 extraigo los valores del Modelo `M06`
 
 
@@ -1002,11 +1033,11 @@ tab_model(mod0,
 <table style="border-collapse:collapse; border:none;">
 <tr>
 <th style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm;  text-align:left; ">&nbsp;</th>
-<th colspan="2" style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm; ">logrend1</th>
-<th colspan="2" style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm; ">logrend1</th>
-<th colspan="2" style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm; ">logrend1</th>
-<th colspan="2" style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm; ">logrend1</th>
-<th colspan="2" style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm; ">logrend1</th>
+<th colspan="2" style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm; ">logrend 1</th>
+<th colspan="2" style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm; ">logrend 1</th>
+<th colspan="2" style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm; ">logrend 1</th>
+<th colspan="2" style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm; ">logrend 1</th>
+<th colspan="2" style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm; ">logrend 1</th>
 </tr>
 <tr>
 <td style=" text-align:center; border-bottom:1px solid; font-style:italic; font-weight:normal;  text-align:left; ">Predictors</td>
@@ -1024,7 +1055,7 @@ tab_model(mod0,
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">(Intercept)</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.36 <sup>**</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.10&nbsp;&ndash;&nbsp;0.63</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.09&nbsp;&ndash;&nbsp;0.63</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.06 <sup>**</sup></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.27&nbsp;&ndash;&nbsp;1.86</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.93 <sup>*</sup></td>
@@ -1037,7 +1068,7 @@ tab_model(mod0,
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">ANO [2018]</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.68 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.34&nbsp;&ndash;&nbsp;1.01</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.33&nbsp;&ndash;&nbsp;1.02</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
@@ -1050,7 +1081,7 @@ tab_model(mod0,
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">ANO [2019]</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.90 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.55&nbsp;&ndash;&nbsp;1.24</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.55&nbsp;&ndash;&nbsp;1.25</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.37 <sup></sup></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.42&nbsp;&ndash;&nbsp;1.16</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.48 <sup></sup></td>
@@ -1063,7 +1094,7 @@ tab_model(mod0,
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">ANO [2020]</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.71 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.32&nbsp;&ndash;&nbsp;1.10</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.32&nbsp;&ndash;&nbsp;1.11</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.35 <sup></sup></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.45&nbsp;&ndash;&nbsp;1.16</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.42 <sup></sup></td>
@@ -1076,7 +1107,7 @@ tab_model(mod0,
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">ANO [2021]</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.10 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.75&nbsp;&ndash;&nbsp;1.46</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.74&nbsp;&ndash;&nbsp;1.46</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.67 <sup></sup></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.12&nbsp;&ndash;&nbsp;1.46</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.78 <sup>*</sup></td>
@@ -1089,7 +1120,7 @@ tab_model(mod0,
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">ANO [2022]</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.74 <sup>***</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.36&nbsp;&ndash;&nbsp;1.11</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.36&nbsp;&ndash;&nbsp;1.12</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.36 <sup></sup></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.44&nbsp;&ndash;&nbsp;1.16</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.47 <sup></sup></td>
@@ -1102,7 +1133,7 @@ tab_model(mod0,
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">ANO [2023]</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.23 <sup></sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.59&nbsp;&ndash;&nbsp;0.14</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.60&nbsp;&ndash;&nbsp;0.14</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.34 <sup></sup></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;1.17&nbsp;&ndash;&nbsp;0.50</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.31 <sup></sup></td>
@@ -1111,6 +1142,19 @@ tab_model(mod0,
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  col9">&#45;1.55&nbsp;&ndash;&nbsp;0.59</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  0">&#45;0.44 <sup></sup></td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  1">&#45;1.52&nbsp;&ndash;&nbsp;0.64</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">ANO [2024]</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.19 <sup></sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">&#45;0.76&nbsp;&ndash;&nbsp;0.39</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  col7"></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  col8"></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  col9"></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  0"></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  1"></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">TRIM [2]</td>
@@ -1361,7 +1405,7 @@ tab_model(mod0,
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm; border-top:1px solid;">Observations</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="2">353</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="2">365</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="2">219</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="2">219</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="2">219</td>
@@ -1369,7 +1413,7 @@ tab_model(mod0,
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">R<sup>2</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="2">0.205</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="2">0.209</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="2">0.291</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="2">0.388</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="2">0.416</td>
@@ -1398,11 +1442,11 @@ compare_performance(mod0,
 ## 
 ## Name | Model |    R2 |  RMSE | Sigma | AIC weights | AICc weights | BIC weights | Performance-Score
 ## ---------------------------------------------------------------------------------------------------
-## mod2 |   glm | 0.388 | 0.685 | 0.715 |       0.611 |        0.877 |    2.97e-04 |            79.07%
-## mod3 |   glm | 0.416 | 0.669 | 0.708 |       0.270 |        0.090 |    5.05e-09 |            58.98%
-## mod4 |   glm | 0.417 | 0.668 | 0.710 |       0.119 |        0.030 |    4.06e-10 |            53.68%
-## mod1 |   glm | 0.291 | 0.737 | 0.753 |    4.90e-04 |        0.003 |       1.000 |            46.77%
-## mod0 |   glm | 0.205 | 0.869 | 0.877 |    3.48e-93 |     2.74e-92 |    3.12e-89 |             0.00%
+## mod2 |   glm | 0.388 | 0.685 | 0.715 |       0.611 |        0.877 |    2.97e-04 |            79.18%
+## mod3 |   glm | 0.416 | 0.669 | 0.708 |       0.270 |        0.090 |    5.05e-09 |            58.99%
+## mod4 |   glm | 0.417 | 0.668 | 0.710 |       0.119 |        0.030 |    4.06e-10 |            53.69%
+## mod1 |   glm | 0.291 | 0.737 | 0.753 |    4.90e-04 |        0.003 |       1.000 |            47.36%
+## mod0 |   glm | 0.209 | 0.884 | 0.894 |   3.94e-103 |    2.97e-102 |   4.40e-100 |             0.00%
 ```
 
 ```r
@@ -1422,14 +1466,14 @@ pairs.panels(baserend1 %>%
              stars = TRUE)
 ```
 
-<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-40-1.jpeg" style="display: block; margin: auto;" />
+<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-43-1.jpeg" style="display: block; margin: auto;" />
 
 ```r
 plot_model(mod2)+
   theme_few()
 ```
 
-<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-41-1.jpeg" style="display: block; margin: auto;" />
+<img src="Rendimiento-Pesquero_files/figure-html/unnamed-chunk-44-1.jpeg" style="display: block; margin: auto;" />
 
 
 # Dudas

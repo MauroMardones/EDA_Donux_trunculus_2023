@@ -683,7 +683,7 @@ write.csv(cpuess3, "CPUE_Coquina_SS3.csv")
 # Estandarización de la CPUE
 
 ```{r}
-Cloro <- readRDS("~/IEO/DATA/EDA_Donux_truculus_2023/Cloro.RDS")
+Cloro <- readRDS("Cloro.RDS")
 head(Cloro) 
 Cloro <- Cloro %>% 
   rename(Sampling.point = Site) %>% 
