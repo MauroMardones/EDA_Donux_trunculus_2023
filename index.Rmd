@@ -27,6 +27,7 @@ editor_options:
     wrap: 72
 ---
 
+
 ```{r echo=FALSE, setup1}
 rm(list = ls())
 knitr::opts_chunk$set(echo = TRUE,
