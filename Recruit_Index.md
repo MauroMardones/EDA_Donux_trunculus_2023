@@ -2,7 +2,7 @@
 title: "Indice Reclutamiento D. trunculus"
 subtitle: "Datos Monitoreo poblacional FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "04 April, 2024"
+date:  "15 April, 2024"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -177,7 +177,7 @@ table(denspob2124f$ANO, denspob2124f$MES)
 ##   2021 12  6  5 12  6  6 11  5  6 11  6 12
 ##   2022  6  6 12  6  6  6 18  6  0  6 12  6
 ##   2023  6  6  5  6  6  6  6  6  6  6  6  6
-##   2024  6  6  6  0  0  0  0  0  0  0  0  0
+##   2024  6  6  6  6  0  0  0  0  0  0  0  0
 ```
 
 
@@ -225,27 +225,31 @@ denspobtot2 <- denspobtot %>%
          area = m_track * 0.445,
          bio= Btotal / area,
          dens = Ntotal / area)
-tail(denspobtot2)
+denspobtot2
 ```
 
 ```
-## # A tibble: 6 × 46
-## # Groups:   Beach, Sampling.point, ANO, MES, DIA [3]
-##   Date                Beach   Sampling.point m_track tow_time  Latº Latmin Longº
-##   <dttm>              <chr>            <dbl>   <dbl>    <dbl> <dbl>  <dbl> <dbl>
-## 1 2024-03-13 00:00:00 Donana…              2      52        5    36   50.3     6
-## 2 2024-03-13 00:00:00 Donana…              2      52        5    36   50.3     6
-## 3 2024-03-13 00:00:00 Donana…              4      62        5    36   53.4     6
-## 4 2024-03-13 00:00:00 Donana…              4      62        5    36   53.4     6
-## 5 2024-03-13 00:00:00 Donana…              6      90        6    36   57.1     6
-## 6 2024-03-13 00:00:00 Donana…              6      90        6    36   57.1     6
+## # A tibble: 284 × 46
+## # Groups:   Beach, Sampling.point, ANO, MES, DIA [145]
+##    Date                Beach  Sampling.point m_track tow_time  Latº Latmin Longº
+##    <dttm>              <chr>           <dbl>   <dbl>    <dbl> <dbl>  <dbl> <dbl>
+##  1 2021-01-12 00:00:00 Donan…              2      51        5    36   50.3     6
+##  2 2021-01-12 00:00:00 Donan…              2      51        5    36   50.3     6
+##  3 2021-01-12 00:00:00 Donan…              4      56        5    36   53.5     6
+##  4 2021-01-12 00:00:00 Donan…              4      56        5    36   53.5     6
+##  5 2021-01-12 00:00:00 Donan…              6      69        5    36   56.8     6
+##  6 2021-01-12 00:00:00 Donan…              6      69        5    36   56.8     6
+##  7 2021-01-14 00:00:00 LaBota              9      40        5    37   12.1     7
+##  8 2021-01-14 00:00:00 LaBota              9      40        5    37   12.1     7
+##  9 2021-01-14 00:00:00 Isla_…             10      49        5    37   10.7     7
+## 10 2021-01-14 00:00:00 Isla_…             10      49        5    37   10.7     7
+## # ℹ 274 more rows
 ## # ℹ 38 more variables: Longmin <dbl>, Lat <dbl>, Long <dbl>, rastro <chr>,
 ## #   mariscador <chr>, SW <dbl>, SWsub <dbl>, CSWsub <dbl>, MCSWsub <dbl>,
 ## #   DCSWsub <dbl>, Categoria <chr>, CAT <dbl>, Nmedida <dbl>, Ndañossub <dbl>,
 ## #   Tide_coef <dbl>, Low_tide_hour <dttm>, Catch_hour <dttm>, species <chr>,
 ## #   Temp <dbl>, ID_codificado_punto <chr>, ID_codificado_muestreo <chr>,
-## #   ANO <dbl>, MES <dbl>, DIA <int>, fps <dbl>, CSW <dbl>, fpm <dbl>,
-## #   MCSW <dbl>, DCSW <dbl>, TCSW <dbl>, Btotal <dbl>, fpn <dbl>, …
+## #   ANO <dbl>, MES <dbl>, DIA <int>, fps <dbl>, CSW <dbl>, fpm <dbl>, …
 ```
 
 
@@ -332,7 +336,7 @@ glimpse(size_21_23)
 ```
 
 ```
-## Rows: 50,390
+## Rows: 50,913
 ## Columns: 12
 ## $ Date                   <dttm> 2021-01-12, 2021-01-12, 2021-01-12, 2021-01-12…
 ## $ Beach                  <chr> "Donana_sur", "Donana_sur", "Donana_sur", "Dona…
@@ -358,7 +362,7 @@ table(size_21_23$ANO, size_21_23$MES)
 ##   2021 3103 1600  897 2399  784 1384 2846  819 1384 2389 1552 2814
 ##   2022 1374 1156 2560 1673 1013 1857 2577  868    0  996 2619  733
 ##   2023  915 1040  866  857  732 1068  618  655  639  384  490  772
-##   2024  615  374  968    0    0    0    0    0    0    0    0    0
+##   2024  615  374  968  523    0    0    0    0    0    0    0    0
 ```
 
 ```r
@@ -366,7 +370,7 @@ size_21_23
 ```
 
 ```
-## # A tibble: 50,390 × 12
+## # A tibble: 50,913 × 12
 ##    Date                Beach   Sampling.point rastro   CAT Categoria  size sizeE
 ##    <dttm>              <chr>   <chr>          <chr>  <dbl> <chr>     <dbl> <dbl>
 ##  1 2021-01-12 00:00:00 Donana… 2              POBLA…     2 g          22.4    22
@@ -379,31 +383,25 @@ size_21_23
 ##  8 2021-01-12 00:00:00 Donana… 2              POBLA…     2 g          24.0    24
 ##  9 2021-01-12 00:00:00 Donana… 2              POBLA…     2 g          22.4    22
 ## 10 2021-01-12 00:00:00 Donana… 2              POBLA…     2 g          22.5    22
-## # ℹ 50,380 more rows
+## # ℹ 50,903 more rows
 ## # ℹ 4 more variables: ID_codificado_muestreo <chr>, DIA <int>, MES <dbl>,
 ## #   ANO <dbl>
 ```
+## Calculo D15
 
-
-Ahora por la cantidad de individuos bajo los 15 mm. Si bien hemos visualizado la base usando los datos desde el 2017, previo al 2020 no se puede asignar un area a los datos. Por lo que trabajo con los datos del 2020 al 2023.
+Ahora calculo la cantidad de individuos bajo los 15 mm. Si bien hemos visualizado la base usando los datos desde el 2017, previo al 2020 no se puede asignar un area a los datos. Por lo que trabajo con los datos del 2020 al 2023.
 
 Primero calculo en n de ind medidos y luego junto con base que tiene medida del area `track_m`, que es una variable para estimar `D15` q es en función del área, de acuerdo a lo comentado por MD.
 
 
 ```r
-# para calcular una proporcion de ind < 15
-FUN <- function(x) (sum(x < 15, na.rm = TRUE) / length(x)) * 100
-
 D15n <- size_21_23 %>% 
   group_by(ANO, 
            MES, 
            Sampling.point, 
-           ID_codificado_muestreo, 
-           Beach,
-           Categoria,
+           ID_codificado_muestreo
            ) %>% 
   summarize(
-    d15 = FUN(sizeE),
     total = sum(sizeE < 15, na.rm = TRUE),
     .groups = "drop")
 
@@ -412,39 +410,34 @@ D15n$Sampling.point <- as.double(D15n$Sampling.point)
 D15n1 <- right_join(denspobtot2, D15n)
 ```
 
-
-Calculo el reclutamiento, es decir, n ind /`track_m`* 0.045 para el ultimo muestreo
+A traves de la ponderación del `D15`, hago un retrocalculo a traves de los ponderadores `fps`, `fpn`y `fpm` para luego extrapolar al tamaño del área.
 
 
 ```r
 D15n2 <- D15n1 %>% 
-  filter(Categoria=="p") %>% 
-  group_by(ANO, MES, Sampling.point, Categoria) %>% 
-  ungroup() %>%
-  mutate(num_individuos_m2 = total / 
-           (m_track*0.045))
-
-
-
-D15n4 <- D15n1 %>% 
-  filter(Categoria == "p") %>% 
-  group_by(ANO, MES, Sampling.point, Categoria) %>% 
-  ungroup() %>%
-  mutate(
-    multiplicador = ifelse(fpn > 1 & !is.infinite(total / (m_track * 0.045)), 1, 0),  # Condición
-    num_individuos_m2 = ifelse(multiplicador == 1, total / (m_track * 0.045), NA)  # Evitar valores inf
-  )
+  filter(!is.na(fpn) &
+           !is.na(fpm) & 
+           !is.na(fps) ) %>% 
+  group_by(ANO, MES, Sampling.point) %>% 
+  mutate(ponderar = ifelse(fpn, fpn, 1) *
+                                   ifelse(fpm, fpm, 1) *
+                                   ifelse(fps, fps, 1)) %>%
+  # Multiplicar por m_track * 0.045
+  mutate(D15 = ponderar * m_track * 0.045, na.rm = TRUE)
 ```
+
+
 Ploteo columnas por año y Sampling point
 
 
 ```r
-plotD15 <- ggplot(D15n2, 
-                  aes(MES,num_individuos_m2,
+plotD15 <- ggplot(D15n2 %>% 
+                    filter(Sampling.point %in% c(2,4,6)), 
+                  aes(MES,D15,
                       color=as.factor(Sampling.point),
                   group=as.factor(Sampling.point)))+
   geom_point()+
-  geom_smooth(method="lm")+
+  geom_smooth(method="loess", se=FALSE)+
   facet_wrap(.~ANO, ncol=4)+
   scale_color_viridis_d(option="H",
                         name="Sampling point")+
@@ -460,43 +453,366 @@ plotD15 <- ggplot(D15n2,
                                    hjust = 1))+
   labs(y="Indice de Reclutamiemto",
        x="MES")+
-  ylim(0,200)
+  ylim(0,50)
 plotD15
 ```
 
 <img src="Recruit_Index_files/figure-html/unnamed-chunk-13-1.jpeg" style="display: block; margin: auto;" />
+Ahora agrupado por el complejo espacial total
 
-Obtengo el valor para el informe de acuerdo al mes
+
+```r
+totalD15 <- ggplot(D15n2 %>% 
+                    group_by(ANO, MES) %>% 
+                    summarise(MEAND15 =mean(D15), na.rm=TRUE), 
+                  aes(MES,MEAND15))+
+  geom_point()+
+  geom_smooth(method="loess",
+              se=FALSE)+
+  facet_wrap(.~ANO, ncol=4)+
+  scale_color_viridis_d(option="H",
+                        name="Sampling point")+
+  scale_x_continuous(breaks = seq(from = 1, 
+                                  to = 12, 
+                                  by = 1,
+                                  size=2))+
+  theme_few()+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))+
+  labs(y="Indice de Reclutamiemto",
+       x="MES")+
+  ylim(1,30)
+totalD15
+```
+
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-14-1.jpeg" style="display: block; margin: auto;" />
+Ahora de Columnnas
+
+
+```r
+plotD15 <- ggplot(D15n2, 
+                  aes(MES,D15))+
+  geom_col()+
+  #geom_smooth(method="lm")+
+  facet_grid(Sampling.point~ANO)+
+  scale_color_viridis_d(option="H",
+                        name="Sampling point")+
+  scale_x_continuous(breaks = seq(from = 1, 
+                                  to = 12, 
+                                  by = 1,
+                                  size=2))+
+  theme_few()+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))+
+  labs(y="Indice de Reclutamiemto",
+       x="MES")+
+  ylim(0,30)
+plotD15
+```
+
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-15-1.jpeg" style="display: block; margin: auto;" />
+Obtengo el valor para el informe de acuerdo al mes. Para ello genero una tabla de acuerdo al formato del informe
 
 
 
 ```r
-D15n3 <- D15n1 %>% 
-  filter(Categoria=="p") %>% 
-  group_by(ANO, MES, Sampling.point, Categoria) %>% 
-  ungroup() %>%
-  mutate(num_individuos_m2 = total / 
-           (m_track*0.045)) %>% 
-  arrange(ANO, MES) %>% 
-  filter(ANO==2023,
-         MES==7) %>%
-  group_by(Sampling.point) %>%
-  summarize(across(num_individuos_m2, mean))
-D15n3
+D15n3 <- D15n2 %>% 
+  group_by(ANO, MES, Sampling.point) %>% 
+  summarise(D15PRO =mean(D15)) 
+
+D15n4 <- D15n3 %>%
+  filter(Sampling.point %in% c(2,4,6)) %>% 
+  pivot_wider(names_from = Sampling.point, 
+              values_from = D15PRO,
+              values_fill = 0)
+
+kbl(D15n4) %>% 
+  kable_styling(bootstrap_options = c("striped", 
+                                      "hover", 
+                                      "condensed",
+                                      "responsive"))
 ```
 
-```
-## # A tibble: 3 × 2
-##   Sampling.point num_individuos_m2
-##            <dbl>             <dbl>
-## 1              2            22.8  
-## 2              4             0.803
-## 3              6            36.4
-```
-
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+ <thead>
+  <tr>
+   <th style="text-align:right;"> ANO </th>
+   <th style="text-align:right;"> MES </th>
+   <th style="text-align:right;"> 2 </th>
+   <th style="text-align:right;"> 4 </th>
+   <th style="text-align:right;"> 6 </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:right;"> 2021 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 5.294278 </td>
+   <td style="text-align:right;"> 6.517724 </td>
+   <td style="text-align:right;"> 3.105000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2021 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 20.767392 </td>
+   <td style="text-align:right;"> 7.545575 </td>
+   <td style="text-align:right;"> 6.050992 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2021 </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 2.520000 </td>
+   <td style="text-align:right;"> 6.830706 </td>
+   <td style="text-align:right;"> 4.401694 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2021 </td>
+   <td style="text-align:right;"> 4 </td>
+   <td style="text-align:right;"> 15.547300 </td>
+   <td style="text-align:right;"> 5.014604 </td>
+   <td style="text-align:right;"> 2.430000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2021 </td>
+   <td style="text-align:right;"> 5 </td>
+   <td style="text-align:right;"> 16.374371 </td>
+   <td style="text-align:right;"> 9.696133 </td>
+   <td style="text-align:right;"> 16.261551 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2021 </td>
+   <td style="text-align:right;"> 6 </td>
+   <td style="text-align:right;"> 10.109222 </td>
+   <td style="text-align:right;"> 11.106487 </td>
+   <td style="text-align:right;"> 5.076612 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2021 </td>
+   <td style="text-align:right;"> 7 </td>
+   <td style="text-align:right;"> 8.445814 </td>
+   <td style="text-align:right;"> 8.389744 </td>
+   <td style="text-align:right;"> 2.880000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2021 </td>
+   <td style="text-align:right;"> 8 </td>
+   <td style="text-align:right;"> 2.981651 </td>
+   <td style="text-align:right;"> 11.373828 </td>
+   <td style="text-align:right;"> 0.943200 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2021 </td>
+   <td style="text-align:right;"> 9 </td>
+   <td style="text-align:right;"> 4.698386 </td>
+   <td style="text-align:right;"> 6.391353 </td>
+   <td style="text-align:right;"> 2.430000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2021 </td>
+   <td style="text-align:right;"> 10 </td>
+   <td style="text-align:right;"> 2.490734 </td>
+   <td style="text-align:right;"> 3.363704 </td>
+   <td style="text-align:right;"> 2.160000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2021 </td>
+   <td style="text-align:right;"> 11 </td>
+   <td style="text-align:right;"> 2.070000 </td>
+   <td style="text-align:right;"> 2.742660 </td>
+   <td style="text-align:right;"> 2.205000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2021 </td>
+   <td style="text-align:right;"> 12 </td>
+   <td style="text-align:right;"> 8.080953 </td>
+   <td style="text-align:right;"> 2.250000 </td>
+   <td style="text-align:right;"> 2.250000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1.980000 </td>
+   <td style="text-align:right;"> 2.758889 </td>
+   <td style="text-align:right;"> 2.025000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 2.746558 </td>
+   <td style="text-align:right;"> 2.536289 </td>
+   <td style="text-align:right;"> 3.017234 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 5.499511 </td>
+   <td style="text-align:right;"> 4.250024 </td>
+   <td style="text-align:right;"> 3.641897 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 4 </td>
+   <td style="text-align:right;"> 9.087342 </td>
+   <td style="text-align:right;"> 5.683183 </td>
+   <td style="text-align:right;"> 3.645000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 5 </td>
+   <td style="text-align:right;"> 5.642415 </td>
+   <td style="text-align:right;"> 2.565000 </td>
+   <td style="text-align:right;"> 2.655000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 6 </td>
+   <td style="text-align:right;"> 4.388788 </td>
+   <td style="text-align:right;"> 3.105000 </td>
+   <td style="text-align:right;"> 5.130000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 7 </td>
+   <td style="text-align:right;"> 2.542500 </td>
+   <td style="text-align:right;"> 2.385000 </td>
+   <td style="text-align:right;"> 2.295000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 8 </td>
+   <td style="text-align:right;"> 2.340000 </td>
+   <td style="text-align:right;"> 1.867500 </td>
+   <td style="text-align:right;"> 1.957500 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 10 </td>
+   <td style="text-align:right;"> 1.485000 </td>
+   <td style="text-align:right;"> 2.385000 </td>
+   <td style="text-align:right;"> 2.295000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 11 </td>
+   <td style="text-align:right;"> 4.005000 </td>
+   <td style="text-align:right;"> 2.205000 </td>
+   <td style="text-align:right;"> 2.115000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 12 </td>
+   <td style="text-align:right;"> 4.095000 </td>
+   <td style="text-align:right;"> 4.635000 </td>
+   <td style="text-align:right;"> 23.395502 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 4.862961 </td>
+   <td style="text-align:right;"> 25.712781 </td>
+   <td style="text-align:right;"> 2.340000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 3.077746 </td>
+   <td style="text-align:right;"> 3.452624 </td>
+   <td style="text-align:right;"> 2.025000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 4.095000 </td>
+   <td style="text-align:right;"> 3.690000 </td>
+   <td style="text-align:right;"> 2.295000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 6 </td>
+   <td style="text-align:right;"> 5.476712 </td>
+   <td style="text-align:right;"> 3.240000 </td>
+   <td style="text-align:right;"> 4.725000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 7 </td>
+   <td style="text-align:right;"> 3.600000 </td>
+   <td style="text-align:right;"> 37.015978 </td>
+   <td style="text-align:right;"> 4.095000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 8 </td>
+   <td style="text-align:right;"> 13.297339 </td>
+   <td style="text-align:right;"> 5.779742 </td>
+   <td style="text-align:right;"> 17.531773 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 9 </td>
+   <td style="text-align:right;"> 8.804841 </td>
+   <td style="text-align:right;"> 5.998077 </td>
+   <td style="text-align:right;"> 3.793553 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 10 </td>
+   <td style="text-align:right;"> 2.250000 </td>
+   <td style="text-align:right;"> 3.285000 </td>
+   <td style="text-align:right;"> 2.918128 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 11 </td>
+   <td style="text-align:right;"> 2.250000 </td>
+   <td style="text-align:right;"> 3.285000 </td>
+   <td style="text-align:right;"> 2.925000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 12 </td>
+   <td style="text-align:right;"> 7.335000 </td>
+   <td style="text-align:right;"> 8.775000 </td>
+   <td style="text-align:right;"> 15225.582744 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2024 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 3.285000 </td>
+   <td style="text-align:right;"> 3.420000 </td>
+   <td style="text-align:right;"> 3.510000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2024 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 3.105000 </td>
+   <td style="text-align:right;"> 3.600000 </td>
+   <td style="text-align:right;"> 2.970000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2024 </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 7.597681 </td>
+   <td style="text-align:right;"> 10.485564 </td>
+   <td style="text-align:right;"> 4.050000 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2024 </td>
+   <td style="text-align:right;"> 4 </td>
+   <td style="text-align:right;"> 4.410000 </td>
+   <td style="text-align:right;"> 38.989958 </td>
+   <td style="text-align:right;"> 2.205000 </td>
+  </tr>
+</tbody>
+</table>
 
 Esto debemos tratarlo como grupo dado que de acuerdo a la replica de cálculos los valores son mayores que los registrados en los ITAs de los años 2021 y 2023 [@Delgado2021; @Delgado2023].
-
 
 Existe un archivo que tiene datos de `D15` previos al 2020 y son valores menores.
 
@@ -533,7 +849,7 @@ duda <- ggplot(D151720 %>%
 duda
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-17-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
 
 Ahora lo veo como un plot similar al de los años 2021-2024
 
@@ -562,7 +878,7 @@ D15_17_20 <- ggplot(D151720 ,
 D15_17_20
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-18-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
 Ambos graficos (2017-2020 y 2021.2024) para comparar metodologías. Estas no tienen os mismos puntos muestreados
 
 
@@ -575,10 +891,10 @@ joinpl <- ggarrange(D15_17_20,
 joinpl
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-21-1.jpeg" style="display: block; margin: auto;" />
 
 
-Tabla con los datos del año
+Tabla con los datos del año para el informe;
 
 
 ```r
@@ -591,7 +907,7 @@ kbl(D15n2$Sampling.point.x, D15n2$num_individuos_m2,
 ```
 
 
-# ALTERNATIVAS DE CALCULO DEL INDICE DE RECLUTAMIENTO
+# OTRAS FORMAS DE CALCULO DEL INDICE DE RECLUTAMIENTO
 
 ## Porcentaje Individuos < 15 mm
 
@@ -600,7 +916,7 @@ Cargo data total de las estructuiras de tallas
 
 
 ```r
-tallas13_24 <- readRDS("~/IEO/DATA/EDA_Donux_truculus_2023/tallas13_24.RDS")
+tallas13_24 <- readRDS("tallas13_24.RDS")
 ```
 
 
@@ -651,7 +967,7 @@ D15plot <- ggplot(D15 %>%
 D15plot
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-23-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-25-1.jpeg" style="display: block; margin: auto;" />
 
 
 
@@ -681,7 +997,7 @@ landpop <- ggplot(D15 %>%
 landpop
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-24-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-26-1.jpeg" style="display: block; margin: auto;" />
 
 ## Recruit Index size Based (from sea urchin, Chile)
 
@@ -712,7 +1028,7 @@ indseg <- ggplot(indice_reclutamiento %>%
 indseg
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-26-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-28-1.jpeg" style="display: block; margin: auto;" />
 Ahora estandarizo entre - y 1
 
 
@@ -755,7 +1071,7 @@ indseg3 <- ggplot(indice_reclutamiento %>%
 indseg3
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-28-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-30-1.jpeg" style="display: block; margin: auto;" />
 
 
 # INDICE DE DENSIDAD
@@ -846,7 +1162,7 @@ plot_dens <- ggplot(dens1724 %>%
 plot_dens
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-31-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-33-1.jpeg" style="display: block; margin: auto;" />
 
 
 ahora creo vector con desviación 
@@ -892,7 +1208,7 @@ bio <- ggplot(denspobtot2 %>%
 bio                       
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-33-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-35-1.jpeg" style="display: block; margin: auto;" />
 # REFERENCIAS
 
 

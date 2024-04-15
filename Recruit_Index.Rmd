@@ -210,7 +210,7 @@ denspobtot2 <- denspobtot %>%
          area = m_track * 0.445,
          bio= Btotal / area,
          dens = Ntotal / area)
-tail(denspobtot2)
+denspobtot2
 ```
 
 
@@ -285,26 +285,20 @@ glimpse(size_21_23)
 table(size_21_23$ANO, size_21_23$MES)
 size_21_23
 ```
+## Calculo D15
 
-
-Ahora por la cantidad de individuos bajo los 15 mm. Si bien hemos visualizado la base usando los datos desde el 2017, previo al 2020 no se puede asignar un area a los datos. Por lo que trabajo con los datos del 2020 al 2023.
+Ahora calculo la cantidad de individuos bajo los 15 mm. Si bien hemos visualizado la base usando los datos desde el 2017, previo al 2020 no se puede asignar un area a los datos. Por lo que trabajo con los datos del 2020 al 2023.
 
 Primero calculo en n de ind medidos y luego junto con base que tiene medida del area `track_m`, que es una variable para estimar `D15` q es en función del área, de acuerdo a lo comentado por MD.
 
 ```{r}
-# para calcular una proporcion de ind < 15
-FUN <- function(x) (sum(x < 15, na.rm = TRUE) / length(x)) * 100
-
 D15n <- size_21_23 %>% 
   group_by(ANO, 
            MES, 
            Sampling.point, 
-           ID_codificado_muestreo, 
-           Beach,
-           Categoria,
+           ID_codificado_muestreo
            ) %>% 
   summarize(
-    d15 = FUN(sizeE),
     total = sum(sizeE < 15, na.rm = TRUE),
     .groups = "drop")
 
@@ -313,37 +307,32 @@ D15n$Sampling.point <- as.double(D15n$Sampling.point)
 D15n1 <- right_join(denspobtot2, D15n)
 ```
 
-
-Calculo el reclutamiento, es decir, n ind /`track_m`* 0.045 para el ultimo muestreo
+A traves de la ponderación del `D15`, hago un retrocalculo a traves de los ponderadores `fps`, `fpn`y `fpm` para luego extrapolar al tamaño del área.
 
 ```{r}
 D15n2 <- D15n1 %>% 
-  filter(Categoria=="p") %>% 
-  group_by(ANO, MES, Sampling.point, Categoria) %>% 
-  ungroup() %>%
-  mutate(num_individuos_m2 = total / 
-           (m_track*0.045))
-
-
-
-D15n4 <- D15n1 %>% 
-  filter(Categoria == "p") %>% 
-  group_by(ANO, MES, Sampling.point, Categoria) %>% 
-  ungroup() %>%
-  mutate(
-    multiplicador = ifelse(fpn > 1 & !is.infinite(total / (m_track * 0.045)), 1, 0),  # Condición
-    num_individuos_m2 = ifelse(multiplicador == 1, total / (m_track * 0.045), NA)  # Evitar valores inf
-  )
+  filter(!is.na(fpn) &
+           !is.na(fpm) & 
+           !is.na(fps) ) %>% 
+  group_by(ANO, MES, Sampling.point) %>% 
+  mutate(ponderar = ifelse(fpn, fpn, 1) *
+                                   ifelse(fpm, fpm, 1) *
+                                   ifelse(fps, fps, 1)) %>%
+  # Multiplicar por m_track * 0.045
+  mutate(D15 = ponderar * m_track * 0.045, na.rm = TRUE)
 ```
+
+
 Ploteo columnas por año y Sampling point
 
 ```{r warning=FALSE}
-plotD15 <- ggplot(D15n2, 
-                  aes(MES,num_individuos_m2,
+plotD15 <- ggplot(D15n2 %>% 
+                    filter(Sampling.point %in% c(2,4,6)), 
+                  aes(MES,D15,
                       color=as.factor(Sampling.point),
                   group=as.factor(Sampling.point)))+
   geom_point()+
-  geom_smooth(method="lm")+
+  geom_smooth(method="loess", se=FALSE)+
   facet_wrap(.~ANO, ncol=4)+
   scale_color_viridis_d(option="H",
                         name="Sampling point")+
@@ -359,31 +348,85 @@ plotD15 <- ggplot(D15n2,
                                    hjust = 1))+
   labs(y="Indice de Reclutamiemto",
        x="MES")+
-  ylim(0,200)
+  ylim(0,50)
 plotD15
 ```
+Ahora agrupado por el complejo espacial total
 
-Obtengo el valor para el informe de acuerdo al mes
+```{r warning=FALSE}
+totalD15 <- ggplot(D15n2 %>% 
+                    group_by(ANO, MES) %>% 
+                    summarise(MEAND15 =mean(D15), na.rm=TRUE), 
+                  aes(MES,MEAND15))+
+  geom_point()+
+  geom_smooth(method="loess",
+              se=FALSE)+
+  facet_wrap(.~ANO, ncol=4)+
+  scale_color_viridis_d(option="H",
+                        name="Sampling point")+
+  scale_x_continuous(breaks = seq(from = 1, 
+                                  to = 12, 
+                                  by = 1,
+                                  size=2))+
+  theme_few()+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))+
+  labs(y="Indice de Reclutamiemto",
+       x="MES")+
+  ylim(1,30)
+totalD15
+```
+Ahora de Columnnas
+
+```{r warning=FALSE}
+plotD15 <- ggplot(D15n2, 
+                  aes(MES,D15))+
+  geom_col()+
+  #geom_smooth(method="lm")+
+  facet_grid(Sampling.point~ANO)+
+  scale_color_viridis_d(option="H",
+                        name="Sampling point")+
+  scale_x_continuous(breaks = seq(from = 1, 
+                                  to = 12, 
+                                  by = 1,
+                                  size=2))+
+  theme_few()+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))+
+  labs(y="Indice de Reclutamiemto",
+       x="MES")+
+  ylim(0,30)
+plotD15
+```
+Obtengo el valor para el informe de acuerdo al mes. Para ello genero una tabla de acuerdo al formato del informe
 
 
 ```{r}
-D15n3 <- D15n1 %>% 
-  filter(Categoria=="p") %>% 
-  group_by(ANO, MES, Sampling.point, Categoria) %>% 
-  ungroup() %>%
-  mutate(num_individuos_m2 = total / 
-           (m_track*0.045)) %>% 
-  arrange(ANO, MES) %>% 
-  filter(ANO==2023,
-         MES==7) %>%
-  group_by(Sampling.point) %>%
-  summarize(across(num_individuos_m2, mean))
-D15n3
+D15n3 <- D15n2 %>% 
+  group_by(ANO, MES, Sampling.point) %>% 
+  summarise(D15PRO =mean(D15)) 
+
+D15n4 <- D15n3 %>%
+  filter(Sampling.point %in% c(2,4,6)) %>% 
+  pivot_wider(names_from = Sampling.point, 
+              values_from = D15PRO,
+              values_fill = 0)
+
+kbl(D15n4) %>% 
+  kable_styling(bootstrap_options = c("striped", 
+                                      "hover", 
+                                      "condensed",
+                                      "responsive"))
+
 ```
 
-
 Esto debemos tratarlo como grupo dado que de acuerdo a la replica de cálculos los valores son mayores que los registrados en los ITAs de los años 2021 y 2023 [@Delgado2021; @Delgado2023].
-
 
 Existe un archivo que tiene datos de `D15` previos al 2020 y son valores menores.
 
@@ -454,7 +497,7 @@ joinpl
 ```
 
 
-Tabla con los datos del año
+Tabla con los datos del año para el informe;
 
 ```{r eval=FALSE}
 kbl(D15n2$Sampling.point.x, D15n2$num_individuos_m2, 
@@ -467,7 +510,7 @@ kbl(D15n2$Sampling.point.x, D15n2$num_individuos_m2,
 ```
 
 
-# ALTERNATIVAS DE CALCULO DEL INDICE DE RECLUTAMIENTO
+# OTRAS FORMAS DE CALCULO DEL INDICE DE RECLUTAMIENTO
 
 ## Porcentaje Individuos < 15 mm
 
@@ -475,7 +518,7 @@ Este es una forma mas simple calculando la proporción de ind bajo  los 15 mm, e
 Cargo data total de las estructuiras de tallas 
 
 ```{r}
-tallas13_24 <- readRDS("~/IEO/DATA/EDA_Donux_truculus_2023/tallas13_24.RDS")
+tallas13_24 <- readRDS("tallas13_24.RDS")
 ```
 
 
