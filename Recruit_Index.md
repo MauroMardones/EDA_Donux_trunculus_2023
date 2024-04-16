@@ -2,7 +2,7 @@
 title: "Indice Reclutamiento D. trunculus"
 subtitle: "Datos Monitoreo poblacional FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "15 April, 2024"
+date:  "16 April, 2024"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -72,23 +72,29 @@ Recordar que las bases de densidades previas al 2021 estan en la misma base que 
 
 
 ```r
-dens17_20 <- read_excel("Data/Anterior a 2020/densidad_reclutamiento_2017_2018_2019_2020.xlsx")
+dens17_20 <- read_excel(here("Data", 
+                             "Anterior a 2020",
+                             "densidad_reclutamiento_2017_2018_2019_2020.xlsx"))
 ```
 
 Llamo las bases con el formato último, es decir desde el año 2021.
 
 
 ```r
-dens2021pob <- read_excel(here("Data", "Posterior 2020", 
+dens2021pob <- read_excel(here("Data", 
+                               "Posterior 2020", 
                                "Data_sample_FEMP_04_2021.xlsx"),
                        sheet = "Data_POBL")
-dens2022pob <- read_excel(here("Data", "Posterior 2020", 
+dens2022pob <- read_excel(here("Data",
+                               "Posterior 2020", 
                                "Data_sample_FEMP_04_2022.xlsx"),
                        sheet = "Data_POBL")
-dens2023pob <- read_excel(here("Data", "Posterior 2020", 
+dens2023pob <- read_excel(here("Data",
+                               "Posterior 2020", 
                                "Data_sample_FEMP_04_2023.xlsx"),
                        sheet = "Data_POBL")
-dens2024pob <- read_excel(here("Data", "Posterior 2020", 
+dens2024pob <- read_excel(here("Data",
+                               "Posterior 2020", 
                                "Data_sample_FEMP_04_2024.xlsx"),
                        sheet = "Data_POBL")
 ```
@@ -413,7 +419,10 @@ D15n1 <- right_join(denspobtot2, D15n)
 A traves de la ponderación del `D15`, hago un retrocalculo a traves de los ponderadores `fps`, `fpn`y `fpm` para luego extrapolar al tamaño del área.
 
 
+
+
 ```r
+# formula para el informe de Abril 24
 D15n2 <- D15n1 %>% 
   filter(!is.na(fpn) &
            !is.na(fpm) & 
@@ -423,7 +432,24 @@ D15n2 <- D15n1 %>%
                                    ifelse(fpm, fpm, 1) *
                                    ifelse(fps, fps, 1)) %>%
   # Multiplicar por m_track * 0.045
-  mutate(D15 = ponderar * m_track * 0.045, na.rm = TRUE)
+  mutate(D15 = ponderar * (m_track * 0.045), na.rm = TRUE)
+```
+(Al dia de hoy, 15 de abril, he realizado algunas correcciones al estimador del `D15`)
+
+
+```r
+# probando otras formas
+D15n2 <- D15n1 %>%
+  filter(
+         !is.na(fpn), 
+         !is.na(fpm), 
+         !is.na(fps), 
+         !is.na(m_track)) %>%
+  group_by(ANO, MES, Sampling.point) %>%
+  mutate(ponderar = ifelse(fpn, fpn, 1) *
+                                   ifelse(fpm, fpm, 1) *
+                                   ifelse(fps, fps, 1)) %>%
+  mutate(D15 = total * ponderar / (m_track * 0.045)) 
 ```
 
 
@@ -438,7 +464,7 @@ plotD15 <- ggplot(D15n2 %>%
                   group=as.factor(Sampling.point)))+
   geom_point()+
   geom_smooth(method="loess", se=FALSE)+
-  facet_wrap(.~ANO, ncol=4)+
+  facet_wrap(.~ANO, ncol=2)+
   scale_color_viridis_d(option="H",
                         name="Sampling point")+
   scale_x_continuous(breaks = seq(from = 1, 
@@ -453,11 +479,11 @@ plotD15 <- ggplot(D15n2 %>%
                                    hjust = 1))+
   labs(y="Indice de Reclutamiemto",
        x="MES")+
-  ylim(0,50)
+  ylim(0,40)
 plotD15
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-13-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-14-1.jpeg" style="display: block; margin: auto;" />
 Ahora agrupado por el complejo espacial total
 
 
@@ -483,12 +509,11 @@ totalD15 <- ggplot(D15n2 %>%
   theme(axis.text.x = element_text(angle = 90, 
                                    hjust = 1))+
   labs(y="Indice de Reclutamiemto",
-       x="MES")+
-  ylim(1,30)
+       x="MES")
 totalD15
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-14-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-15-1.jpeg" style="display: block; margin: auto;" />
 Ahora de Columnnas
 
 
@@ -516,7 +541,7 @@ plotD15 <- ggplot(D15n2,
 plotD15
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-15-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-16-1.jpeg" style="display: block; margin: auto;" />
 Obtengo el valor para el informe de acuerdo al mes. Para ello genero una tabla de acuerdo al formato del informe
 
 
@@ -524,7 +549,7 @@ Obtengo el valor para el informe de acuerdo al mes. Para ello genero una tabla d
 ```r
 D15n3 <- D15n2 %>% 
   group_by(ANO, MES, Sampling.point) %>% 
-  summarise(D15PRO =mean(D15)) 
+  summarise(D15PRO =round(mean(D15),2)) 
 
 D15n4 <- D15n3 %>%
   filter(Sampling.point %in% c(2,4,6)) %>% 
@@ -553,261 +578,261 @@ kbl(D15n4) %>%
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 5.294278 </td>
-   <td style="text-align:right;"> 6.517724 </td>
-   <td style="text-align:right;"> 3.105000 </td>
+   <td style="text-align:right;"> 156.81 </td>
+   <td style="text-align:right;"> 159.08 </td>
+   <td style="text-align:right;"> 14.49 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 20.767392 </td>
-   <td style="text-align:right;"> 7.545575 </td>
-   <td style="text-align:right;"> 6.050992 </td>
+   <td style="text-align:right;"> 110.50 </td>
+   <td style="text-align:right;"> 76.22 </td>
+   <td style="text-align:right;"> 94.14 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 3 </td>
-   <td style="text-align:right;"> 2.520000 </td>
-   <td style="text-align:right;"> 6.830706 </td>
-   <td style="text-align:right;"> 4.401694 </td>
+   <td style="text-align:right;"> 2.38 </td>
+   <td style="text-align:right;"> 96.36 </td>
+   <td style="text-align:right;"> 15.09 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 4 </td>
-   <td style="text-align:right;"> 15.547300 </td>
-   <td style="text-align:right;"> 5.014604 </td>
-   <td style="text-align:right;"> 2.430000 </td>
+   <td style="text-align:right;"> 485.31 </td>
+   <td style="text-align:right;"> 129.19 </td>
+   <td style="text-align:right;"> 16.46 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 5 </td>
-   <td style="text-align:right;"> 16.374371 </td>
-   <td style="text-align:right;"> 9.696133 </td>
-   <td style="text-align:right;"> 16.261551 </td>
+   <td style="text-align:right;"> 19.74 </td>
+   <td style="text-align:right;"> 73.30 </td>
+   <td style="text-align:right;"> 29.50 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 6 </td>
-   <td style="text-align:right;"> 10.109222 </td>
-   <td style="text-align:right;"> 11.106487 </td>
-   <td style="text-align:right;"> 5.076612 </td>
+   <td style="text-align:right;"> 58.39 </td>
+   <td style="text-align:right;"> 22.22 </td>
+   <td style="text-align:right;"> 32.96 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 7 </td>
-   <td style="text-align:right;"> 8.445814 </td>
-   <td style="text-align:right;"> 8.389744 </td>
-   <td style="text-align:right;"> 2.880000 </td>
+   <td style="text-align:right;"> 83.02 </td>
+   <td style="text-align:right;"> 17.53 </td>
+   <td style="text-align:right;"> 44.79 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 8 </td>
-   <td style="text-align:right;"> 2.981651 </td>
-   <td style="text-align:right;"> 11.373828 </td>
-   <td style="text-align:right;"> 0.943200 </td>
+   <td style="text-align:right;"> 0.00 </td>
+   <td style="text-align:right;"> 69.04 </td>
+   <td style="text-align:right;"> 81.64 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 9 </td>
-   <td style="text-align:right;"> 4.698386 </td>
-   <td style="text-align:right;"> 6.391353 </td>
-   <td style="text-align:right;"> 2.430000 </td>
+   <td style="text-align:right;"> 30.24 </td>
+   <td style="text-align:right;"> 17.70 </td>
+   <td style="text-align:right;"> 39.09 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 10 </td>
-   <td style="text-align:right;"> 2.490734 </td>
-   <td style="text-align:right;"> 3.363704 </td>
-   <td style="text-align:right;"> 2.160000 </td>
+   <td style="text-align:right;"> 43.60 </td>
+   <td style="text-align:right;"> 124.73 </td>
+   <td style="text-align:right;"> 37.04 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 11 </td>
-   <td style="text-align:right;"> 2.070000 </td>
-   <td style="text-align:right;"> 2.742660 </td>
-   <td style="text-align:right;"> 2.205000 </td>
+   <td style="text-align:right;"> 14.01 </td>
+   <td style="text-align:right;"> 283.32 </td>
+   <td style="text-align:right;"> 73.47 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 12 </td>
-   <td style="text-align:right;"> 8.080953 </td>
-   <td style="text-align:right;"> 2.250000 </td>
-   <td style="text-align:right;"> 2.250000 </td>
+   <td style="text-align:right;"> 207.84 </td>
+   <td style="text-align:right;"> 15.56 </td>
+   <td style="text-align:right;"> 42.22 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2022 </td>
    <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 1.980000 </td>
-   <td style="text-align:right;"> 2.758889 </td>
-   <td style="text-align:right;"> 2.025000 </td>
+   <td style="text-align:right;"> 2.53 </td>
+   <td style="text-align:right;"> 31.68 </td>
+   <td style="text-align:right;"> 11.36 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2022 </td>
    <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 2.746558 </td>
-   <td style="text-align:right;"> 2.536289 </td>
-   <td style="text-align:right;"> 3.017234 </td>
+   <td style="text-align:right;"> 12.30 </td>
+   <td style="text-align:right;"> 6.51 </td>
+   <td style="text-align:right;"> 14.28 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2022 </td>
    <td style="text-align:right;"> 3 </td>
-   <td style="text-align:right;"> 5.499511 </td>
-   <td style="text-align:right;"> 4.250024 </td>
-   <td style="text-align:right;"> 3.641897 </td>
+   <td style="text-align:right;"> 17.96 </td>
+   <td style="text-align:right;"> 8.74 </td>
+   <td style="text-align:right;"> 50.36 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2022 </td>
    <td style="text-align:right;"> 4 </td>
-   <td style="text-align:right;"> 9.087342 </td>
-   <td style="text-align:right;"> 5.683183 </td>
-   <td style="text-align:right;"> 3.645000 </td>
+   <td style="text-align:right;"> 52.86 </td>
+   <td style="text-align:right;"> 5.49 </td>
+   <td style="text-align:right;"> 9.05 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2022 </td>
    <td style="text-align:right;"> 5 </td>
-   <td style="text-align:right;"> 5.642415 </td>
-   <td style="text-align:right;"> 2.565000 </td>
-   <td style="text-align:right;"> 2.655000 </td>
+   <td style="text-align:right;"> 1.76 </td>
+   <td style="text-align:right;"> 1.17 </td>
+   <td style="text-align:right;"> 11.30 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2022 </td>
    <td style="text-align:right;"> 6 </td>
-   <td style="text-align:right;"> 4.388788 </td>
-   <td style="text-align:right;"> 3.105000 </td>
-   <td style="text-align:right;"> 5.130000 </td>
+   <td style="text-align:right;"> 5.80 </td>
+   <td style="text-align:right;"> 0.64 </td>
+   <td style="text-align:right;"> 14.62 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2022 </td>
    <td style="text-align:right;"> 7 </td>
-   <td style="text-align:right;"> 2.542500 </td>
-   <td style="text-align:right;"> 2.385000 </td>
-   <td style="text-align:right;"> 2.295000 </td>
+   <td style="text-align:right;"> 49.56 </td>
+   <td style="text-align:right;"> 21.80 </td>
+   <td style="text-align:right;"> 5.66 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2022 </td>
    <td style="text-align:right;"> 8 </td>
-   <td style="text-align:right;"> 2.340000 </td>
-   <td style="text-align:right;"> 1.867500 </td>
-   <td style="text-align:right;"> 1.957500 </td>
+   <td style="text-align:right;"> 101.78 </td>
+   <td style="text-align:right;"> 84.72 </td>
+   <td style="text-align:right;"> 29.59 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2022 </td>
    <td style="text-align:right;"> 10 </td>
-   <td style="text-align:right;"> 1.485000 </td>
-   <td style="text-align:right;"> 2.385000 </td>
-   <td style="text-align:right;"> 2.295000 </td>
+   <td style="text-align:right;"> 82.83 </td>
+   <td style="text-align:right;"> 72.12 </td>
+   <td style="text-align:right;"> 14.81 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2022 </td>
    <td style="text-align:right;"> 11 </td>
-   <td style="text-align:right;"> 4.005000 </td>
-   <td style="text-align:right;"> 2.205000 </td>
-   <td style="text-align:right;"> 2.115000 </td>
+   <td style="text-align:right;"> 16.23 </td>
+   <td style="text-align:right;"> 24.49 </td>
+   <td style="text-align:right;"> 34.99 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2022 </td>
    <td style="text-align:right;"> 12 </td>
-   <td style="text-align:right;"> 4.095000 </td>
-   <td style="text-align:right;"> 4.635000 </td>
-   <td style="text-align:right;"> 23.395502 </td>
+   <td style="text-align:right;"> 3.17 </td>
+   <td style="text-align:right;"> 24.38 </td>
+   <td style="text-align:right;"> 0.00 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2023 </td>
    <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 4.862961 </td>
-   <td style="text-align:right;"> 25.712781 </td>
-   <td style="text-align:right;"> 2.340000 </td>
+   <td style="text-align:right;"> 25.82 </td>
+   <td style="text-align:right;"> 66.44 </td>
+   <td style="text-align:right;"> 12.82 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2023 </td>
    <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 3.077746 </td>
-   <td style="text-align:right;"> 3.452624 </td>
-   <td style="text-align:right;"> 2.025000 </td>
+   <td style="text-align:right;"> 14.26 </td>
+   <td style="text-align:right;"> 13.71 </td>
+   <td style="text-align:right;"> 7.41 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2023 </td>
    <td style="text-align:right;"> 3 </td>
-   <td style="text-align:right;"> 4.095000 </td>
-   <td style="text-align:right;"> 3.690000 </td>
-   <td style="text-align:right;"> 2.295000 </td>
+   <td style="text-align:right;"> 3.91 </td>
+   <td style="text-align:right;"> 0.00 </td>
+   <td style="text-align:right;"> 10.02 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2023 </td>
    <td style="text-align:right;"> 6 </td>
-   <td style="text-align:right;"> 5.476712 </td>
-   <td style="text-align:right;"> 3.240000 </td>
-   <td style="text-align:right;"> 4.725000 </td>
+   <td style="text-align:right;"> 4.16 </td>
+   <td style="text-align:right;"> 1.23 </td>
+   <td style="text-align:right;"> 3.60 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2023 </td>
    <td style="text-align:right;"> 7 </td>
-   <td style="text-align:right;"> 3.600000 </td>
-   <td style="text-align:right;"> 37.015978 </td>
-   <td style="text-align:right;"> 4.095000 </td>
+   <td style="text-align:right;"> 22.78 </td>
+   <td style="text-align:right;"> 7.96 </td>
+   <td style="text-align:right;"> 36.39 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2023 </td>
    <td style="text-align:right;"> 8 </td>
-   <td style="text-align:right;"> 13.297339 </td>
-   <td style="text-align:right;"> 5.779742 </td>
-   <td style="text-align:right;"> 17.531773 </td>
+   <td style="text-align:right;"> 99.41 </td>
+   <td style="text-align:right;"> 32.04 </td>
+   <td style="text-align:right;"> 83.88 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2023 </td>
    <td style="text-align:right;"> 9 </td>
-   <td style="text-align:right;"> 8.804841 </td>
-   <td style="text-align:right;"> 5.998077 </td>
-   <td style="text-align:right;"> 3.793553 </td>
+   <td style="text-align:right;"> 46.01 </td>
+   <td style="text-align:right;"> 41.99 </td>
+   <td style="text-align:right;"> 10.02 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2023 </td>
    <td style="text-align:right;"> 10 </td>
-   <td style="text-align:right;"> 2.250000 </td>
-   <td style="text-align:right;"> 3.285000 </td>
-   <td style="text-align:right;"> 2.918128 </td>
+   <td style="text-align:right;"> 10.67 </td>
+   <td style="text-align:right;"> 29.83 </td>
+   <td style="text-align:right;"> 11.26 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2023 </td>
    <td style="text-align:right;"> 11 </td>
-   <td style="text-align:right;"> 2.250000 </td>
-   <td style="text-align:right;"> 3.285000 </td>
-   <td style="text-align:right;"> 2.925000 </td>
+   <td style="text-align:right;"> 9.78 </td>
+   <td style="text-align:right;"> 57.23 </td>
+   <td style="text-align:right;"> 0.34 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2023 </td>
    <td style="text-align:right;"> 12 </td>
-   <td style="text-align:right;"> 7.335000 </td>
-   <td style="text-align:right;"> 8.775000 </td>
-   <td style="text-align:right;"> 15225.582744 </td>
+   <td style="text-align:right;"> 37.26 </td>
+   <td style="text-align:right;"> 8.22 </td>
+   <td style="text-align:right;"> 14.67 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2024 </td>
    <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 3.285000 </td>
-   <td style="text-align:right;"> 3.420000 </td>
-   <td style="text-align:right;"> 3.510000 </td>
+   <td style="text-align:right;"> 17.05 </td>
+   <td style="text-align:right;"> 9.06 </td>
+   <td style="text-align:right;"> 0.00 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2024 </td>
    <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 3.105000 </td>
-   <td style="text-align:right;"> 3.600000 </td>
-   <td style="text-align:right;"> 2.970000 </td>
+   <td style="text-align:right;"> 11.92 </td>
+   <td style="text-align:right;"> 0.00 </td>
+   <td style="text-align:right;"> 2.02 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2024 </td>
    <td style="text-align:right;"> 3 </td>
-   <td style="text-align:right;"> 7.597681 </td>
-   <td style="text-align:right;"> 10.485564 </td>
-   <td style="text-align:right;"> 4.050000 </td>
+   <td style="text-align:right;"> 22.20 </td>
+   <td style="text-align:right;"> 52.53 </td>
+   <td style="text-align:right;"> 8.15 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2024 </td>
    <td style="text-align:right;"> 4 </td>
-   <td style="text-align:right;"> 4.410000 </td>
-   <td style="text-align:right;"> 38.989958 </td>
-   <td style="text-align:right;"> 2.205000 </td>
+   <td style="text-align:right;"> 0.91 </td>
+   <td style="text-align:right;"> 11.45 </td>
+   <td style="text-align:right;"> 10.43 </td>
   </tr>
 </tbody>
 </table>
@@ -849,7 +874,7 @@ duda <- ggplot(D151720 %>%
 duda
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-19-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
 
 Ahora lo veo como un plot similar al de los años 2021-2024
 
@@ -878,7 +903,7 @@ D15_17_20 <- ggplot(D151720 ,
 D15_17_20
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-20-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-21-1.jpeg" style="display: block; margin: auto;" />
 Ambos graficos (2017-2020 y 2021.2024) para comparar metodologías. Estas no tienen os mismos puntos muestreados
 
 
@@ -891,7 +916,7 @@ joinpl <- ggarrange(D15_17_20,
 joinpl
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-21-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-22-1.jpeg" style="display: block; margin: auto;" />
 
 
 Tabla con los datos del año para el informe;
@@ -967,7 +992,7 @@ D15plot <- ggplot(D15 %>%
 D15plot
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-25-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-26-1.jpeg" style="display: block; margin: auto;" />
 
 
 
@@ -997,7 +1022,7 @@ landpop <- ggplot(D15 %>%
 landpop
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-26-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-27-1.jpeg" style="display: block; margin: auto;" />
 
 ## Recruit Index size Based (from sea urchin, Chile)
 
@@ -1028,7 +1053,7 @@ indseg <- ggplot(indice_reclutamiento %>%
 indseg
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-28-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-29-1.jpeg" style="display: block; margin: auto;" />
 Ahora estandarizo entre - y 1
 
 
@@ -1071,7 +1096,7 @@ indseg3 <- ggplot(indice_reclutamiento %>%
 indseg3
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-30-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-31-1.jpeg" style="display: block; margin: auto;" />
 
 
 # INDICE DE DENSIDAD
@@ -1162,7 +1187,7 @@ plot_dens <- ggplot(dens1724 %>%
 plot_dens
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-33-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-34-1.jpeg" style="display: block; margin: auto;" />
 
 
 ahora creo vector con desviación 
@@ -1208,7 +1233,7 @@ bio <- ggplot(denspobtot2 %>%
 bio                       
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-35-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-36-1.jpeg" style="display: block; margin: auto;" />
 # REFERENCIAS
 
 

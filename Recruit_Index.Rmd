@@ -69,22 +69,28 @@ En este codigo, se establecen dos formas de estimar el indice de reclutamiento p
 Recordar que las bases de densidades previas al 2021 estan en la misma base que las longitudes. pero he encontrado un archivo que tiene una síntesis.
 
 ```{r eval=FALSE}
-dens17_20 <- read_excel("Data/Anterior a 2020/densidad_reclutamiento_2017_2018_2019_2020.xlsx")
+dens17_20 <- read_excel(here("Data", 
+                             "Anterior a 2020",
+                             "densidad_reclutamiento_2017_2018_2019_2020.xlsx"))
 ```
 
 Llamo las bases con el formato último, es decir desde el año 2021.
 
 ```{r}
-dens2021pob <- read_excel(here("Data", "Posterior 2020", 
+dens2021pob <- read_excel(here("Data", 
+                               "Posterior 2020", 
                                "Data_sample_FEMP_04_2021.xlsx"),
                        sheet = "Data_POBL")
-dens2022pob <- read_excel(here("Data", "Posterior 2020", 
+dens2022pob <- read_excel(here("Data",
+                               "Posterior 2020", 
                                "Data_sample_FEMP_04_2022.xlsx"),
                        sheet = "Data_POBL")
-dens2023pob <- read_excel(here("Data", "Posterior 2020", 
+dens2023pob <- read_excel(here("Data",
+                               "Posterior 2020", 
                                "Data_sample_FEMP_04_2023.xlsx"),
                        sheet = "Data_POBL")
-dens2024pob <- read_excel(here("Data", "Posterior 2020", 
+dens2024pob <- read_excel(here("Data",
+                               "Posterior 2020", 
                                "Data_sample_FEMP_04_2024.xlsx"),
                        sheet = "Data_POBL")
 ```
@@ -309,7 +315,10 @@ D15n1 <- right_join(denspobtot2, D15n)
 
 A traves de la ponderación del `D15`, hago un retrocalculo a traves de los ponderadores `fps`, `fpn`y `fpm` para luego extrapolar al tamaño del área.
 
+
+
 ```{r}
+# formula para el informe de Abril 24
 D15n2 <- D15n1 %>% 
   filter(!is.na(fpn) &
            !is.na(fpm) & 
@@ -319,7 +328,25 @@ D15n2 <- D15n1 %>%
                                    ifelse(fpm, fpm, 1) *
                                    ifelse(fps, fps, 1)) %>%
   # Multiplicar por m_track * 0.045
-  mutate(D15 = ponderar * m_track * 0.045, na.rm = TRUE)
+  mutate(D15 = ponderar * (m_track * 0.045), na.rm = TRUE)
+```
+(Al dia de hoy, 15 de abril, he realizado algunas correcciones al estimador del `D15`)
+
+```{r}
+# probando otras formas
+D15n2 <- D15n1 %>%
+  filter(
+         !is.na(fpn), 
+         !is.na(fpm), 
+         !is.na(fps), 
+         !is.na(m_track)) %>%
+  group_by(ANO, MES, Sampling.point) %>%
+  mutate(ponderar = ifelse(fpn, fpn, 1) *
+                                   ifelse(fpm, fpm, 1) *
+                                   ifelse(fps, fps, 1)) %>%
+  mutate(D15 = total * ponderar / (m_track * 0.045)) 
+
+
 ```
 
 
@@ -333,7 +360,7 @@ plotD15 <- ggplot(D15n2 %>%
                   group=as.factor(Sampling.point)))+
   geom_point()+
   geom_smooth(method="loess", se=FALSE)+
-  facet_wrap(.~ANO, ncol=4)+
+  facet_wrap(.~ANO, ncol=2)+
   scale_color_viridis_d(option="H",
                         name="Sampling point")+
   scale_x_continuous(breaks = seq(from = 1, 
@@ -348,7 +375,7 @@ plotD15 <- ggplot(D15n2 %>%
                                    hjust = 1))+
   labs(y="Indice de Reclutamiemto",
        x="MES")+
-  ylim(0,50)
+  ylim(0,40)
 plotD15
 ```
 Ahora agrupado por el complejo espacial total
@@ -375,8 +402,7 @@ totalD15 <- ggplot(D15n2 %>%
   theme(axis.text.x = element_text(angle = 90, 
                                    hjust = 1))+
   labs(y="Indice de Reclutamiemto",
-       x="MES")+
-  ylim(1,30)
+       x="MES")
 totalD15
 ```
 Ahora de Columnnas
@@ -410,7 +436,7 @@ Obtengo el valor para el informe de acuerdo al mes. Para ello genero una tabla d
 ```{r}
 D15n3 <- D15n2 %>% 
   group_by(ANO, MES, Sampling.point) %>% 
-  summarise(D15PRO =mean(D15)) 
+  summarise(D15PRO =round(mean(D15),2)) 
 
 D15n4 <- D15n3 %>%
   filter(Sampling.point %in% c(2,4,6)) %>% 
