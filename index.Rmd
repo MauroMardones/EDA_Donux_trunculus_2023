@@ -41,6 +41,8 @@ knitr::opts_chunk$set(echo = TRUE,
 options(bitmapType = "cairo") 
 # (https://github.com/tidyverse/ggplot2/issues/2655)
 # Lo mapas se hacen mas rapido
+# if you need tranbslate into to raw code, run;
+# knitr::purl("index.Rmd", documentation = 2)
 ```
 
 
@@ -115,7 +117,7 @@ knitr::include_graphics("Fig/Fig2.png")
 
 Uno de los principales elementos de información proviene de los estudios reproductivos y de parámetros realizados sobre coquina. A continuación un vistazo general a este importante componente para la evaluación de stock.
 
-| Item | Observación | Agregación  |
+| Item | Observación | Fuente  |
 |:-------:|:------:|:-----------:|:---------:|
 | vB Linf |  46.7 mm | [@Delgado2017] |
 | vB k | 0.47 | [@Delgado2017] |
