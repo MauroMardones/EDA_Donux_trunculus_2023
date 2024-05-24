@@ -105,7 +105,7 @@ El caso del muestreo `COMERCIAL`, solo se registran los individuos que pase por 
 
 Uno de los principales elementos de información proviene de los estudios reproductivos y de parámetros realizados sobre coquina. A continuación un vistazo general a este importante componente para la evaluación de stock.
 
-| Item | Observación | Fuente  |
+| Parámetro | Valor | Fuente  |
 |:-------:|:------:|:-----------:|:---------:|
 | vB Linf |  46.7 mm | [@Delgado2017] |
 | vB k | 0.47 | [@Delgado2017] |
@@ -114,7 +114,8 @@ Uno de los principales elementos de información proviene de los estudios reprod
 | t0 | -0.59 | [@Delgado2017] |
 | EDAD MÁXIMA |  EM= log(0.01)/M | Revisar | 
 | Parámetros gravimetricos |  a;b |  Revisar | 
-| TALLA PRIMERA MADUREZ |   L50=10.8mm | L95= pendiente |
+| L~50~ |   10.8mm | [@Delgado2018] |
+| L~95~ |   Pendiente |  |
 
 
 En cuanto a aspectos reproductivos, la coquina tiene los máximos de IGS entre los meses de Febrero – julio, con un máximo de desove entre mayo- julio, coincidiendo con la veda. La Figura \@ref(fig:matplot1) representa el ciclo vital interanual de coquina [@Delgado2017].

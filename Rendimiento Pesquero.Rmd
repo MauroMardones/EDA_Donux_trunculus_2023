@@ -454,7 +454,7 @@ rend1723 <- rbind(denscom1720totf,
 simple y global
 
 
-```{r}
+```{r warning=FALSE, message=FALSE,  fig.width=5}
 grurend1723 <- rend1723 %>% 
   group_by(ANO, MES) %>% 
   summarise(MEAN =mean(Rend1))
@@ -464,13 +464,13 @@ rendgru <- ggplot(grurend1723 %>%
                aes(ANO,MEAN))+
     geom_point(show.legend = T,
                alpha=.7) +
-    geom_smooth(method= "lm")+
+    geom_smooth(method= "loess")+
     theme_few()+ 
     theme(axis.text.x = element_text(angle = 90,
                                      hjust = 1,
                                      vjust = 0.5,
                                      size = 8),
-          axis.text.y = element_text(size = 8))+
+          axis.text.y = element_text(size = 12))+
     guides(fill = guide_legend(reverse=F))+
     scale_color_viridis_d(option= "H", 
                           name="Sampling Point")+

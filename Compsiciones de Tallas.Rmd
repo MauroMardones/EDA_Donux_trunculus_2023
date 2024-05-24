@@ -296,35 +296,6 @@ size2013 <- bind_rows(sizep01_13,
   )
 ```
 
-Primer vistazo
-
-```{r}
-s2013 <- ggplot(size2013 %>%
-                  drop_na(sizeE), 
-               aes(x=sizeE, 
-                   y = as.factor(MES),
-                  fill= as.factor(rastro)))+
-  geom_density_ridges2(stat = "density_ridges",
-                       position = "points_sina",
-                      scale = 1.5,
-                      alpha=0.7)+
-  # geom_density_ridges2(stat = "binline",
-  #                      position = "points_sina",
-  #                     scale = 1.5,
-  #                     alpha=0.7)+
-  #facet_wrap(.~rastro, ncol=4) +
-  geom_vline(xintercept = 10.8, color = "red")+
-  scale_fill_viridis_d(option="F",
-                       name="Rastro")+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-  theme_few()+
-  xlab("Longitud (cm.)")+
-  ylab("")+
-  xlim(0,40)
-#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
-s2013
-```
-
 
 ## Datos 2014-2015
 
@@ -384,32 +355,6 @@ size14_15 <- bind_rows(sizec14_15,
 ```
 
 
-```{r}
-s201415 <- ggplot(size14_15 %>%
-                  drop_na(sizeE), 
-               aes(x=sizeE, 
-                   y = as.factor(MES),
-                  fill= as.factor(rastro)))+
-  geom_density_ridges2(stat = "density_ridges",
-                       position = "points_sina",
-                      scale = 1.5,
-                      alpha=0.7)+
-  # geom_density_ridges2(stat = "binline",
-  #                      position = "points_sina",
-  #                     scale = 1.5,
-  #                     alpha=0.7)+
-  facet_wrap(ANO~., ncol=4) +
-  geom_vline(xintercept = 10.8, color = "red")+
-  scale_fill_viridis_d(option="F",
-                       name="Rastro")+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-  theme_few()+
-  xlab("Longitud (cm.)")+
-  ylab("")+
-  xlim(0,40)
-#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
-s201415
-```
 Separo las fechas
 
 ## Datos 2016
@@ -473,34 +418,6 @@ size2016 <- bind_rows(sizec2016,
     MES = month(Date),
     ANO = year(Date)
   )
-```
-un plot simple
-
-```{r}
-s2016 <- ggplot(size2016 %>%
-                  drop_na(sizeE), 
-               aes(x=sizeE, 
-                   y = as.factor(rastro),
-                  fill= as.factor(rastro)))+
-  geom_density_ridges2(stat = "density_ridges",
-                       position = "points_sina",
-                      scale = 1.5,
-                      alpha=0.7)+
-  # geom_density_ridges2(stat = "binline",
-  #                      position = "points_sina",
-  #                     scale = 1.5,
-  #                     alpha=0.7)+
-  #facet_wrap(rastro~., ncol=4) +
-  geom_vline(xintercept = 10.8, color = "red")+
-  scale_fill_viridis_d(option="F",
-                       name="Rastro")+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-  theme_few()+
-  xlab("Longitud (cm.)")+
-  ylab("")+
-  xlim(0,40)
-#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
-s2016
 ```
 
 
@@ -713,7 +630,7 @@ table(sizeall2$ANO, sizeall2$rastro)
 
 ```{r eval=FALSE}
 saveRDS(sizeall2, "tallas_13_24.RData")
-sizeall2<- readRDS("~/IEO/DATA/EDA_Donux_truculus_2023/tallas13_24.RDS")
+sizeall2 <- readRDS("~/IEO/DATA/EDA_Donux_trunculus_2023/tallas13_24.RDS")
 ```
 
 
