@@ -2,7 +2,7 @@
 title: "Composiciones de Tallas D. trunculus"
 subtitle: "Datos Monitoreo poblacional FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "08 April, 2024"
+date:  "29 May, 2024"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -383,38 +383,6 @@ size2013 <- bind_rows(sizep01_13,
   )
 ```
 
-Primer vistazo
-
-
-```r
-s2013 <- ggplot(size2013 %>%
-                  drop_na(sizeE), 
-               aes(x=sizeE, 
-                   y = as.factor(MES),
-                  fill= as.factor(rastro)))+
-  geom_density_ridges2(stat = "density_ridges",
-                       position = "points_sina",
-                      scale = 1.5,
-                      alpha=0.7)+
-  # geom_density_ridges2(stat = "binline",
-  #                      position = "points_sina",
-  #                     scale = 1.5,
-  #                     alpha=0.7)+
-  #facet_wrap(.~rastro, ncol=4) +
-  geom_vline(xintercept = 10.8, color = "red")+
-  scale_fill_viridis_d(option="F",
-                       name="Rastro")+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-  theme_few()+
-  xlab("Longitud (cm.)")+
-  ylab("")+
-  xlim(0,40)
-#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
-s2013
-```
-
-<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-6-1.jpeg" style="display: block; margin: auto;" />
-
 
 ## Datos 2014-2015
 
@@ -476,35 +444,6 @@ size14_15 <- bind_rows(sizec14_15,
 ```
 
 
-
-```r
-s201415 <- ggplot(size14_15 %>%
-                  drop_na(sizeE), 
-               aes(x=sizeE, 
-                   y = as.factor(MES),
-                  fill= as.factor(rastro)))+
-  geom_density_ridges2(stat = "density_ridges",
-                       position = "points_sina",
-                      scale = 1.5,
-                      alpha=0.7)+
-  # geom_density_ridges2(stat = "binline",
-  #                      position = "points_sina",
-  #                     scale = 1.5,
-  #                     alpha=0.7)+
-  facet_wrap(ANO~., ncol=4) +
-  geom_vline(xintercept = 10.8, color = "red")+
-  scale_fill_viridis_d(option="F",
-                       name="Rastro")+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-  theme_few()+
-  xlab("Longitud (cm.)")+
-  ylab("")+
-  xlim(0,40)
-#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
-s201415
-```
-
-<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-9-1.jpeg" style="display: block; margin: auto;" />
 Separo las fechas
 
 ## Datos 2016
@@ -571,37 +510,6 @@ size2016 <- bind_rows(sizec2016,
     ANO = year(Date)
   )
 ```
-un plot simple
-
-
-```r
-s2016 <- ggplot(size2016 %>%
-                  drop_na(sizeE), 
-               aes(x=sizeE, 
-                   y = as.factor(rastro),
-                  fill= as.factor(rastro)))+
-  geom_density_ridges2(stat = "density_ridges",
-                       position = "points_sina",
-                      scale = 1.5,
-                      alpha=0.7)+
-  # geom_density_ridges2(stat = "binline",
-  #                      position = "points_sina",
-  #                     scale = 1.5,
-  #                     alpha=0.7)+
-  #facet_wrap(rastro~., ncol=4) +
-  geom_vline(xintercept = 10.8, color = "red")+
-  scale_fill_viridis_d(option="F",
-                       name="Rastro")+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-  theme_few()+
-  xlab("Longitud (cm.)")+
-  ylab("")+
-  xlim(0,40)
-#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
-s2016
-```
-
-<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-12-1.jpeg" style="display: block; margin: auto;" />
 
 
 ## Datos 2017-2020
@@ -806,7 +714,7 @@ dim(sizeall)
 ```
 
 ```
-## [1] 213384     12
+## [1] 214449     12
 ```
 
 ```r
@@ -816,7 +724,7 @@ table(sizeall$ANO)
 ```
 ## 
 ##  2013  2014  2015  2016  2017  2018  2019  2020  2021  2022  2023  2024 
-##  6179 71147 22972   386 10121 20418 18109 13435 21971 17426  9036  1957
+##  6179 71147 22972   386 10121 20418 18109 13435 21971 17426  9036  3022
 ```
 
 ```r
@@ -826,7 +734,7 @@ table(sizeall$Beach)
 ```
 ## 
 ##       Donana      Donana  Donana_norte   Donana_sur       Huelva  Isla_Canela 
-##       105673          285        25082        15313        40841        14435 
+##       105673          285        25735        15725        40841        14435 
 ##      La_Bota       LaBota     Malandar Matalascanas      Mazagon 
 ##         3043         1266            7          382          265
 ```
@@ -838,9 +746,9 @@ table(sizeall$Sampling.point)
 ```
 ## 
 ##     1    10    11    12    13     2     3     4    4R     5     6     7     8 
-## 12221 35089 15306   265     7 32160 11911 49278   221  3544 27182  9813  5182 
+## 12221 35089 15306   265     7 32533 11911 49608   221  3544 27470  9813  5182 
 ##     9     M 
-##  4310   560
+##  4310   634
 ```
 
 ```r
@@ -850,7 +758,7 @@ table(sizeall$rastro)
 ```
 ## 
 ##     COMERCIAL    COMERCIAL  COMERCIAL NEW   POBLACIONAL  POBLACIONAL  
-##         54145            16           873        158311            39
+##         54615            16           873        158906            39
 ```
 
 Rename values
@@ -935,14 +843,14 @@ table(sizeall2$ANO, sizeall2$rastro)
 ##   2021      7124       14847
 ##   2022      5732       11694
 ##   2023      2627        6409
-##   2024       646        1311
+##   2024      1116        1906
 ```
 ## Save data
 
 
 ```r
 saveRDS(sizeall2, "tallas_13_24.RData")
-sizeall2<- readRDS("~/IEO/DATA/EDA_Donux_truculus_2023/tallas13_24.RDS")
+sizeall2 <- readRDS("~/IEO/DATA/EDA_Donux_trunculus_2023/tallas13_24.RDS")
 ```
 
 
@@ -978,7 +886,7 @@ nall <- ggplot(sizeall2 %>%
 nall
 ```
 
-<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-24-1.jpeg" style="display: block; margin: auto;" />
+<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-21-1.jpeg" style="display: block; margin: auto;" />
 
 
 
@@ -1006,7 +914,7 @@ nallbeach <- ggplot(sizeall2%>%
 nallbeach
 ```
 
-<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-25-1.jpeg" style="display: block; margin: auto;" />
+<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-22-1.jpeg" style="display: block; margin: auto;" />
 
 just Poblacional sample
 
@@ -1035,7 +943,7 @@ pobeach <- ggplot(sizeall2 %>%
 pobeach
 ```
 
-<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-26-1.jpeg" style="display: block; margin: auto;" />
+<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-23-1.jpeg" style="display: block; margin: auto;" />
 
 justm Comercial sample
 
@@ -1064,7 +972,7 @@ combeach <- ggplot(sizeall2 %>%
 combeach
 ```
 
-<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-27-1.jpeg" style="display: block; margin: auto;" />
+<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-24-1.jpeg" style="display: block; margin: auto;" />
 
 Ahora plotear el ultimo mes para el informe
 
@@ -1090,7 +998,7 @@ combeachago23 <- ggplot(sizeall2 %>%
 combeachago23
 ```
 
-<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-28-1.jpeg" style="display: block; margin: auto;" />
+<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-25-1.jpeg" style="display: block; margin: auto;" />
 
 another way to viz is a scatter plot
 
@@ -1134,7 +1042,7 @@ pmea <- ggplot(sizemean %>%
 pmea
 ```
 
-<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-30-1.jpeg" style="display: block; margin: auto;" />
+<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-27-1.jpeg" style="display: block; margin: auto;" />
 por playa
 
 
@@ -1167,7 +1075,7 @@ ppla <- ggplot(sizemean %>%
 ppla
 ```
 
-<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-31-1.jpeg" style="display: block; margin: auto;" />
+<img src="Compsiciones-de-Tallas_files/figure-html/unnamed-chunk-28-1.jpeg" style="display: block; margin: auto;" />
 
 
 ## Modelos 
@@ -1208,23 +1116,23 @@ tp
 ```
 
 ```{=html}
-<div id="skoooqqwuy" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#skoooqqwuy table {
+<div id="ljlutaszbv" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#ljlutaszbv table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#skoooqqwuy thead, #skoooqqwuy tbody, #skoooqqwuy tfoot, #skoooqqwuy tr, #skoooqqwuy td, #skoooqqwuy th {
+#ljlutaszbv thead, #ljlutaszbv tbody, #ljlutaszbv tfoot, #ljlutaszbv tr, #ljlutaszbv td, #ljlutaszbv th {
   border-style: none;
 }
 
-#skoooqqwuy p {
+#ljlutaszbv p {
   margin: 0;
   padding: 0;
 }
 
-#skoooqqwuy .gt_table {
+#ljlutaszbv .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1250,12 +1158,12 @@ tp
   border-left-color: #D3D3D3;
 }
 
-#skoooqqwuy .gt_caption {
+#ljlutaszbv .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#skoooqqwuy .gt_title {
+#ljlutaszbv .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1267,7 +1175,7 @@ tp
   border-bottom-width: 0;
 }
 
-#skoooqqwuy .gt_subtitle {
+#ljlutaszbv .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1279,7 +1187,7 @@ tp
   border-top-width: 0;
 }
 
-#skoooqqwuy .gt_heading {
+#ljlutaszbv .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1291,13 +1199,13 @@ tp
   border-right-color: #D3D3D3;
 }
 
-#skoooqqwuy .gt_bottom_border {
+#ljlutaszbv .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#skoooqqwuy .gt_col_headings {
+#ljlutaszbv .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1312,7 +1220,7 @@ tp
   border-right-color: #D3D3D3;
 }
 
-#skoooqqwuy .gt_col_heading {
+#ljlutaszbv .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1332,7 +1240,7 @@ tp
   overflow-x: hidden;
 }
 
-#skoooqqwuy .gt_column_spanner_outer {
+#ljlutaszbv .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1344,15 +1252,15 @@ tp
   padding-right: 4px;
 }
 
-#skoooqqwuy .gt_column_spanner_outer:first-child {
+#ljlutaszbv .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#skoooqqwuy .gt_column_spanner_outer:last-child {
+#ljlutaszbv .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#skoooqqwuy .gt_column_spanner {
+#ljlutaszbv .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1364,11 +1272,11 @@ tp
   width: 100%;
 }
 
-#skoooqqwuy .gt_spanner_row {
+#ljlutaszbv .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#skoooqqwuy .gt_group_heading {
+#ljlutaszbv .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1394,7 +1302,7 @@ tp
   text-align: left;
 }
 
-#skoooqqwuy .gt_empty_group_heading {
+#ljlutaszbv .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1409,15 +1317,15 @@ tp
   vertical-align: middle;
 }
 
-#skoooqqwuy .gt_from_md > :first-child {
+#ljlutaszbv .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#skoooqqwuy .gt_from_md > :last-child {
+#ljlutaszbv .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#skoooqqwuy .gt_row {
+#ljlutaszbv .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1436,7 +1344,7 @@ tp
   overflow-x: hidden;
 }
 
-#skoooqqwuy .gt_stub {
+#ljlutaszbv .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1449,7 +1357,7 @@ tp
   padding-right: 5px;
 }
 
-#skoooqqwuy .gt_stub_row_group {
+#ljlutaszbv .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1463,15 +1371,15 @@ tp
   vertical-align: top;
 }
 
-#skoooqqwuy .gt_row_group_first td {
+#ljlutaszbv .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#skoooqqwuy .gt_row_group_first th {
+#ljlutaszbv .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#skoooqqwuy .gt_summary_row {
+#ljlutaszbv .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1481,16 +1389,16 @@ tp
   padding-right: 5px;
 }
 
-#skoooqqwuy .gt_first_summary_row {
+#ljlutaszbv .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#skoooqqwuy .gt_first_summary_row.thick {
+#ljlutaszbv .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#skoooqqwuy .gt_last_summary_row {
+#ljlutaszbv .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1500,7 +1408,7 @@ tp
   border-bottom-color: #D3D3D3;
 }
 
-#skoooqqwuy .gt_grand_summary_row {
+#ljlutaszbv .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1510,7 +1418,7 @@ tp
   padding-right: 5px;
 }
 
-#skoooqqwuy .gt_first_grand_summary_row {
+#ljlutaszbv .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1520,7 +1428,7 @@ tp
   border-top-color: #D3D3D3;
 }
 
-#skoooqqwuy .gt_last_grand_summary_row_top {
+#ljlutaszbv .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1530,11 +1438,11 @@ tp
   border-bottom-color: #D3D3D3;
 }
 
-#skoooqqwuy .gt_striped {
+#ljlutaszbv .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#skoooqqwuy .gt_table_body {
+#ljlutaszbv .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1543,7 +1451,7 @@ tp
   border-bottom-color: #D3D3D3;
 }
 
-#skoooqqwuy .gt_footnotes {
+#ljlutaszbv .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1557,7 +1465,7 @@ tp
   border-right-color: #D3D3D3;
 }
 
-#skoooqqwuy .gt_footnote {
+#ljlutaszbv .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1566,7 +1474,7 @@ tp
   padding-right: 5px;
 }
 
-#skoooqqwuy .gt_sourcenotes {
+#ljlutaszbv .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1580,7 +1488,7 @@ tp
   border-right-color: #D3D3D3;
 }
 
-#skoooqqwuy .gt_sourcenote {
+#ljlutaszbv .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1588,69 +1496,68 @@ tp
   padding-right: 5px;
 }
 
-#skoooqqwuy .gt_left {
+#ljlutaszbv .gt_left {
   text-align: left;
 }
 
-#skoooqqwuy .gt_center {
+#ljlutaszbv .gt_center {
   text-align: center;
 }
 
-#skoooqqwuy .gt_right {
+#ljlutaszbv .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#skoooqqwuy .gt_font_normal {
+#ljlutaszbv .gt_font_normal {
   font-weight: normal;
 }
 
-#skoooqqwuy .gt_font_bold {
+#ljlutaszbv .gt_font_bold {
   font-weight: bold;
 }
 
-#skoooqqwuy .gt_font_italic {
+#ljlutaszbv .gt_font_italic {
   font-style: italic;
 }
 
-#skoooqqwuy .gt_super {
+#ljlutaszbv .gt_super {
   font-size: 65%;
 }
 
-#skoooqqwuy .gt_footnote_marks {
+#ljlutaszbv .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#skoooqqwuy .gt_asterisk {
+#ljlutaszbv .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#skoooqqwuy .gt_indent_1 {
+#ljlutaszbv .gt_indent_1 {
   text-indent: 5px;
 }
 
-#skoooqqwuy .gt_indent_2 {
+#ljlutaszbv .gt_indent_2 {
   text-indent: 10px;
 }
 
-#skoooqqwuy .gt_indent_3 {
+#ljlutaszbv .gt_indent_3 {
   text-indent: 15px;
 }
 
-#skoooqqwuy .gt_indent_4 {
+#ljlutaszbv .gt_indent_4 {
   text-indent: 20px;
 }
 
-#skoooqqwuy .gt_indent_5 {
+#ljlutaszbv .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
 <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
   <thead>
-    
     <tr class="gt_col_headings">
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Characteristic&lt;/strong&gt;"><strong>Characteristic</strong></th>
       <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Beta&lt;/strong&gt;"><strong>Beta</strong></th>
@@ -1660,9 +1567,9 @@ tp
   </thead>
   <tbody class="gt_table_body">
     <tr><td headers="label" class="gt_row gt_left">ANO</td>
-<td headers="estimate" class="gt_row gt_center">-0.061</td>
-<td headers="ci" class="gt_row gt_center">-0.164, 0.041</td>
-<td headers="p.value" class="gt_row gt_center">0.2</td></tr>
+<td headers="estimate" class="gt_row gt_center">-0.045</td>
+<td headers="ci" class="gt_row gt_center">-0.145, 0.055</td>
+<td headers="p.value" class="gt_row gt_center">0.4</td></tr>
   </tbody>
   
   <tfoot class="gt_footnotes">
@@ -1681,23 +1588,23 @@ tc
 ```
 
 ```{=html}
-<div id="btlblhazuy" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#btlblhazuy table {
+<div id="cppjhtpqsi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#cppjhtpqsi table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#btlblhazuy thead, #btlblhazuy tbody, #btlblhazuy tfoot, #btlblhazuy tr, #btlblhazuy td, #btlblhazuy th {
+#cppjhtpqsi thead, #cppjhtpqsi tbody, #cppjhtpqsi tfoot, #cppjhtpqsi tr, #cppjhtpqsi td, #cppjhtpqsi th {
   border-style: none;
 }
 
-#btlblhazuy p {
+#cppjhtpqsi p {
   margin: 0;
   padding: 0;
 }
 
-#btlblhazuy .gt_table {
+#cppjhtpqsi .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1723,12 +1630,12 @@ tc
   border-left-color: #D3D3D3;
 }
 
-#btlblhazuy .gt_caption {
+#cppjhtpqsi .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#btlblhazuy .gt_title {
+#cppjhtpqsi .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1740,7 +1647,7 @@ tc
   border-bottom-width: 0;
 }
 
-#btlblhazuy .gt_subtitle {
+#cppjhtpqsi .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1752,7 +1659,7 @@ tc
   border-top-width: 0;
 }
 
-#btlblhazuy .gt_heading {
+#cppjhtpqsi .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1764,13 +1671,13 @@ tc
   border-right-color: #D3D3D3;
 }
 
-#btlblhazuy .gt_bottom_border {
+#cppjhtpqsi .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#btlblhazuy .gt_col_headings {
+#cppjhtpqsi .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1785,7 +1692,7 @@ tc
   border-right-color: #D3D3D3;
 }
 
-#btlblhazuy .gt_col_heading {
+#cppjhtpqsi .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1805,7 +1712,7 @@ tc
   overflow-x: hidden;
 }
 
-#btlblhazuy .gt_column_spanner_outer {
+#cppjhtpqsi .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1817,15 +1724,15 @@ tc
   padding-right: 4px;
 }
 
-#btlblhazuy .gt_column_spanner_outer:first-child {
+#cppjhtpqsi .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#btlblhazuy .gt_column_spanner_outer:last-child {
+#cppjhtpqsi .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#btlblhazuy .gt_column_spanner {
+#cppjhtpqsi .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1837,11 +1744,11 @@ tc
   width: 100%;
 }
 
-#btlblhazuy .gt_spanner_row {
+#cppjhtpqsi .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#btlblhazuy .gt_group_heading {
+#cppjhtpqsi .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1867,7 +1774,7 @@ tc
   text-align: left;
 }
 
-#btlblhazuy .gt_empty_group_heading {
+#cppjhtpqsi .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1882,15 +1789,15 @@ tc
   vertical-align: middle;
 }
 
-#btlblhazuy .gt_from_md > :first-child {
+#cppjhtpqsi .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#btlblhazuy .gt_from_md > :last-child {
+#cppjhtpqsi .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#btlblhazuy .gt_row {
+#cppjhtpqsi .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1909,7 +1816,7 @@ tc
   overflow-x: hidden;
 }
 
-#btlblhazuy .gt_stub {
+#cppjhtpqsi .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1922,7 +1829,7 @@ tc
   padding-right: 5px;
 }
 
-#btlblhazuy .gt_stub_row_group {
+#cppjhtpqsi .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1936,15 +1843,15 @@ tc
   vertical-align: top;
 }
 
-#btlblhazuy .gt_row_group_first td {
+#cppjhtpqsi .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#btlblhazuy .gt_row_group_first th {
+#cppjhtpqsi .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#btlblhazuy .gt_summary_row {
+#cppjhtpqsi .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1954,16 +1861,16 @@ tc
   padding-right: 5px;
 }
 
-#btlblhazuy .gt_first_summary_row {
+#cppjhtpqsi .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#btlblhazuy .gt_first_summary_row.thick {
+#cppjhtpqsi .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#btlblhazuy .gt_last_summary_row {
+#cppjhtpqsi .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1973,7 +1880,7 @@ tc
   border-bottom-color: #D3D3D3;
 }
 
-#btlblhazuy .gt_grand_summary_row {
+#cppjhtpqsi .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1983,7 +1890,7 @@ tc
   padding-right: 5px;
 }
 
-#btlblhazuy .gt_first_grand_summary_row {
+#cppjhtpqsi .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1993,7 +1900,7 @@ tc
   border-top-color: #D3D3D3;
 }
 
-#btlblhazuy .gt_last_grand_summary_row_top {
+#cppjhtpqsi .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2003,11 +1910,11 @@ tc
   border-bottom-color: #D3D3D3;
 }
 
-#btlblhazuy .gt_striped {
+#cppjhtpqsi .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#btlblhazuy .gt_table_body {
+#cppjhtpqsi .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2016,7 +1923,7 @@ tc
   border-bottom-color: #D3D3D3;
 }
 
-#btlblhazuy .gt_footnotes {
+#cppjhtpqsi .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2030,7 +1937,7 @@ tc
   border-right-color: #D3D3D3;
 }
 
-#btlblhazuy .gt_footnote {
+#cppjhtpqsi .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2039,7 +1946,7 @@ tc
   padding-right: 5px;
 }
 
-#btlblhazuy .gt_sourcenotes {
+#cppjhtpqsi .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2053,7 +1960,7 @@ tc
   border-right-color: #D3D3D3;
 }
 
-#btlblhazuy .gt_sourcenote {
+#cppjhtpqsi .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2061,69 +1968,68 @@ tc
   padding-right: 5px;
 }
 
-#btlblhazuy .gt_left {
+#cppjhtpqsi .gt_left {
   text-align: left;
 }
 
-#btlblhazuy .gt_center {
+#cppjhtpqsi .gt_center {
   text-align: center;
 }
 
-#btlblhazuy .gt_right {
+#cppjhtpqsi .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#btlblhazuy .gt_font_normal {
+#cppjhtpqsi .gt_font_normal {
   font-weight: normal;
 }
 
-#btlblhazuy .gt_font_bold {
+#cppjhtpqsi .gt_font_bold {
   font-weight: bold;
 }
 
-#btlblhazuy .gt_font_italic {
+#cppjhtpqsi .gt_font_italic {
   font-style: italic;
 }
 
-#btlblhazuy .gt_super {
+#cppjhtpqsi .gt_super {
   font-size: 65%;
 }
 
-#btlblhazuy .gt_footnote_marks {
+#cppjhtpqsi .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#btlblhazuy .gt_asterisk {
+#cppjhtpqsi .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#btlblhazuy .gt_indent_1 {
+#cppjhtpqsi .gt_indent_1 {
   text-indent: 5px;
 }
 
-#btlblhazuy .gt_indent_2 {
+#cppjhtpqsi .gt_indent_2 {
   text-indent: 10px;
 }
 
-#btlblhazuy .gt_indent_3 {
+#cppjhtpqsi .gt_indent_3 {
   text-indent: 15px;
 }
 
-#btlblhazuy .gt_indent_4 {
+#cppjhtpqsi .gt_indent_4 {
   text-indent: 20px;
 }
 
-#btlblhazuy .gt_indent_5 {
+#cppjhtpqsi .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
 <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
   <thead>
-    
     <tr class="gt_col_headings">
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Characteristic&lt;/strong&gt;"><strong>Characteristic</strong></th>
       <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Beta&lt;/strong&gt;"><strong>Beta</strong></th>
@@ -2133,8 +2039,8 @@ tc
   </thead>
   <tbody class="gt_table_body">
     <tr><td headers="label" class="gt_row gt_left">ANO</td>
-<td headers="estimate" class="gt_row gt_center">-0.036</td>
-<td headers="ci" class="gt_row gt_center">-0.105, 0.034</td>
+<td headers="estimate" class="gt_row gt_center">-0.039</td>
+<td headers="ci" class="gt_row gt_center">-0.106, 0.029</td>
 <td headers="p.value" class="gt_row gt_center">0.3</td></tr>
   </tbody>
   
@@ -2190,7 +2096,7 @@ tail(tallapob2, 10)
 ##   2021    0    1   15  104  190  248  416  543  558  581  612  610  632  727
 ##   2022    0    0   27  127   93   99  120  206  236  345  380  410  468  522
 ##   2023    0    0    4   36   63   79   98  148  196  212  202  193  220  232
-##   2024    0    0    0    0    0    2    9   13   19   36   42   41   56   59
+##   2024    0    0    0    0    0    4   16   21   30   50   50   57   71   83
 ##       
 ##          16   17   18   19   20   21   22   23   24   25   26   27   28   29
 ##   2015 1312 1212 1139 1098 1219 1138 1020 1251 1184 1080 1093  772  485  404
@@ -2202,7 +2108,7 @@ tail(tallapob2, 10)
 ##   2021  669  602  673  781  831  893 1033 1048  857  701  550  366  254  180
 ##   2022  558  594  559  607  630  687  681  770  899  797  638  482  306  225
 ##   2023  227  264  314  358  388  428  490  450  438  348  334  241  178   95
-##   2024   56   65   72   80   69   97  110   92  120   96   69   47   35   17
+##   2024   69   85   97  108  101  142  165  152  166  146  109   74   59   29
 ##       
 ##          30   31   32   33   34   35   36   37   38   49
 ##   2015  309  181  136   42   39   29   13    6    0    0
@@ -2214,7 +2120,7 @@ tail(tallapob2, 10)
 ##   2021   92   42   16   15    4    2    1    0    0    0
 ##   2022  117   60   37    8    2    1    1    1    1    0
 ##   2023   84   42   29   11    5    1    1    0    0    0
-##   2024    4    4    1    0    0    0    0    0    0    0
+##   2024   12    8    1    1    0    0    0    0    0    0
 ```
 
 ```r
@@ -2233,7 +2139,7 @@ tail(tallacom2, 10)
 ##   2021    0    0    0    0    0    0    0    0    1    0    4   11  115  711
 ##   2022    0    0    0    0    0    0    0    0    0    2    8   24  117  549
 ##   2023    0    0    0    0    0    0    0    0    0    0    0    2   26  184
-##   2024    0    0    0    0    0    0    0    0    0    0    1    2   15   56
+##   2024    0    0    0    0    0    0    0    0    0    2    4    8   47  126
 ##       
 ##          25   26   27   28   29   30   31   32   33   34   35   36   37   38
 ##   2015  122  163  148  144   95  103   49   31   17    8    4    4    1    0
@@ -2245,7 +2151,7 @@ tail(tallacom2, 10)
 ##   2021 1643 1703 1246  758  505  251  105   28   15   24    1    1    1    0
 ##   2022 1193 1283  986  714  417  233  123   55   14   11    2    0    1    0
 ##   2023  513  569  432  321  212  157   98   53   33   18    7    2    0    0
-##   2024  146  148  125   78   43   15   13    2    2    0    0    0    0    0
+##   2024  246  221  207  121   63   37   23    8    3    0    0    0    0    0
 ##       
 ##          39   42   44   45   47   49
 ##   2015    0    0    0    0    0    0
