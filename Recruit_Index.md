@@ -2,7 +2,7 @@
 title: "Indice Reclutamiento D. trunculus"
 subtitle: "Datos Monitoreo poblacional FEMP_AND_04"
 author: "Mardones, M; Delgado, M"
-date:  "16 April, 2024"
+date:  "29 May, 2024"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -74,7 +74,7 @@ Recordar que las bases de densidades previas al 2021 estan en la misma base que 
 ```r
 dens17_20 <- read_excel(here("Data", 
                              "Anterior a 2020",
-                             "densidad_reclutamiento_2017_2018_2019_2020.xlsx"))
+                            "densidad_reclutamiento_2017_2018_2019_2020.xlsx"))
 ```
 
 Llamo las bases con el formato último, es decir desde el año 2021.
@@ -183,7 +183,7 @@ table(denspob2124f$ANO, denspob2124f$MES)
 ##   2021 12  6  5 12  6  6 11  5  6 11  6 12
 ##   2022  6  6 12  6  6  6 18  6  0  6 12  6
 ##   2023  6  6  5  6  6  6  6  6  6  6  6  6
-##   2024  6  6  6  6  0  0  0  0  0  0  0  0
+##   2024  6  6  6  6  6  0  0  0  0  0  0  0
 ```
 
 
@@ -235,8 +235,8 @@ denspobtot2
 ```
 
 ```
-## # A tibble: 284 × 46
-## # Groups:   Beach, Sampling.point, ANO, MES, DIA [145]
+## # A tibble: 290 × 46
+## # Groups:   Beach, Sampling.point, ANO, MES, DIA [148]
 ##    Date                Beach  Sampling.point m_track tow_time  Latº Latmin Longº
 ##    <dttm>              <chr>           <dbl>   <dbl>    <dbl> <dbl>  <dbl> <dbl>
 ##  1 2021-01-12 00:00:00 Donan…              2      51        5    36   50.3     6
@@ -249,7 +249,7 @@ denspobtot2
 ##  8 2021-01-14 00:00:00 LaBota              9      40        5    37   12.1     7
 ##  9 2021-01-14 00:00:00 Isla_…             10      49        5    37   10.7     7
 ## 10 2021-01-14 00:00:00 Isla_…             10      49        5    37   10.7     7
-## # ℹ 274 more rows
+## # ℹ 280 more rows
 ## # ℹ 38 more variables: Longmin <dbl>, Lat <dbl>, Long <dbl>, rastro <chr>,
 ## #   mariscador <chr>, SW <dbl>, SWsub <dbl>, CSWsub <dbl>, MCSWsub <dbl>,
 ## #   DCSWsub <dbl>, Categoria <chr>, CAT <dbl>, Nmedida <dbl>, Ndañossub <dbl>,
@@ -315,7 +315,7 @@ Figure \@ref(fig:edaplot1)
 
 
 ```r
-size_21_23 <- rbind(size2021,
+size_21_24 <- rbind(size2021,
                     size2022,
                     size2023,
                     size2024)
@@ -324,13 +324,13 @@ Separate `Date` column
 
 
 ```r
-size_21_23<- size_21_23 %>%
+size_21_24<- size_21_24 %>%
   mutate(
     DIA = day(Date),
     MES = month(Date),
     ANO = year(Date)
   )
-unique(size_21_23$rastro)
+unique(size_21_24$rastro)
 ```
 
 ```
@@ -338,11 +338,11 @@ unique(size_21_23$rastro)
 ```
 
 ```r
-glimpse(size_21_23)
+glimpse(size_21_24)
 ```
 
 ```
-## Rows: 50,913
+## Rows: 51,455
 ## Columns: 12
 ## $ Date                   <dttm> 2021-01-12, 2021-01-12, 2021-01-12, 2021-01-12…
 ## $ Beach                  <chr> "Donana_sur", "Donana_sur", "Donana_sur", "Dona…
@@ -359,7 +359,7 @@ glimpse(size_21_23)
 ```
 
 ```r
-table(size_21_23$ANO, size_21_23$MES)
+table(size_21_24$ANO, size_21_24$MES)
 ```
 
 ```
@@ -368,15 +368,15 @@ table(size_21_23$ANO, size_21_23$MES)
 ##   2021 3103 1600  897 2399  784 1384 2846  819 1384 2389 1552 2814
 ##   2022 1374 1156 2560 1673 1013 1857 2577  868    0  996 2619  733
 ##   2023  915 1040  866  857  732 1068  618  655  639  384  490  772
-##   2024  615  374  968  523    0    0    0    0    0    0    0    0
+##   2024  615  374  968  523  542    0    0    0    0    0    0    0
 ```
 
 ```r
-size_21_23
+size_21_24
 ```
 
 ```
-## # A tibble: 50,913 × 12
+## # A tibble: 51,455 × 12
 ##    Date                Beach   Sampling.point rastro   CAT Categoria  size sizeE
 ##    <dttm>              <chr>   <chr>          <chr>  <dbl> <chr>     <dbl> <dbl>
 ##  1 2021-01-12 00:00:00 Donana… 2              POBLA…     2 g          22.4    22
@@ -389,7 +389,7 @@ size_21_23
 ##  8 2021-01-12 00:00:00 Donana… 2              POBLA…     2 g          24.0    24
 ##  9 2021-01-12 00:00:00 Donana… 2              POBLA…     2 g          22.4    22
 ## 10 2021-01-12 00:00:00 Donana… 2              POBLA…     2 g          22.5    22
-## # ℹ 50,903 more rows
+## # ℹ 51,445 more rows
 ## # ℹ 4 more variables: ID_codificado_muestreo <chr>, DIA <int>, MES <dbl>,
 ## #   ANO <dbl>
 ```
@@ -401,7 +401,7 @@ Primero calculo en n de ind medidos y luego junto con base que tiene medida del 
 
 
 ```r
-D15n <- size_21_23 %>% 
+D15n <- size_21_24 %>% 
   group_by(ANO, 
            MES, 
            Sampling.point, 
@@ -434,23 +434,7 @@ D15n2 <- D15n1 %>%
   # Multiplicar por m_track * 0.045
   mutate(D15 = ponderar * (m_track * 0.045), na.rm = TRUE)
 ```
-(Al dia de hoy, 15 de abril, he realizado algunas correcciones al estimador del `D15`)
 
-
-```r
-# probando otras formas
-D15n2 <- D15n1 %>%
-  filter(
-         !is.na(fpn), 
-         !is.na(fpm), 
-         !is.na(fps), 
-         !is.na(m_track)) %>%
-  group_by(ANO, MES, Sampling.point) %>%
-  mutate(ponderar = ifelse(fpn, fpn, 1) *
-                                   ifelse(fpm, fpm, 1) *
-                                   ifelse(fps, fps, 1)) %>%
-  mutate(D15 = total * ponderar / (m_track * 0.045)) 
-```
 
 
 Ploteo columnas por año y Sampling point
@@ -463,8 +447,8 @@ plotD15 <- ggplot(D15n2 %>%
                       color=as.factor(Sampling.point),
                   group=as.factor(Sampling.point)))+
   geom_point()+
-  geom_smooth(method="loess", se=FALSE)+
-  facet_wrap(.~ANO, ncol=2)+
+  geom_smooth(method="loess", se=T)+
+  facet_wrap(.~ANO, ncol=4)+
   scale_color_viridis_d(option="H",
                         name="Sampling point")+
   scale_x_continuous(breaks = seq(from = 1, 
@@ -483,7 +467,34 @@ plotD15 <- ggplot(D15n2 %>%
 plotD15
 ```
 
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-13-1.jpeg" style="display: block; margin: auto;" />
+
+```r
+D15_17_20a <- ggplot(D15n2 , 
+                  aes(MES,D15, 
+                  color=as.factor(Sampling.point)))+
+  geom_point()+
+  geom_smooth(col=2)+
+  facet_wrap(.~ANO, ncol=4)+
+  scale_color_viridis_d(name="Sampling Points")+
+  theme_few()+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))+
+    scale_x_continuous(breaks = seq(from = 1, 
+                                  to = 12, 
+                                  by = 1,
+                                  size=2))+
+  ylim(0,50)+
+  labs(y="Indice de Reclutamiemto",
+       x="MES")
+D15_17_20a
+```
+
 <img src="Recruit_Index_files/figure-html/unnamed-chunk-14-1.jpeg" style="display: block; margin: auto;" />
+
 Ahora agrupado por el complejo espacial total
 
 
@@ -537,7 +548,8 @@ plotD15 <- ggplot(D15n2,
                                    hjust = 1))+
   labs(y="Indice de Reclutamiemto",
        x="MES")+
-  ylim(0,30)
+  ylim(0,50)
+  #coord_polar(theta = "y")
 plotD15
 ```
 
@@ -564,7 +576,7 @@ kbl(D15n4) %>%
                                       "responsive"))
 ```
 
-<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover table-condensed table-responsive" style="color: black; margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
    <th style="text-align:right;"> ANO </th>
@@ -578,261 +590,268 @@ kbl(D15n4) %>%
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 156.81 </td>
-   <td style="text-align:right;"> 159.08 </td>
-   <td style="text-align:right;"> 14.49 </td>
+   <td style="text-align:right;"> 5.29 </td>
+   <td style="text-align:right;"> 6.52 </td>
+   <td style="text-align:right;"> 3.10 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 110.50 </td>
-   <td style="text-align:right;"> 76.22 </td>
-   <td style="text-align:right;"> 94.14 </td>
+   <td style="text-align:right;"> 20.77 </td>
+   <td style="text-align:right;"> 7.55 </td>
+   <td style="text-align:right;"> 6.05 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 3 </td>
-   <td style="text-align:right;"> 2.38 </td>
-   <td style="text-align:right;"> 96.36 </td>
-   <td style="text-align:right;"> 15.09 </td>
+   <td style="text-align:right;"> 2.52 </td>
+   <td style="text-align:right;"> 6.83 </td>
+   <td style="text-align:right;"> 4.40 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 4 </td>
-   <td style="text-align:right;"> 485.31 </td>
-   <td style="text-align:right;"> 129.19 </td>
-   <td style="text-align:right;"> 16.46 </td>
+   <td style="text-align:right;"> 15.55 </td>
+   <td style="text-align:right;"> 5.01 </td>
+   <td style="text-align:right;"> 2.43 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 5 </td>
-   <td style="text-align:right;"> 19.74 </td>
-   <td style="text-align:right;"> 73.30 </td>
-   <td style="text-align:right;"> 29.50 </td>
+   <td style="text-align:right;"> 16.37 </td>
+   <td style="text-align:right;"> 9.70 </td>
+   <td style="text-align:right;"> 16.26 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 6 </td>
-   <td style="text-align:right;"> 58.39 </td>
-   <td style="text-align:right;"> 22.22 </td>
-   <td style="text-align:right;"> 32.96 </td>
+   <td style="text-align:right;"> 10.11 </td>
+   <td style="text-align:right;"> 11.11 </td>
+   <td style="text-align:right;"> 5.08 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 7 </td>
-   <td style="text-align:right;"> 83.02 </td>
-   <td style="text-align:right;"> 17.53 </td>
-   <td style="text-align:right;"> 44.79 </td>
+   <td style="text-align:right;"> 8.45 </td>
+   <td style="text-align:right;"> 8.39 </td>
+   <td style="text-align:right;"> 2.88 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 8 </td>
-   <td style="text-align:right;"> 0.00 </td>
-   <td style="text-align:right;"> 69.04 </td>
-   <td style="text-align:right;"> 81.64 </td>
+   <td style="text-align:right;"> 2.98 </td>
+   <td style="text-align:right;"> 11.37 </td>
+   <td style="text-align:right;"> 0.94 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 9 </td>
-   <td style="text-align:right;"> 30.24 </td>
-   <td style="text-align:right;"> 17.70 </td>
-   <td style="text-align:right;"> 39.09 </td>
+   <td style="text-align:right;"> 4.70 </td>
+   <td style="text-align:right;"> 6.39 </td>
+   <td style="text-align:right;"> 2.43 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 10 </td>
-   <td style="text-align:right;"> 43.60 </td>
-   <td style="text-align:right;"> 124.73 </td>
-   <td style="text-align:right;"> 37.04 </td>
+   <td style="text-align:right;"> 2.49 </td>
+   <td style="text-align:right;"> 3.36 </td>
+   <td style="text-align:right;"> 2.16 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 11 </td>
-   <td style="text-align:right;"> 14.01 </td>
-   <td style="text-align:right;"> 283.32 </td>
-   <td style="text-align:right;"> 73.47 </td>
+   <td style="text-align:right;"> 2.07 </td>
+   <td style="text-align:right;"> 2.74 </td>
+   <td style="text-align:right;"> 2.20 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2021 </td>
    <td style="text-align:right;"> 12 </td>
-   <td style="text-align:right;"> 207.84 </td>
-   <td style="text-align:right;"> 15.56 </td>
-   <td style="text-align:right;"> 42.22 </td>
+   <td style="text-align:right;"> 8.08 </td>
+   <td style="text-align:right;"> 2.25 </td>
+   <td style="text-align:right;"> 2.25 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2022 </td>
    <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 2.53 </td>
-   <td style="text-align:right;"> 31.68 </td>
-   <td style="text-align:right;"> 11.36 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2022 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 12.30 </td>
-   <td style="text-align:right;"> 6.51 </td>
-   <td style="text-align:right;"> 14.28 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2022 </td>
-   <td style="text-align:right;"> 3 </td>
-   <td style="text-align:right;"> 17.96 </td>
-   <td style="text-align:right;"> 8.74 </td>
-   <td style="text-align:right;"> 50.36 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2022 </td>
-   <td style="text-align:right;"> 4 </td>
-   <td style="text-align:right;"> 52.86 </td>
-   <td style="text-align:right;"> 5.49 </td>
-   <td style="text-align:right;"> 9.05 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2022 </td>
-   <td style="text-align:right;"> 5 </td>
-   <td style="text-align:right;"> 1.76 </td>
-   <td style="text-align:right;"> 1.17 </td>
-   <td style="text-align:right;"> 11.30 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2022 </td>
-   <td style="text-align:right;"> 6 </td>
-   <td style="text-align:right;"> 5.80 </td>
-   <td style="text-align:right;"> 0.64 </td>
-   <td style="text-align:right;"> 14.62 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2022 </td>
-   <td style="text-align:right;"> 7 </td>
-   <td style="text-align:right;"> 49.56 </td>
-   <td style="text-align:right;"> 21.80 </td>
-   <td style="text-align:right;"> 5.66 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2022 </td>
-   <td style="text-align:right;"> 8 </td>
-   <td style="text-align:right;"> 101.78 </td>
-   <td style="text-align:right;"> 84.72 </td>
-   <td style="text-align:right;"> 29.59 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2022 </td>
-   <td style="text-align:right;"> 10 </td>
-   <td style="text-align:right;"> 82.83 </td>
-   <td style="text-align:right;"> 72.12 </td>
-   <td style="text-align:right;"> 14.81 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2022 </td>
-   <td style="text-align:right;"> 11 </td>
-   <td style="text-align:right;"> 16.23 </td>
-   <td style="text-align:right;"> 24.49 </td>
-   <td style="text-align:right;"> 34.99 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2022 </td>
-   <td style="text-align:right;"> 12 </td>
-   <td style="text-align:right;"> 3.17 </td>
-   <td style="text-align:right;"> 24.38 </td>
-   <td style="text-align:right;"> 0.00 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2023 </td>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 25.82 </td>
-   <td style="text-align:right;"> 66.44 </td>
-   <td style="text-align:right;"> 12.82 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2023 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 14.26 </td>
-   <td style="text-align:right;"> 13.71 </td>
-   <td style="text-align:right;"> 7.41 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2023 </td>
-   <td style="text-align:right;"> 3 </td>
-   <td style="text-align:right;"> 3.91 </td>
-   <td style="text-align:right;"> 0.00 </td>
-   <td style="text-align:right;"> 10.02 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2023 </td>
-   <td style="text-align:right;"> 6 </td>
-   <td style="text-align:right;"> 4.16 </td>
-   <td style="text-align:right;"> 1.23 </td>
-   <td style="text-align:right;"> 3.60 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2023 </td>
-   <td style="text-align:right;"> 7 </td>
-   <td style="text-align:right;"> 22.78 </td>
-   <td style="text-align:right;"> 7.96 </td>
-   <td style="text-align:right;"> 36.39 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2023 </td>
-   <td style="text-align:right;"> 8 </td>
-   <td style="text-align:right;"> 99.41 </td>
-   <td style="text-align:right;"> 32.04 </td>
-   <td style="text-align:right;"> 83.88 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2023 </td>
-   <td style="text-align:right;"> 9 </td>
-   <td style="text-align:right;"> 46.01 </td>
-   <td style="text-align:right;"> 41.99 </td>
-   <td style="text-align:right;"> 10.02 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2023 </td>
-   <td style="text-align:right;"> 10 </td>
-   <td style="text-align:right;"> 10.67 </td>
-   <td style="text-align:right;"> 29.83 </td>
-   <td style="text-align:right;"> 11.26 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2023 </td>
-   <td style="text-align:right;"> 11 </td>
-   <td style="text-align:right;"> 9.78 </td>
-   <td style="text-align:right;"> 57.23 </td>
-   <td style="text-align:right;"> 0.34 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2023 </td>
-   <td style="text-align:right;"> 12 </td>
-   <td style="text-align:right;"> 37.26 </td>
-   <td style="text-align:right;"> 8.22 </td>
-   <td style="text-align:right;"> 14.67 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2024 </td>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 17.05 </td>
-   <td style="text-align:right;"> 9.06 </td>
-   <td style="text-align:right;"> 0.00 </td>
-  </tr>
-  <tr>
-   <td style="text-align:right;"> 2024 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 11.92 </td>
-   <td style="text-align:right;"> 0.00 </td>
+   <td style="text-align:right;"> 1.98 </td>
+   <td style="text-align:right;"> 2.76 </td>
    <td style="text-align:right;"> 2.02 </td>
   </tr>
   <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 2.75 </td>
+   <td style="text-align:right;"> 2.54 </td>
+   <td style="text-align:right;"> 3.02 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 5.50 </td>
+   <td style="text-align:right;"> 4.25 </td>
+   <td style="text-align:right;"> 3.64 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 4 </td>
+   <td style="text-align:right;"> 9.09 </td>
+   <td style="text-align:right;"> 5.68 </td>
+   <td style="text-align:right;"> 3.64 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 5 </td>
+   <td style="text-align:right;"> 5.64 </td>
+   <td style="text-align:right;"> 2.56 </td>
+   <td style="text-align:right;"> 2.65 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 6 </td>
+   <td style="text-align:right;"> 4.39 </td>
+   <td style="text-align:right;"> 3.10 </td>
+   <td style="text-align:right;"> 5.13 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 7 </td>
+   <td style="text-align:right;"> 2.54 </td>
+   <td style="text-align:right;"> 2.38 </td>
+   <td style="text-align:right;"> 2.30 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 8 </td>
+   <td style="text-align:right;"> 2.34 </td>
+   <td style="text-align:right;"> 1.87 </td>
+   <td style="text-align:right;"> 1.96 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 10 </td>
+   <td style="text-align:right;"> 1.48 </td>
+   <td style="text-align:right;"> 2.38 </td>
+   <td style="text-align:right;"> 2.30 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 11 </td>
+   <td style="text-align:right;"> 4.00 </td>
+   <td style="text-align:right;"> 2.20 </td>
+   <td style="text-align:right;"> 2.11 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2022 </td>
+   <td style="text-align:right;"> 12 </td>
+   <td style="text-align:right;"> 4.10 </td>
+   <td style="text-align:right;"> 4.64 </td>
+   <td style="text-align:right;"> 23.40 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 4.86 </td>
+   <td style="text-align:right;"> 25.71 </td>
+   <td style="text-align:right;"> 2.34 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 3.08 </td>
+   <td style="text-align:right;"> 3.45 </td>
+   <td style="text-align:right;"> 2.02 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 4.10 </td>
+   <td style="text-align:right;"> 3.69 </td>
+   <td style="text-align:right;"> 2.30 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 6 </td>
+   <td style="text-align:right;"> 5.48 </td>
+   <td style="text-align:right;"> 3.24 </td>
+   <td style="text-align:right;"> 4.72 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 7 </td>
+   <td style="text-align:right;"> 3.60 </td>
+   <td style="text-align:right;"> 37.02 </td>
+   <td style="text-align:right;"> 4.10 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 8 </td>
+   <td style="text-align:right;"> 13.30 </td>
+   <td style="text-align:right;"> 5.78 </td>
+   <td style="text-align:right;"> 17.53 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 9 </td>
+   <td style="text-align:right;"> 8.80 </td>
+   <td style="text-align:right;"> 6.00 </td>
+   <td style="text-align:right;"> 3.79 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 10 </td>
+   <td style="text-align:right;"> 2.25 </td>
+   <td style="text-align:right;"> 3.28 </td>
+   <td style="text-align:right;"> 2.92 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 11 </td>
+   <td style="text-align:right;"> 2.25 </td>
+   <td style="text-align:right;"> 3.28 </td>
+   <td style="text-align:right;"> 2.92 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2023 </td>
+   <td style="text-align:right;"> 12 </td>
+   <td style="text-align:right;"> 2.92 </td>
+   <td style="text-align:right;"> 3.28 </td>
+   <td style="text-align:right;"> 2.25 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2024 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 3.28 </td>
+   <td style="text-align:right;"> 3.42 </td>
+   <td style="text-align:right;"> 3.51 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2024 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 3.10 </td>
+   <td style="text-align:right;"> 3.60 </td>
+   <td style="text-align:right;"> 2.97 </td>
+  </tr>
+  <tr>
    <td style="text-align:right;"> 2024 </td>
    <td style="text-align:right;"> 3 </td>
-   <td style="text-align:right;"> 22.20 </td>
-   <td style="text-align:right;"> 52.53 </td>
-   <td style="text-align:right;"> 8.15 </td>
+   <td style="text-align:right;"> 7.60 </td>
+   <td style="text-align:right;"> 10.49 </td>
+   <td style="text-align:right;"> 4.05 </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2024 </td>
    <td style="text-align:right;"> 4 </td>
-   <td style="text-align:right;"> 0.91 </td>
-   <td style="text-align:right;"> 11.45 </td>
-   <td style="text-align:right;"> 10.43 </td>
+   <td style="text-align:right;"> 4.41 </td>
+   <td style="text-align:right;"> 38.99 </td>
+   <td style="text-align:right;"> 2.20 </td>
+  </tr>
+  <tr>
+   <td style="text-align:right;"> 2024 </td>
+   <td style="text-align:right;"> 5 </td>
+   <td style="text-align:right;"> 5.09 </td>
+   <td style="text-align:right;"> 2.61 </td>
+   <td style="text-align:right;"> 3.01 </td>
   </tr>
 </tbody>
 </table>
@@ -897,7 +916,7 @@ D15_17_20 <- ggplot(D151720 ,
                                   to = 12, 
                                   by = 1,
                                   size=2))+
-  ylim(0,150)+
+  ylim(0,50)+
   labs(y="Indice de Reclutamiemto",
        x="MES")
 D15_17_20
@@ -910,7 +929,7 @@ Ambos graficos (2017-2020 y 2021.2024) para comparar metodologías. Estas no tie
 
 ```r
 joinpl <- ggarrange(D15_17_20, 
-                    plotD15, 
+                    D15_17_20a, 
                     ncol = 2,
                     legend="bottom")
 joinpl
@@ -1168,8 +1187,8 @@ plot_dens <- ggplot(dens1724 %>%
                   aes(MES,mead))+
   geom_point()+
   geom_smooth(col=2, 
-              method = "lm")+
-  facet_grid(Sampling.point~ANO)+
+              method = "loess")+
+  #facet_grid(Sampling.point~ANO)+
   scale_color_viridis_d(name="Sampling Points")+
   theme_few()+
   geom_hline(yintercept = 8,
@@ -1188,7 +1207,37 @@ plot_dens
 ```
 
 <img src="Recruit_Index_files/figure-html/unnamed-chunk-34-1.jpeg" style="display: block; margin: auto;" />
+agrupada 
 
+
+```r
+plot_dens_agru <- ggplot(dens1724 %>% 
+                      group_by(ANO,MES) %>% 
+                      summarize(mead =mean(Densidad)) %>% 
+                      drop_na(), 
+                  aes(ANO,mead))+
+  geom_point()+
+  geom_smooth(col=2, 
+              method = "loess")+
+  #facet_grid(Sampling.point~ANO)+
+  scale_color_viridis_d(name="Sampling Points")+
+  theme_few()+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))+
+    scale_x_continuous(breaks = seq(from = 1, 
+                                  to = 12, 
+                                  by = 1,
+                                  size=2))+
+   labs(y="Densidad (ind/mt2)",
+       x="MES")+
+  ylim(0, 75)
+plot_dens_agru
+```
+
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-35-1.jpeg" style="display: block; margin: auto;" />
 
 ahora creo vector con desviación 
 
@@ -1233,7 +1282,7 @@ bio <- ggplot(denspobtot2 %>%
 bio                       
 ```
 
-<img src="Recruit_Index_files/figure-html/unnamed-chunk-36-1.jpeg" style="display: block; margin: auto;" />
+<img src="Recruit_Index_files/figure-html/unnamed-chunk-37-1.jpeg" style="display: block; margin: auto;" />
 # REFERENCIAS
 
 

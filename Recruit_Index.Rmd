@@ -271,7 +271,7 @@ Este aspecto se trabaja de forma de ponderación ad-hoc descrita en la
 Figure \@ref(fig:edaplot1)
 
 ```{r}
-size_21_23 <- rbind(size2021,
+size_21_24 <- rbind(size2021,
                     size2022,
                     size2023,
                     size2024)
@@ -279,17 +279,17 @@ size_21_23 <- rbind(size2021,
 Separate `Date` column
 
 ```{r}
-size_21_23<- size_21_23 %>%
+size_21_24<- size_21_24 %>%
   mutate(
     DIA = day(Date),
     MES = month(Date),
     ANO = year(Date)
   )
-unique(size_21_23$rastro)
+unique(size_21_24$rastro)
 
-glimpse(size_21_23)
-table(size_21_23$ANO, size_21_23$MES)
-size_21_23
+glimpse(size_21_24)
+table(size_21_24$ANO, size_21_24$MES)
+size_21_24
 ```
 ## Calculo D15
 
@@ -298,7 +298,7 @@ Ahora calculo la cantidad de individuos bajo los 15 mm. Si bien hemos visualizad
 Primero calculo en n de ind medidos y luego junto con base que tiene medida del area `track_m`, que es una variable para estimar `D15` q es en función del área, de acuerdo a lo comentado por MD.
 
 ```{r}
-D15n <- size_21_23 %>% 
+D15n <- size_21_24 %>% 
   group_by(ANO, 
            MES, 
            Sampling.point, 
@@ -330,24 +330,7 @@ D15n2 <- D15n1 %>%
   # Multiplicar por m_track * 0.045
   mutate(D15 = ponderar * (m_track * 0.045), na.rm = TRUE)
 ```
-(Al dia de hoy, 15 de abril, he realizado algunas correcciones al estimador del `D15`)
 
-```{r}
-# probando otras formas
-D15n2 <- D15n1 %>%
-  filter(
-         !is.na(fpn), 
-         !is.na(fpm), 
-         !is.na(fps), 
-         !is.na(m_track)) %>%
-  group_by(ANO, MES, Sampling.point) %>%
-  mutate(ponderar = ifelse(fpn, fpn, 1) *
-                                   ifelse(fpm, fpm, 1) *
-                                   ifelse(fps, fps, 1)) %>%
-  mutate(D15 = total * ponderar / (m_track * 0.045)) 
-
-
-```
 
 
 Ploteo columnas por año y Sampling point
@@ -359,7 +342,7 @@ plotD15 <- ggplot(D15n2 %>%
                       color=as.factor(Sampling.point),
                   group=as.factor(Sampling.point)))+
   geom_point()+
-  geom_smooth(method="loess", se=FALSE)+
+  geom_smooth(method="loess", se=T)+
   facet_wrap(.~ANO, ncol=4)+
   scale_color_viridis_d(option="H",
                         name="Sampling point")+
