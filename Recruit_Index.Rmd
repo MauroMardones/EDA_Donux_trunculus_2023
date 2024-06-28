@@ -68,11 +68,6 @@ En este codigo, se establecen dos formas de estimar el indice de reclutamiento p
 
 Recordar que las bases de densidades previas al 2021 estan en la misma base que las longitudes. pero he encontrado un archivo que tiene una síntesis.
 
-```{r eval=FALSE}
-dens17_20 <- read_excel(here("Data", 
-                             "Anterior a 2020",
-                            "densidad_reclutamiento_2017_2018_2019_2020.xlsx"))
-```
 
 Llamo las bases con el formato último, es decir desde el año 2021.
 
@@ -317,7 +312,7 @@ A traves de la ponderación del `D15`, hago un retrocalculo a traves de los pond
 
 
 
-```{r}
+```{r eval=FALSE}
 # formula para el informe de Abril 24
 D15n2 <- D15n1 %>% 
   filter(!is.na(fpn) &
@@ -331,9 +326,7 @@ D15n2 <- D15n1 %>%
   mutate(D15 = ponderar * (m_track * 0.045), na.rm = TRUE)
 ```
 
-
-
-Ploteo columnas por año y Sampling point
+Ploteo columnas por año y Sampling point 2, 4 y 6
 
 ```{r warning=FALSE}
 plotD15 <- ggplot(D15n2 %>% 
@@ -342,7 +335,8 @@ plotD15 <- ggplot(D15n2 %>%
                       color=as.factor(Sampling.point),
                   group=as.factor(Sampling.point)))+
   geom_point()+
-  geom_smooth(method="loess", se=T)+
+  geom_smooth(method="loess", 
+              se=F)+
   facet_wrap(.~ANO, ncol=4)+
   scale_color_viridis_d(option="H",
                         name="Sampling point")+
@@ -361,8 +355,11 @@ plotD15 <- ggplot(D15n2 %>%
   ylim(0,40)
 plotD15
 ```
+
+con todos los puntos
+
 ```{r warning = FALSE}
-D15_17_20a <- ggplot(D15n2 , 
+D15_allp <- ggplot(D15n2 , 
                   aes(MES,D15, 
                   color=as.factor(Sampling.point)))+
   geom_point()+
@@ -382,7 +379,7 @@ D15_17_20a <- ggplot(D15n2 ,
   ylim(0,50)+
   labs(y="Indice de Reclutamiemto",
        x="MES")
-D15_17_20a
+D15_allp
 ```
 
 Ahora agrupado por el complejo espacial total
@@ -394,7 +391,8 @@ totalD15 <- ggplot(D15n2 %>%
                   aes(MES,MEAND15))+
   geom_point()+
   geom_smooth(method="loess",
-              se=FALSE)+
+              se=FALSE,
+              color="black")+
   facet_wrap(.~ANO, ncol=4)+
   scale_color_viridis_d(option="H",
                         name="Sampling point")+
@@ -464,9 +462,12 @@ Esto debemos tratarlo como grupo dado que de acuerdo a la replica de cálculos l
 
 Existe un archivo que tiene datos de `D15` previos al 2020 y son valores menores.
 
+## Datos previo al 2020
 
 ```{r}
-D151720 <- read_excel("Data/Anterior a 2020/densidad_reclutamiento_2017_2018_2019_2020.xlsx")
+D151720  <- read_excel(here("Data", 
+                             "Anterior a 2020",
+                            "densidad_reclutamiento_2017_2018_2019_2020.xlsx"))
 ```
 
 
@@ -519,16 +520,7 @@ D15_17_20 <- ggplot(D151720 ,
        x="MES")
 D15_17_20
 ```
-Ambos graficos (2017-2020 y 2021.2024) para comparar metodologías. Estas no tienen os mismos puntos muestreados
 
-
-```{r warning=FALSE, fig.height=4, fig.width=12}
-joinpl <- ggarrange(D15_17_20, 
-                    D15_17_20a, 
-                    ncol = 2,
-                    legend="bottom")
-joinpl
-```
 
 
 Tabla con los datos del año para el informe;
@@ -542,6 +534,112 @@ kbl(D15n2$Sampling.point.x, D15n2$num_individuos_m2,
                 full_width = FALSE,font_size=8)
 
 ```
+çuno bases desde el 2017
+
+```{r}
+names(D151720)
+D15_17_20 <- D151720 %>% 
+  select(c(2, 5, 6, 11, 12, 13))
+names(D15_17_20)
+
+
+names(D15n2)
+D15_21_24 <- D15n2 %>% 
+  select(c(3, 46, 49, 32, 31, 30)) %>% 
+  rename(Densidad = dens)
+names(D15_21_24)
+```
+unir bases
+
+```{r}
+D15_17_24 <- rbind(D15_17_20,
+                   D15_21_24)
+write_csv(D15_17_24, "D15_17_24.csv")
+```
+Ambos graficos (2017-2020 y 2021.2024) para comparar metodologías. Estas no tienen os mismos puntos muestreados
+
+
+```{r warning=FALSE}
+plot_D15_17_24 <- ggplot(D15_17_24 , 
+                  aes(MES,D15, 
+                  group=as.factor(Sampling.point)))+
+  geom_point()+
+  geom_smooth(col=2)+
+  facet_grid(Sampling.point~ANO)+
+  scale_color_viridis_d(name="Sampling Points")+
+  theme_few()+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))+
+  scale_x_continuous(breaks = seq(from = 1, 
+                                  to = 12, 
+                                  by = 1,
+                                  size=2))+
+  ylim(0,50)+
+  labs(y="Indice de Reclutamiemto",
+       x="MES")
+plot_D15_17_24
+```
+juntos
+
+
+```{r warning=FALSE}
+plot_D15_17_24_2 <- ggplot(D15_17_24 , 
+                  aes(MES,D15, 
+                  colour=as.factor(Sampling.point)))+
+  geom_point()+
+  geom_smooth(method = "lm",
+              se=F)+
+  facet_wrap(~ANO,
+             ncol=4)+
+  scale_color_viridis_d(name="Sampling Points")+
+  theme_few()+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1),
+        legend.position = "bottom")+
+  scale_x_continuous(breaks = seq(from = 1, 
+                                  to = 12, 
+                                  by = 1,
+                                  size=2))+
+  ylim(0,50)+
+  labs(y="Indice de Reclutamiemto D15",
+       x="MES")
+plot_D15_17_24_2
+```
+
+```{r warning=FALSE}
+plotD15all <- ggplot(D15_17_24 %>% 
+                    filter(Sampling.point %in% c(2,4,6)), 
+                  aes(MES,D15,
+                      color=as.factor(Sampling.point),
+                  group=as.factor(Sampling.point)))+
+  geom_point()+
+  geom_smooth(method="loess", 
+              se=F)+
+  facet_wrap(.~ANO, ncol=4)+
+  scale_color_viridis_d(option="H",
+                        name="Sampling point")+
+  scale_x_continuous(breaks = seq(from = 1, 
+                                  to = 12, 
+                                  by = 1,
+                                  size=2))+
+  theme_few()+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1),
+        legend.position = "bottom")+
+  labs(y="Indice de Reclutamiemto D15",
+       x="MES")+
+  ylim(0,40)
+plotD15all
+```
 
 
 # OTRAS FORMAS DE CALCULO DEL INDICE DE RECLUTAMIENTO
@@ -552,7 +650,8 @@ Este es una forma mas simple calculando la proporción de ind bajo  los 15 mm, e
 Cargo data total de las estructuiras de tallas 
 
 ```{r}
-tallas13_24 <- readRDS("tallas13_24.RDS")
+tallas13_24 <- readRDS("tallas_13_24.RDS")
+table(tallas13_24$ANO, tallas13_24$MES)
 ```
 
 
@@ -687,7 +786,11 @@ indseg3 <- ggplot(indice_reclutamiento %>%
   geom_hline(yintercept = 0, color = "black")+
   #scale_x_discrete(breaks = seq(from = 1996, to = 2022, by = 4))+
   theme_few()+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+   theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     vjust= 0.5,
+                                     size = 8),
+          axis.text.y = element_text(size = 8),
         legend.position = "bottom")+
   labs(x = "", 
         y = "IR")+

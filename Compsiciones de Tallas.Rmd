@@ -60,12 +60,9 @@ library(gtsummary)
 
 El monitoreo de tallas considera dos compenentes. muestreo espacial, temporal y por arte de pesca (comercial y poblacional)
 
-
 # Metodología de manipulación de data
 
-Leer y juntar Data Base  provenientos de todos los muestreos, que datan desde el 2013.
-
-Cabe señalar que las bases de datos previas al 2020, tiene (o pueden contener) otras columnas como densidad, rendimiento y tallas. 
+Leer y juntar Data Base  provenientos de todos los muestreos, que datan desde el 2013. Cabe señalar que las bases de datos previas al 2020, tiene (o pueden contener) otras columnas como densidad, rendimiento y tallas. 
 
 ```{r, include=FALSE}
 ## Set path
@@ -562,6 +559,8 @@ size_21_24<- size_21_24 %>%
     ANO = year(Date)
   )
 unique(size_21_24$rastro)
+
+table(size_21_24$ANO, size_21_24$MES)
 ```
 
 ## Unir los datos desde el 2013 al 2023
@@ -583,6 +582,7 @@ table(sizeall$ANO)
 table(sizeall$Beach)
 table(sizeall$Sampling.point)
 table(sizeall$rastro)
+table(sizeall$ANO, sizeall$MES)
 ```
 
 Rename values
@@ -624,12 +624,13 @@ sizeall2 <- sizeall %>%
 unique(sizeall2$Beach)
 unique(sizeall2$rastro)
 unique(sizeall2$MES)
-table(sizeall2$ANO, sizeall2$rastro)
+table(sizeall2$ANO, sizeall2$MES)
 ```
 ## Save data
 
 ```{r eval=FALSE}
-saveRDS(sizeall2, "tallas_13_24.RData")
+saveRDS(sizeall2, "tallas_13_24.RDS")
+write_csv(sizeall2, "tallas_13_24.csv")
 sizeall2 <- readRDS("~/IEO/DATA/EDA_Donux_trunculus_2023/tallas13_24.RDS")
 ```
 
@@ -643,14 +644,14 @@ nall <- ggplot(sizeall2 %>%
                aes(x=sizeE, 
                    y = MES,
                   fill= as.factor(rastro)))+
-  # geom_density_ridges(stat = "densit", 
-  #                     bins = 50, 
-  #                     scale = 1.2,
-  #                     alpha=0.7)+
-   geom_density_ridges2(stat = "density_ridges",
-                       position = "points_sina",
+   geom_density_ridges(stat = "binline", 
+                      bins = 40, 
                       scale = 1.5,
                       alpha=0.7)+
+   # geom_density_ridges2(stat = "bin",
+   #                     position = "points_sina",
+   #                    scale = 1.5,
+   #                    alpha=0.7)+
   facet_wrap(.~ANO, ncol=6) +
   geom_vline(xintercept = 10.8, color = "red")+
   scale_fill_viridis_d(option="B",
@@ -781,13 +782,43 @@ Promedio por tipo de rastro.
 
 ```{r, fig.align="center", warning=FALSE}
 pmea <- ggplot(sizemean %>% 
-                 drop_na(avg), 
+                 drop_na(avg, Sampling.point), 
                aes(as.factor(ANO), avg,
                color=rastro))+
     geom_boxplot(show.legend = T,
                alpha=.7) +
-  geom_jitter()+
+    #geom_jitter(width = 2.5)+
     theme_few()+ 
+    scale_y_continuous(breaks = seq(from = 2013, to = 2023, by = 1))+
+    theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     vjust= 0.5,
+                                     size = 12),
+          axis.text.y = element_text(size = 12),
+          legend.position = "bottom")+
+    guides(fill = guide_legend(reverse=F))+
+    scale_color_viridis_d(option="H",
+                          name="")+
+    ylab("Tallas Medias (mm)") +
+    xlab("") +
+  ylim(5,35)+
+    ggtitle("Tallas medias coquina por año")
+pmea
+```
+scatter plot Por Punto
+
+```{r, fig.align="center", warning=FALSE}
+pmea2 <- ggplot(sizemean %>% 
+                 drop_na(avg, Sampling.point), 
+               aes(as.factor(ANO), avg,
+               color=rastro,
+               group=rastro))+
+    geom_point(show.legend = T,
+               alpha=.7) +
+  geom_smooth(method = "lm")+
+    theme_few()+ 
+  facet_wrap(.~Sampling.point,
+             ncol=5)+
     scale_y_continuous(breaks = seq(from = 2013, to = 2023, by = 1))+
     theme(axis.text.x = element_text(angle = 90,
                                      hjust = 1,
@@ -802,8 +833,9 @@ pmea <- ggplot(sizemean %>%
     xlab("") +
   ylim(5,35)+
     ggtitle("Tallas medias coquina por año")
-pmea
+pmea2
 ```
+
 por playa
 
 ```{r, fig.align="center", warning=FALSE}

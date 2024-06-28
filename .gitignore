@@ -1,12 +1,12 @@
 .Rproj.user
 .Rhistory
 .Rdata
-.RDS
 .Ruserdata
 *csv
 *jpeg
 *docx
 *xlsx
+*RDS
 Fig/
 Data/
 tallas_MD.csv
