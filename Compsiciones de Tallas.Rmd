@@ -629,9 +629,9 @@ table(sizeall2$ANO, sizeall2$MES)
 ## Save data
 
 ```{r eval=FALSE}
-saveRDS(sizeall2, "tallas_13_24.RDS")
-write_csv(sizeall2, "tallas_13_24.csv")
-sizeall2 <- readRDS("~/IEO/DATA/EDA_Donux_trunculus_2023/tallas13_24.RDS")
+#saveRDS(sizeall2, "tallas_13_24.RDS")
+#write_csv(sizeall2, "tallas_13_24.csv")
+sizeall2 <- readRDS("tallas_13_24.RDS")
 ```
 
 
@@ -948,6 +948,21 @@ for (i in seq_along(tatodos)) {
   write.csv(tatodos[[i]], 
             file = ttnames[i])
 }
+```
+
+## Tabla de Proporciones
+
+```{r eval=F}
+summary(sizeall2)
+sizeallfil <- na.omit(sizeall2)
+summary(sizeallfil)
+# Definir la función para calcular proporciones por grupo
+tabla_proporciones <- sizeallfil %>%
+  select(Beach, Sampling.point, sizeE, rastro, ANO) %>% 
+  group_by(ANO, Sampling.point, rastro, Beach) %>%
+  mutate(total_size = sum(sizeE, na.rm = TRUE),
+         proportion = sizeE / total_size) 
+
 ```
 
 # Dudas.

@@ -74,13 +74,11 @@ spain <- ne_countries(country = "spain",
 portug<- ne_countries(country = "portugal",  
                       scale="medium", 
                       returnclass = 'sf')
-# chile<- ne_countries(country = "chile",  
-#                       scale="medium", 
-#                       returnclass = 'sf')
 costandalucia <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_10_Playa.shp')
-#zonapro <- st_read('~/IEO/DATA/Shapefiles_Andalucia/ZonasProduccionMoluscos.shp')
+baty <- st_read('~/IEO/DATA/Shapefiles_Andalucia/batimetria_rediam20x20_15m_id.shp')
 zonapro <- st_read('~/IEO/DATA/Shapefiles_Andalucia/zzpp_resolucion_2023_25830.shp')
 zonape <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_09_ZonaIdoneaPesca.shp')
+resepe <- st_read('~/IEO/DATA/Shapefiles_Andalucia/Res_Pesca_Des_Gualquivir.shp')
 fisicomar <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_01_FisiograficoMarino.shp')
 playas <- st_read('~/IEO/DATA/Shapefiles_Andalucia/playas.shp')
 lito <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_02_Litologia.shp')
@@ -103,7 +101,8 @@ cuencas1 <- st_transform(cuencas, "+init=epsg:4326")
 #lmarino1 <- st_transform(lmarino, "+init=epsg:4326")
 hidro1 <- st_transform(hidro, "+init=epsg:4326")
 costa1 <- st_transform(costa, "+init=epsg:4326")
-#chile1 <- st_transform(chile, "+init=epsg:4326")
+baty1 <- st_transform(baty, "+init=epsg:4326")
+resepe1 <- st_transform(resepe, "+init=epsg:4326")
 ```
 
 # Mapa
@@ -138,14 +137,67 @@ mas
 ```
 
 
-# Agragar indicadores
- 
-Agregar Data Frame con Puntos de Muestreo
+## Agregar Data Frame con Puntos de Muestreo
 
 
-36.83339444	-6.40205556	Punto 2
-36.90075278	-6.43584444	Punto 3
-36.93598056	-6.48456944	Punto 4
-36.98449444	-6.53501944	Matalascañas
+```{r}
+Coordenadas <- read_excel("Coordenadas.xlsx")
 
+coord <- Coordenadas %>% 
+  mutate(Long_Dec1=Long_Dec*-1) %>% 
+  st_as_sf(coords = c("Long_Dec1", "Lat_Dec"),  
+                  crs = "+init=epsg:4326") 
 
+```
+
+Mapa con puntos
+
+```{r warning=FALSE}
+maspu <- ggplot() +
+  geom_sf(data = costa1, fill="white") +
+  #geom_sf(data = resepe1, aes(col="blue",
+   #                            fill=NA)) +
+  geom_sf(data = zonapro1, aes(col="red",
+                               fill=NA)) +
+  geom_sf(data = coord)+
+  scale_fill_viridis_d(option="H",
+                       alpha=.5)+
+  coord_sf() +
+  xlab(expression(paste(Longitude^o,~'O'))) +
+  ylab(expression(paste(Latitude^o,~'S')))+
+  ggrepel::geom_label_repel(
+    data = coord,
+    aes(label = Punto, geometry = geometry),
+    stat = "sf_coordinates",
+    min.segment.length = ,
+    colour = "black",
+    size = 3,
+    segment.colour = "black",
+    box.padding = 0.9,
+    max.overlaps = 40) +
+  theme_few()+
+  theme(legend.position = "none")+
+  xlim(-7.6,-6.1)+
+  ylim(36.6, 37.4)
+maspu
+```
+
+Mapa test
+```{r}
+# Crea un mapa de Europa
+europe_map <- map_data("world",
+                       region = c("spain", 
+                                  "portugal"))
+
+# Visualiza el mapa de Europa
+ggplot() +
+  geom_polygon(data = europe_map, 
+               aes(x = long, 
+                   y = lat, 
+                   group = group), 
+               fill = "white", 
+               color = "black") +
+  coord_fixed(1.3) +  # Ajusta la relación de aspecto
+  theme_few()  # Estilo del gráfico
+
+```
