@@ -957,11 +957,21 @@ summary(sizeall2)
 sizeallfil <- na.omit(sizeall2)
 summary(sizeallfil)
 # Definir la función para calcular proporciones por grupo
-tabla_proporciones <- sizeallfil %>%
-  select(Beach, Sampling.point, sizeE, rastro, ANO) %>% 
-  group_by(ANO, Sampling.point, rastro, Beach) %>%
-  mutate(total_size = sum(sizeE, na.rm = TRUE),
-         proportion = sizeE / total_size) 
+# Convertir a tibble para usar dplyr
+mtcars_tbl <- as_tibble(sizeallfil)
+
+# Calcular proporciones por grupos
+proporciones_por_grupo <- mtcars_tbl %>%
+  group_by(ANO, rastro, Sampling.point) %>%
+  summarise(count = n()) %>%
+  group_by(ANO) %>%
+  mutate(prop = count / sum(count)) %>%
+  ungroup()
+
+# Ver los resultados
+print(proporciones_por_grupo)
+unique(sizeall2$ANO
+       )
 
 ```
 
