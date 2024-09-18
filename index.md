@@ -2,7 +2,7 @@
 title: "Evaluación de Stock de coquina. AED, modelos y supuestos utilizados"
 subtitle: "Análisis Exploratorio de Datos (AED) para el manejo, asesoría y evaluación de stock de D. trunculus"
 author: "Mardones, M; Delgado, M"
-date:  "06 May, 2024"
+date:  "18 September, 2024"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
@@ -126,7 +126,7 @@ En cuanto a aspectos reproductivos, la coquina tiene los máximos de IGS entre l
 <p class="caption">(\#fig:matplot1)Schematic representation of the reproductive cycle, periods of emission of gametes and related recruitment events in populations of D. trunculus from SW Spain. Black symbols represent the C1 cohort (from February-March) and grey symbols represent the C2 cohort (from July)</p>
 </div>
 
-Por otro lado, cada componente y su rutina de estandarización estan detallas en los siguientes link;
+Por otro lado, cada componente y su rutina de estandarización estan detalladas en los siguientes link;
 
 - [Composiciones de Tallas](Compsiciones-de-Tallas.html)
 - [Rendimiento Pesquero](Rendimiento-Pesquero.html)
@@ -147,7 +147,7 @@ A modo general, la serie historica de desembarques varia entre 1 y 15 t y estan 
 
 
 <div class="figure" style="text-align: center">
-<img src="Fig/Desembarques.png" alt="Desembarques oficiales para coquina en el Golfo de Cádiz entre los años 2013 y 2023"  />
+<img src="Fig/Desembarques.png" alt="Desembarques oficiales para coquina en el Golfo de Cádiz entre los años 2013 y 2023" width="372" />
 <p class="caption">(\#fig:dese)Desembarques oficiales para coquina en el Golfo de Cádiz entre los años 2013 y 2023</p>
 </div>
 

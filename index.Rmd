@@ -137,7 +137,7 @@ En cuanto a aspectos reproductivos, la coquina tiene los máximos de IGS entre l
 knitr::include_graphics("Fig/Ciclo.png")
 ```
 
-Por otro lado, cada componente y su rutina de estandarización estan detallas en los siguientes link;
+Por otro lado, cada componente y su rutina de estandarización estan detalladas en los siguientes link;
 
 - [Composiciones de Tallas](Compsiciones-de-Tallas.html)
 - [Rendimiento Pesquero](Rendimiento-Pesquero.html)
