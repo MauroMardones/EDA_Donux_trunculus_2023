@@ -222,14 +222,29 @@ plotdens2124 <- ggplot(denspobtot2 %>%
                          filter(Categoria== "g") %>% 
                          group_by(ANO, Sampling.point),
                        aes(ANO, dens, group=ANO))+
+  scale_x_continuous(breaks = seq(from = 2020, 
+                                  to = 2024, 
+                                  by = 1))+
   geom_boxplot()+
-  theme_few()
+  theme_few()+
+   theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))+
+  labs(x="")
+
 plotdens2124p <- ggplot(denspobtot2 %>% 
                          filter(Categoria== "p") %>% 
                          group_by(ANO, Sampling.point),
                        aes(ANO, dens, group=ANO))+
+   scale_x_continuous(breaks = seq(from = 2020, 
+                                  to = 2024, 
+                                  by = 1))+
+ 
   geom_boxplot()+
-  theme_few()
+  theme_few()+
+   theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))+
+  labs(x="")
+#
 ggarrange(plotdens2124p, plotdens2124, ncol=2)
 ```
 
@@ -311,7 +326,6 @@ D15n1 <- right_join(denspobtot2, D15n)
 A traves de la ponderación del `D15`, hago un retrocalculo a traves de los ponderadores `fps`, `fpn`y `fpm` para luego extrapolar al tamaño del área.
 
 
-
 ```{r eval=FALSE}
 # formula para el informe de Abril 24
 D15n2 <- D15n1 %>% 
@@ -390,9 +404,6 @@ totalD15 <- ggplot(D15n2 %>%
                     summarise(MEAND15 =mean(D15), na.rm=TRUE), 
                   aes(MES,MEAND15))+
   geom_point()+
-  geom_smooth(method="loess",
-              se=FALSE,
-              color="black")+
   facet_wrap(.~ANO, ncol=4)+
   scale_color_viridis_d(option="H",
                         name="Sampling point")+

@@ -973,6 +973,22 @@ print(proporciones_por_grupo)
 unique(sizeall2$ANO
        )
 
+# Utiliza el conjunto de datos mtcars
+data(mtcars)
+
+# Convertir a tibble para usar dplyr
+mtcars_tbl <- as_tibble(mtcars)
+
+# Calcular frecuencias por grupos
+frecuencias_por_grupo <- mtcars_tbl %>%
+  group_by(cyl, gear) %>%
+  summarise(count = n()) %>%
+  ungroup()
+
+# Ver los resultados
+print(frecuencias_por_grupo)
+
+
 ```
 
 # Dudas.
