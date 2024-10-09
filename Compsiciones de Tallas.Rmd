@@ -484,17 +484,9 @@ size_17_20 <- rbind(size2017,
                     size2019,
                     size2020)
 size_17_20$Date <- dmy(size_17_20$Date)
-```
 
-Comprubo la estructura
+#Change `Date` columns from `character`to `Date` format
 
-```{r}
-summary(size_17_20)
-```
-
-Change `Date` columns from `character`to `Date` format
-
-```{r}
 # separo los meses , dias y años
 # Separar en columnas de día, mes y año
 
@@ -629,7 +621,7 @@ table(sizeall2$ANO, sizeall2$MES)
 ## Save data
 
 ```{r eval=FALSE}
-#saveRDS(sizeall2, "tallas_13_24.RDS")
+saveRDS(sizeall2, "tallas_13_24.RDS")
 #write_csv(sizeall2, "tallas_13_24.csv")
 sizeall2 <- readRDS("tallas_13_24.RDS")
 ```

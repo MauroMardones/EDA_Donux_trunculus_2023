@@ -350,8 +350,8 @@ plotD15 <- ggplot(D15n2 %>%
                   group=as.factor(Sampling.point)))+
   geom_point()+
   geom_smooth(method="loess", 
-              se=F)+
-  facet_wrap(.~ANO, ncol=4)+
+              se=T)+
+  facet_wrap(.~ANO, ncol=2)+
   scale_color_viridis_d(option="H",
                         name="Sampling point")+
   scale_x_continuous(breaks = seq(from = 1, 
@@ -378,7 +378,7 @@ D15_allp <- ggplot(D15n2 ,
                   color=as.factor(Sampling.point)))+
   geom_point()+
   geom_smooth(col=2)+
-  facet_wrap(.~ANO, ncol=4)+
+  facet_wrap(.~ANO, ncol=2)+
   scale_color_viridis_d(name="Sampling Points")+
   theme_few()+
   geom_hline(yintercept = 8,
@@ -404,7 +404,7 @@ totalD15 <- ggplot(D15n2 %>%
                     summarise(MEAND15 =mean(D15), na.rm=TRUE), 
                   aes(MES,MEAND15))+
   geom_point()+
-  facet_wrap(.~ANO, ncol=4)+
+  facet_wrap(.~ANO, ncol=2)+
   scale_color_viridis_d(option="H",
                         name="Sampling point")+
   scale_x_continuous(breaks = seq(from = 1, 
@@ -417,7 +417,7 @@ totalD15 <- ggplot(D15n2 %>%
              linetype=2)+
   theme(axis.text.x = element_text(angle = 90, 
                                    hjust = 1))+
-  labs(y="Indice de Reclutamiemto",
+  labs(y="Indice de Reclutamiemto (D15)",
        x="MES")
 totalD15
 ```
@@ -447,6 +447,65 @@ plotD15 <- ggplot(D15n2,
   #coord_polar(theta = "y")
 plotD15
 ```
+
+
+Ahora de Columnnas para el 2, 4 y 6
+
+```{r warning=FALSE}
+plotD15fil <- ggplot(D15n2 %>% 
+                       filter(Sampling.point %in% c(2,4,6)), 
+                  aes(MES,D15))+
+  geom_col()+
+  #geom_smooth(method="lm")+
+  facet_grid(Sampling.point~ANO)+
+  scale_color_viridis_d(option="H",
+                        name="Sampling point")+
+  scale_x_continuous(breaks = seq(from = 1, 
+                                  to = 12, 
+                                  by = 1,
+                                  size=2))+
+  theme_few()+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))+
+  labs(y="Indice de Reclutamiemto",
+       x="MES")+
+  ylim(0,50)
+  #coord_polar(theta = "y")
+plotD15fil
+```
+
+Ahora solo los datos de los puntos 2,4 y 6 
+
+```{r warning=FALSE}
+totalD15fil <- ggplot(D15n2 %>%
+                     filter(Sampling.point %in% c(2,4,6)) %>% 
+                    group_by(ANO, MES) %>% 
+                    summarise(MEAND15 =mean(D15), na.rm=TRUE), 
+                  aes(MES,MEAND15))+
+  geom_point()+
+  geom_line()+
+  facet_wrap(.~ANO, ncol=2)+
+  scale_color_viridis_d(option="H",
+                        name="Sampling point")+
+  scale_x_continuous(breaks = seq(from = 1, 
+                                  to = 12, 
+                                  by = 1,
+                                  size=2))+
+  theme_few()+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))+
+  labs(y="Indice de Reclutamiemto",
+       x="MES")
+totalD15fil
+```
+
+
 Obtengo el valor para el informe de acuerdo al mes. Para ello genero una tabla de acuerdo al formato del informe
 
 
@@ -467,6 +526,10 @@ kbl(D15n4) %>%
                                       "condensed",
                                       "responsive"))
 
+```
+
+```{r}
+write.csv(D15n3, "reclut_marina.csv")
 ```
 
 Esto debemos tratarlo como grupo dado que de acuerdo a la replica de cálculos los valores son mayores que los registrados en los ITAs de los años 2021 y 2023 [@Delgado2021; @Delgado2023].

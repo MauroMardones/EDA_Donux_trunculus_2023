@@ -56,6 +56,7 @@ library(kableExtra)
 library(ggalt)
 library(see)
 library(egg)
+library(ggpmisc)
 ```
 
 # CORRELACIONES
@@ -233,9 +234,15 @@ rl1 <- ggplot(ChlData %>%
     theme_few()+ 
    # scale_x_continuous(breaks = seq(from = 2018, to = 2023, by = 1))+
  
-    facet_grid(Site~ANO)+
     ylab("Extracto (ug/ml)") +
-    xlab("Intensidad")
+    xlab("Intensidad") +
+  stat_smooth(method = "lm", se = FALSE, color = "blue") +
+  stat_regline_equation(
+    aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
+    label.x = 3, label.y = 750,
+    size=2
+  )
+
 rl1
 ```
 
@@ -255,7 +262,6 @@ para leer varios `.xls.` usar este ejemplo:
 
 [Leer multiples Excel](https://stackoverflow.com/questions/32888757/how-can-i-read-multiple-excel-files-into-r)
 
-o 
 
 ```{r}
 library(xlsx)
