@@ -766,7 +766,8 @@ sizemean <-sizeall2 %>%
                   MES, 
                   rastro,
                   Sampling.point) %>%
-  dplyr::summarise(avg=mean(sizeE))
+  dplyr::summarise(avg=mean(sizeE)) %>% 
+  filter(rastro!="COMERCiAL")
 #kableExtra::kable(coutlength, format = "html")
 ```
 
@@ -789,6 +790,7 @@ pmea <- ggplot(sizemean %>%
           axis.text.y = element_text(size = 12),
           legend.position = "bottom")+
     guides(fill = guide_legend(reverse=F))+
+  geom_hline(yintercept = 25)+
     scale_color_viridis_d(option="H",
                           name="")+
     ylab("Tallas Medias (mm)") +
@@ -827,8 +829,107 @@ pmea2 <- ggplot(sizemean %>%
     ggtitle("Tallas medias coquina por año")
 pmea2
 ```
+ 
 
-por playa
+
+tendencia por puntos importantes
+
+```{r, fig.align="center", warning=FALSE}
+pmeaimp <- ggplot(sizemean %>% 
+                filter(Sampling.point %in% c(2,4,6, "M")) %>% 
+                 drop_na(avg, Sampling.point), 
+               aes(as.factor(ANO), avg,
+               color=rastro,
+               group=rastro))+
+    geom_point(show.legend = T,
+               alpha=.7) +
+  geom_smooth(method = "lm")+
+    theme_few()+ 
+  facet_wrap(.~Sampling.point,
+             ncol=5)+
+    scale_y_continuous(breaks = seq(from = 2013, to = 2023, by = 1))+
+    theme(axis.text.x = element_text(angle = 90,
+                                     hjust = 1,
+                                     vjust= 0.5,
+                                     size = 8),
+          axis.text.y = element_text(size = 8),
+          legend.position = "bottom")+
+    guides(fill = guide_legend(reverse=F))+
+    scale_color_viridis_d(option="H",
+                          name="")+
+  geom_hline(yintercept = 25, 
+             col="black")+
+    ylab("Tallas Medias (mm)") +
+    xlab("") +
+  ylim(5,35)+
+    ggtitle("Tallas medias coquina por año")
+pmeaimp
+```
+
+comercial por mes y año
+
+
+```{r, fig.align="center", warning=FALSE}
+pmecom <- ggplot(sizemean %>% 
+                   filter(Sampling.point %in% c(2, 4, 6, "M"),
+                          rastro != "COMERCIAL") %>% 
+                   drop_na(avg, Sampling.point), 
+                 aes(as.numeric(MES), avg)) +  # Cambiar a as.numeric(MES) para geom_smooth
+  geom_point(aes(x = as.factor(MES)),  # Dejar as.factor(MES) solo en geom_point
+             show.legend = TRUE,
+             alpha = 0.7) + 
+  geom_smooth(method = "lm") +
+  theme_few() + 
+  facet_grid(Sampling.point  ~ ANO) +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1, 
+                                   vjust = 0.5, 
+                                   size = 8), 
+        axis.text.y = element_text(size = 8), 
+        legend.position = "bottom") +
+  guides(fill = guide_legend(reverse = FALSE)) +
+  geom_hline(yintercept = 25, col = "black") +
+  ylab("Tallas Medias (mm)") + 
+  xlab("") + 
+  ylim(5, 35) + 
+  ggtitle("POBLACIONAL")
+
+pmecom
+
+```
+comercial por mes y año
+
+
+```{r, fig.align="center", warning=FALSE}
+pmepob <- ggplot(sizemean %>% 
+                   filter(Sampling.point %in% c(2, 4, 6, "M"),
+                          rastro != "POBLACIONAL") %>% 
+                   drop_na(avg, Sampling.point), 
+                 aes(as.numeric(MES), avg)) +  # Cambiar a as.numeric(MES) para geom_smooth
+  geom_point(aes(x = as.factor(MES)),  # Dejar as.factor(MES) solo en geom_point
+             show.legend = TRUE,
+             alpha = 0.7) + 
+  geom_smooth(method = "lm", col="red") +
+  theme_few() + 
+  facet_grid(Sampling.point  ~ ANO) +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1, 
+                                   vjust = 0.5, 
+                                   size = 8), 
+        axis.text.y = element_text(size = 8), 
+        legend.position = "bottom") +
+  guides(fill = guide_legend(reverse = FALSE)) +
+  geom_hline(yintercept = 25, col = "black") +
+  ylab("Tallas Medias (mm)") + 
+  xlab("") + 
+  ylim(5, 35) + 
+  ggtitle("COMERCIAL")
+
+pmepob
+
+```
+
+
 
 ```{r, fig.align="center", warning=FALSE}
 ppla <- ggplot(sizemean %>%

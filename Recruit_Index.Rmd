@@ -350,8 +350,8 @@ plotD15 <- ggplot(D15n2 %>%
                   group=as.factor(Sampling.point)))+
   geom_point()+
   geom_smooth(method="loess", 
-              se=T)+
-  facet_wrap(.~ANO, ncol=2)+
+              se=F)+
+  facet_wrap(.~ANO, ncol=4)+
   scale_color_viridis_d(option="H",
                         name="Sampling point")+
   scale_x_continuous(breaks = seq(from = 1, 
@@ -363,7 +363,8 @@ plotD15 <- ggplot(D15n2 %>%
              col="red",
              linetype=2)+
   theme(axis.text.x = element_text(angle = 90, 
-                                   hjust = 1))+
+                                   hjust = 1),
+        legend.position = "bottom")+
   labs(y="Indice de Reclutamiemto",
        x="MES")+
   ylim(0,40)
@@ -404,7 +405,8 @@ totalD15 <- ggplot(D15n2 %>%
                     summarise(MEAND15 =mean(D15), na.rm=TRUE), 
                   aes(MES,MEAND15))+
   geom_point()+
-  facet_wrap(.~ANO, ncol=2)+
+  geom_line()+
+  facet_wrap(.~ANO, ncol=4)+
   scale_color_viridis_d(option="H",
                         name="Sampling point")+
   scale_x_continuous(breaks = seq(from = 1, 
