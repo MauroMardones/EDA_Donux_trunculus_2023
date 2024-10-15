@@ -117,6 +117,19 @@ join_le_de <- right_join(denspobtot2,
 
 
 
+#- CPUE dato promedio, es decir, sin desglosar por punto de muestreo (media de 2, 4 y 6; sin M) y 
+#además del número de mes/año, mete columna con la fecha completa formato (ano;mes;día). 
+#Si me puedes pasar los datos y una gráfica, genial.
+
+CPUE_1724 <- read_csv("CPUE_1724.csv")
+
+# ahora agrupo por fecha y sin sampling point
+
+rend1724gru <- CPUE_1724 %>% 
+  group_by(Date) %>% 
+  summarise(MEAN=mean(Rend),
+            MEAN2 =mean(Rend1))
+#write.csv(rend1724gru, "CPUE_1724_gru.csv")
 
 
 

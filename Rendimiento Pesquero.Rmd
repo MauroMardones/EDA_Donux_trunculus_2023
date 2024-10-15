@@ -182,7 +182,8 @@ denscom1720g <- denscom1720tot %>%
            MES,
            Beach,
            mariscador,
-           Sampling.point) %>% 
+           Sampling.point,
+           Date) %>% 
   summarise(Rend1m =mean(Rend1, na.rm = TRUE),
             Rendm =mean(Rend, na.rm = TRUE))
   
@@ -429,6 +430,7 @@ names(denscomtot) # 2021-2023
 denscom1720totf <- denscom1720g %>% 
   select( "Sampling.point" ,
           "mariscador"  ,
+          "Date",
           "MES",
           "ANO",
           "Rendm",
@@ -438,6 +440,7 @@ denscom1720totf <- denscom1720g %>%
 denscomtotf <- denscomtot %>% 
   select( "ANO",
           "MES",
+          "Date",
           "Sampling.point",
           "mariscador",
           "Rend",
@@ -447,6 +450,9 @@ denscomtotf <- denscomtot %>%
 rend1723 <- rbind(denscom1720totf,
                   denscomtotf)
 
+# guardar datos para pedida especifica de MD
+#write.csv(rend1723, "CPUE_1724.csv")
+
 ```
 
 # Graficas
@@ -454,24 +460,27 @@ rend1723 <- rbind(denscom1720totf,
 simple y global
 
 
-```{r warning=FALSE, message=FALSE,  fig.width=5}
+```{r warning=FALSE, message=FALSE}
 grurend1723 <- rend1723 %>% 
-  group_by(ANO, MES) %>% 
-  summarise(MEAN =mean(Rend1))
+  group_by(MES,ANO) %>% 
+  summarise(MEAN =mean(Rend1, na.rm = T))
 
 rendgru <- ggplot(grurend1723 %>% 
                     filter(ANO>2017), 
-               aes(ANO,MEAN))+
+               aes(MES,MEAN))+
     geom_point(show.legend = T,
                alpha=.7) +
-    geom_smooth(method= "loess")+
+    geom_smooth(method= "lm",
+                se=F)+
     theme_few()+ 
+  facet_grid(.~ANO)+
     theme(axis.text.x = element_text(angle = 90,
                                      hjust = 1,
                                      vjust = 0.5,
                                      size = 8),
           axis.text.y = element_text(size = 12))+
     guides(fill = guide_legend(reverse=F))+
+  #scale_x_continuous(breaks = seq(from = 2017, to = 2024, by = 1))+
     scale_color_viridis_d(option= "H", 
                           name="Sampling Point")+
      geom_hline(yintercept=7.6, col="black")+

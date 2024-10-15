@@ -690,14 +690,14 @@ plot_D15_17_24_2
 
 ```{r warning=FALSE}
 plotD15all <- ggplot(D15_17_24 %>% 
-                    filter(Sampling.point %in% c(2,4,6)), 
-                  aes(MES,D15,
-                      color=as.factor(Sampling.point),
-                  group=as.factor(Sampling.point)))+
+                    filter(Sampling.point %in% c(2,4,6)) %>% 
+                      group_by(ANO,MES) %>% 
+                      summarise(MEAN=mean(D15)), 
+                  aes(MES,MEAN))+
   geom_point()+
   geom_smooth(method="loess", 
               se=F)+
-  facet_wrap(.~ANO, ncol=4)+
+  facet_wrap(.~ANO, ncol=8)+
   scale_color_viridis_d(option="H",
                         name="Sampling point")+
   scale_x_continuous(breaks = seq(from = 1, 
@@ -716,6 +716,32 @@ plotD15all <- ggplot(D15_17_24 %>%
   ylim(0,40)
 plotD15all
 ```
+ahora densidad
+
+
+```{r warning=FALSE}
+plotDall <- ggplot(D15_17_24 %>% 
+                    filter(Sampling.point %in% c(2,4,6)) %>% 
+                      group_by(ANO,MES) %>% 
+                      summarise(MEAND=mean(Densidad)), 
+                  aes(MES,MEAND))+
+  geom_point()+
+  geom_smooth(method="loess", 
+              se=F)+
+  facet_wrap(.~ANO, ncol=8)+
+  scale_x_continuous(breaks = seq(from = 1, 
+                                  to = 12, 
+                                  by = 1,
+                                  size=2))+
+  theme_few()+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1),
+        legend.position = "bottom")+
+  labs(y="Densidad (ind/m2)",
+       x="MES")
+plotDall
+```
+
 
 
 # OTRAS FORMAS DE CALCULO DEL INDICE DE RECLUTAMIENTO
