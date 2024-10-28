@@ -458,37 +458,74 @@ rend1723 <- rbind(denscom1720totf,
 # Graficas
 
 simple y global
-
-
-```{r warning=FALSE, message=FALSE}
+```{r}
 grurend1723 <- rend1723 %>% 
-  group_by(MES,ANO) %>% 
+  group_by(MES, ANO) %>% 
   summarise(MEAN =mean(Rend1, na.rm = T))
 
-rendgru <- ggplot(grurend1723 %>% 
-                    filter(ANO>2017), 
-               aes(MES,MEAN))+
-    geom_point(show.legend = T,
-               alpha=.7) +
-    geom_smooth(method= "lm",
-                se=F)+
-    theme_few()+ 
-  facet_grid(.~ANO)+
-    theme(axis.text.x = element_text(angle = 90,
-                                     hjust = 1,
-                                     vjust = 0.5,
-                                     size = 8),
-          axis.text.y = element_text(size = 12))+
-    guides(fill = guide_legend(reverse=F))+
-  #scale_x_continuous(breaks = seq(from = 2017, to = 2024, by = 1))+
-    scale_color_viridis_d(option= "H", 
-                          name="Sampling Point")+
-     geom_hline(yintercept=7.6, col="black")+
-  geom_hline(yintercept=3.5, col=2)+
+rendgru <- ggplot(grurend1723 , 
+               aes(x = as.double(MES), y = MEAN)) +
+    geom_point(show.legend = TRUE, alpha = .7) +
+    geom_smooth(method = "loess", se = FALSE) +  # Cambia "lm" por "loess"
+    theme_few() + 
+    facet_grid(~ ANO) +
+    theme(
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 8),
+        axis.text.y = element_text(size = 12)
+    ) +
+    guides(fill = guide_legend(reverse = FALSE)) +
+    scale_color_viridis_d(option = "H", name = "Sampling Point") +
+    geom_hline(yintercept = 7.6, col = "black") +
+    geom_hline(yintercept = 3.5, col = 2) +
     ylab("CPUE (Kg/Hr)") +
     xlab("") +
-  ylim(0, 20)
+    ylim(0, 20)
+
 rendgru
+```
+
+Ahora un plot continuo
+
+```{r warning=FALSE, message=FALSE}
+
+grurend1723 <- rend1723 %>%
+  mutate(Fecha = make_date(ANO, as.integer(MES), 1)) %>%  # Primer día de cada mes
+  group_by(Fecha) %>%
+  summarise(
+    MEAN = mean(Rend1, na.rm = TRUE),
+    SE = sd(Rend1, na.rm = TRUE) / sqrt(n())  # Error estándar
+  )
+
+# Graficar utilizando la nueva columna de fecha en el eje X y agregar barras de error
+rendgru <- ggplot(grurend1723, 
+               aes(x = Fecha, y = MEAN)) +
+    geom_point(show.legend = TRUE, alpha = .7) +
+    geom_errorbar(aes(ymin = MEAN - SE, ymax = MEAN + SE), width = 0.2, color = "gray50") +  # Barras de error
+    geom_smooth(method = "lm", se = TRUE, 
+                level = 0.5, 
+                span = 0.3) + 
+    theme_few() + 
+    theme(
+        axis.text.x = element_text(angle = 90, hjust = 1, size = 8),
+        axis.text.y = element_text(size = 12),
+        legend.position = "bottom"
+    ) +
+    guides(fill = guide_legend(reverse = FALSE)) +
+    scale_color_viridis_d(option = "H", name = "Sampling Point") +
+    scale_x_date(date_labels = "%b %Y", date_breaks = "3 months") +
+    geom_hline(aes(yintercept = 7.6, color = "Nivel de Referencia (8 kg/ hr)"), 
+               linetype = "solid", size = 0.5) +
+    geom_hline(aes(yintercept = 3.5, color = "Promedio Serie Histórica"), 
+               linetype = "solid", size = 0.5) +
+    scale_color_manual(name = "",
+                       values = c("Nivel de Referencia (8 kg/ hr)" = "black", 
+                                  "Promedio Serie Histórica" = "red")) +
+    ylab("CPUE (Kg/Hr)") +
+    xlab("") +
+    ylim(0, 15)
+
+rendgru
+
 
 ```
 
