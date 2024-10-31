@@ -222,10 +222,12 @@ plotdens2124 <- ggplot(denspobtot2 %>%
                          filter(Categoria== "g") %>% 
                          group_by(ANO, Sampling.point),
                        aes(ANO, dens, group=ANO))+
-  scale_x_continuous(breaks = seq(from = 2020, 
+  scale_x_continuous(breaks = seq(from = 2021, 
                                   to = 2024, 
                                   by = 1))+
-  geom_boxplot()+
+  geom_violindot(scale = "width",
+                 dots_color = "red",
+                 dots_size = 8.5)+
   theme_few()+
    theme(axis.text.x = element_text(angle = 90, 
                                    hjust = 1))+
@@ -235,11 +237,13 @@ plotdens2124p <- ggplot(denspobtot2 %>%
                          filter(Categoria== "p") %>% 
                          group_by(ANO, Sampling.point),
                        aes(ANO, dens, group=ANO))+
-   scale_x_continuous(breaks = seq(from = 2020, 
+   scale_x_continuous(breaks = seq(from = 2021, 
                                   to = 2024, 
                                   by = 1))+
  
-  geom_boxplot()+
+  geom_violindot(scale = "width",
+                 dots_color = "red",
+                 dots_size = 8.5)+
   theme_few()+
    theme(axis.text.x = element_text(angle = 90, 
                                    hjust = 1))+
