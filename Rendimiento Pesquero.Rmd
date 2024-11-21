@@ -190,6 +190,9 @@ denscom1720g <- denscom1720tot %>%
   
 ```
 
+
+Rendiientos por M
+
 ```{r warning=FALSE, message=FALSE}
 rend1720 <- ggplot(denscom1720g, 
                aes(MES,Rend1m,

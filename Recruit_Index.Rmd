@@ -158,7 +158,6 @@ denspob2124f <- rbind(dens2021pobf,
 Separate `Date` column
 
 ```{r}
-
 denspob2124f <- denspob2124f %>%
   mutate(ANO = year(Date),
          MES = month(Date),
