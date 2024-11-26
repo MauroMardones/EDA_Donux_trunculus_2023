@@ -56,6 +56,7 @@ library(kableExtra)
 library(ggalt)
 library(psych)
 library(ggpubr)
+library(easystats)
 ```
 
 # CONTEXTO
