@@ -61,7 +61,7 @@ library(easystats)
 
 # CONTEXTO
 
-En este codigo, se establecen dos formas de estimar el indice de reclutamiento para coquina. El primero es la forma que se ha estado usando desde @Delgado2015. El segundo es una nueva propuesta basada en la prorporcionalidad de individuos basados en los muestreos poblacionales
+En este código, se establecen dos formas de estimar el indice de reclutamiento para coquina. El primero es la forma que se ha estado usando desde @Delgado2015. El segundo es una nueva propuesta basada en la prorporcionalidad de individuos basados en los muestreos poblacionales
 
 # INDICE DE RECLUTAMIENTO POBLACIONAL (`D15`)
 
