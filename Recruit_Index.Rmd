@@ -89,6 +89,10 @@ dens2024pob <- read_excel(here("Data",
                                "Posterior 2020", 
                                "Data_sample_FEMP_04_2024.xlsx"),
                        sheet = "Data_POBL")
+dens2025pob <- read_excel(here("Data",
+                               "Posterior 2020", 
+                               "Data_sample_FEMP_04_2025.xlsx"),
+                       sheet = "Data_POBL")
 ```
 
 
@@ -143,6 +147,9 @@ dens2023pobf <- dens2023pob %>%
 dens2024pobf <- dens2024pob %>% 
   select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
   rename(ID_codificado_punto=ID)
+dens2025pobf <- dens2025pob %>% 
+  select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
+  rename(ID_codificado_punto=ID)
 
 
 #compruebo si hay columnas iguales
@@ -150,21 +157,22 @@ nombres_iguales_pob <- identical(names(dens2021pobf),
                              names(dens2023pobf)) && identical(names(dens2021pobf), 
                                                                names(dens2022pobf))
 #junto la base
-denspob2124f <- rbind(dens2021pobf, 
+denspob2125f <- rbind(dens2021pobf, 
                       dens2022pobf, 
                       dens2023pobf,
-                      dens2024pobf)
+                      dens2024pobf,
+                      dens2025pobf)
 ```
 
 Separate `Date` column
 
 ```{r}
-denspob2124f <- denspob2124f %>%
+denspob2125f <- denspob2125f %>%
   mutate(ANO = year(Date),
          MES = month(Date),
          DIA = day(Date))
 
-table(denspob2124f$ANO, denspob2124f$MES)
+table(denspob2125f$ANO, denspob2125f$MES)
 ```
 
 
@@ -193,7 +201,7 @@ Ahora calculamos las siguientes variables para `POBLACIONAL`;
 pproceder a los calculos para calcular las variables poblacionales de interes, en este caso Densidad, Abundancia y Biomasa;
 
 ```{r}
-denspobtot <- denspob2124f %>% 
+denspobtot <- denspob2125f %>% 
   mutate(fps = SW /SWsub,
          CSW = CSWsub * fps,
          fpm = CSW / CSWsub,
@@ -218,7 +226,7 @@ denspobtot2
 saco un grafico de datos de densidad 
 
 ```{r}
-plotdens2124 <- ggplot(denspobtot2 %>% 
+plotdens2125 <- ggplot(denspobtot2 %>% 
                          filter(Categoria== "g") %>% 
                          group_by(ANO, Sampling.point),
                        aes(ANO, dens, group=ANO))+
@@ -233,7 +241,7 @@ plotdens2124 <- ggplot(denspobtot2 %>%
                                    hjust = 1))+
   labs(x="")
 
-plotdens2124p <- ggplot(denspobtot2 %>% 
+plotdens2125p <- ggplot(denspobtot2 %>% 
                          filter(Categoria== "p") %>% 
                          group_by(ANO, Sampling.point),
                        aes(ANO, dens, group=ANO))+
@@ -249,7 +257,7 @@ plotdens2124p <- ggplot(denspobtot2 %>%
                                    hjust = 1))+
   labs(x="")
 #
-ggarrange(plotdens2124p, plotdens2124, ncol=2)
+ggarrange(plotdens2125p, plotdens2125, ncol=2)
 ```
 
 
@@ -278,32 +286,38 @@ size2024 <- read_excel(here("Data",
                             "Data_size_Coquina_2024.xlsx"),  
                        sheet = "Coquina_Donax") %>% 
   select(-c(1, 2)) 
+size2025 <- read_excel(here("Data", 
+                            "Posterior 2020",
+                            "Data_size_Coquina_2025.xlsx"),  
+                       sheet = "Coquina_Donax") %>% 
+  select(-c(1, 2)) 
 ```
 
 
 Este aspecto se trabaja de forma de ponderación ad-hoc descrita en la
 Figure \@ref(fig:edaplot1)
 
+Now, we handling data 2021-2023. Same columns data 2017-2020
+
 ```{r}
-size_21_24 <- rbind(size2021,
+size_21_25 <- rbind(size2021,
                     size2022,
                     size2023,
-                    size2024)
+                    size2024,
+                    size2025)
 ```
 Separate `Date` column
 
 ```{r}
-size_21_24<- size_21_24 %>%
+size_21_25<- size_21_25 %>%
   mutate(
     DIA = day(Date),
     MES = month(Date),
     ANO = year(Date)
   )
-unique(size_21_24$rastro)
+unique(size_21_25$rastro)
 
-glimpse(size_21_24)
-table(size_21_24$ANO, size_21_24$MES)
-size_21_24
+table(size_21_25$ANO, size_21_25$rastro)
 ```
 ## Calculo D15
 
@@ -312,7 +326,7 @@ Ahora calculo la cantidad de individuos bajo los 15 mm. Si bien hemos visualizad
 Primero calculo en n de ind medidos y luego junto con base que tiene medida del area `track_m`, que es una variable para estimar `D15` q es en función del área, de acuerdo a lo comentado por MD.
 
 ```{r}
-D15n <- size_21_24 %>% 
+D15n <- size_21_25 %>% 
   group_by(ANO, 
            MES, 
            Sampling.point, 
@@ -355,7 +369,7 @@ plotD15 <- ggplot(D15n2 %>%
   geom_point()+
   geom_smooth(method="loess", 
               se=F)+
-  facet_wrap(.~ANO, ncol=4)+
+  facet_wrap(.~ANO, ncol=5)+
   scale_color_viridis_d(option="H",
                         name="Sampling point")+
   scale_x_continuous(breaks = seq(from = 1, 
@@ -813,25 +827,26 @@ D15plot
 landpop <- ggplot(D15 %>% 
                     drop_na(d15, Sampling.point)) +
   geom_lollipop(aes(y=d15, 
-                  x=Sampling.point,
-                  colour=Sampling.point), 
-              size=0.9)+
+                  x=MES), 
+              size=0.5)+
   scale_colour_viridis_d(option = "C",
                        name= "Punto")+
   geom_hline(yintercept = 8,
              col="red",
              linetype=2)+
-  theme_bw() +
+  theme_few() +
   theme(
     legend.position = "none",
     panel.border = element_blank(),
     panel.spacing = unit(0.1, "lines"),
     strip.text.x = element_text(size = 6),
-    axis.text.x = element_text(size = 5),
+    axis.text.x = element_text(size = 5,
+                               angle = 90, 
+                               hjust = 1),
     axis.text.y = element_text(size = 5)) +
   xlab("") +
   ylab("D15") +
-  facet_grid(ANO~MES)
+  facet_grid(ANO~Sampling.point)
 landpop
 ```
 

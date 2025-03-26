@@ -501,7 +501,7 @@ unique(size_17_20$ANO)
 a qui tengo diferencias con los nombres. Verificar cuando se junten todos los años
 
 
-## Data 2020-2024
+## Data 2021-2025
 
 ```{r}
 size2021 <- read_excel(here("Data", 
@@ -525,6 +525,12 @@ size2024 <- read_excel(here("Data",
                             "Data_size_Coquina_2024.xlsx"),  
                        sheet = "Coquina_Donax") %>% 
   select(-c(1, 2)) 
+
+size2025 <- read_excel(here("Data", 
+                            "Posterior 2020",
+                            "Data_size_Coquina_2025.xlsx"),  
+                       sheet = "Coquina_Donax") %>% 
+  select(-c(1, 2)) 
 ```
 
 
@@ -536,23 +542,24 @@ Figure \@ref(fig:edaplot1)
 Now, we handling data 2021-2023. Same columns data 2017-2020
 
 ```{r}
-size_21_24 <- rbind(size2021,
+size_21_25 <- rbind(size2021,
                     size2022,
                     size2023,
-                    size2024)
+                    size2024,
+                    size2025)
 ```
 Separate `Date` column
 
 ```{r}
-size_21_24<- size_21_24 %>%
+size_21_25<- size_21_25 %>%
   mutate(
     DIA = day(Date),
     MES = month(Date),
     ANO = year(Date)
   )
-unique(size_21_24$rastro)
+unique(size_21_25$rastro)
 
-table(size_21_24$ANO, size_21_24$MES)
+table(size_21_25$ANO, size_21_25$rastro)
 ```
 
 ## Unir los datos desde el 2013 al 2023
@@ -563,7 +570,7 @@ sizeall <- rbind(size2013,
                  size14_15,
                  size2016,
                  size_17_20,
-                 size_21_24) 
+                 size_21_25) 
 ```
 
 check dimension. ahora la base completa tiente 21 mil registros
@@ -621,9 +628,9 @@ table(sizeall2$ANO, sizeall2$MES)
 ## Save data
 
 ```{r eval=FALSE}
-saveRDS(sizeall2, "tallas_13_24.RDS")
+saveRDS(sizeall2, "tallas_13_25.RDS")
 #write_csv(sizeall2, "tallas_13_24.csv")
-sizeall2 <- readRDS("tallas_13_24.RDS")
+sizeall2 <- readRDS("tallas_13_25.RDS")
 ```
 
 
@@ -644,7 +651,7 @@ nall <- ggplot(sizeall2 %>%
    #                     position = "points_sina",
    #                    scale = 1.5,
    #                    alpha=0.7)+
-  facet_wrap(.~ANO, ncol=6) +
+  facet_wrap(.~ANO, ncol=7) +
   geom_vline(xintercept = 10.8, color = "red")+
   scale_fill_viridis_d(option="B",
                        name="Gear")+

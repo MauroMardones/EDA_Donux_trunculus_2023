@@ -85,8 +85,6 @@ Dens1415com <- read_excel(here("Data",
                             "Datos tallas 2014_2015",
                             "Datos totales",
                             "ABUNDANCIAS_Com_2014_2015.xlsx"))
-
-
 ```
 ```{r}
 names(Dens1415com)
@@ -1086,6 +1084,7 @@ pairs.panels(baserend1 %>%
              hist.col = 4,       # Color de los histogramas
              stars = TRUE)
 ```
+
 ```{r fig.width=5}
 plot_model(mod2)+
   theme_few()
