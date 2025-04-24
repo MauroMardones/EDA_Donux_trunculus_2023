@@ -761,6 +761,146 @@ plotDall <- ggplot(D15_17_24 %>%
 plotDall
 ```
 
+## Relacion SR
+
+```{r}
+# Cargar librerías
+library(ggplot2)
+library(dplyr)
+library(ggrepel)
+
+# 1. Agrupar y promediar por año
+promedios <- D15_17_24 %>%
+  group_by(ANO) %>%
+  summarise(
+    mean_D15 = mean(D15, na.rm = TRUE),
+    mean_Densidad = mean(Densidad, na.rm = TRUE)
+  ) %>%
+  drop_na()
+
+# 2. Ajuste de modelos de stock-recluta
+# Beverton & Holt
+modelo_BH <- nls(mean_D15 ~ (a * mean_Densidad) / (b + mean_Densidad),
+                 data = promedios,
+                 start = list(a = max(promedios$mean_D15), b = mean(promedios$mean_Densidad)))
+
+# Ricker
+modelo_Ricker <- nls(mean_D15 ~ a * mean_Densidad * exp(-b * mean_Densidad),
+                     data = promedios,
+                     start = list(a = max(promedios$mean_D15)/max(promedios$mean_Densidad), b = 0.01))
+
+# 3. Parámetros y resumen de los modelos
+cat("----- Beverton & Holt -----\n")
+summary(modelo_BH)
+
+cat("\n----- Ricker -----\n")
+summary(modelo_Ricker)
+
+# 4. Calcular residuales
+promedios$Residuals_BH <- residuals(modelo_BH)
+promedios$Residuals_Ricker <- residuals(modelo_Ricker)
+
+# 5. Crear data.frame para predicciones
+# Incluyendo 0 para partir desde el origen
+newdata <- data.frame(mean_Densidad = seq(0, max(promedios$mean_Densidad), length.out = 100))
+newdata$BH <- predict(modelo_BH, newdata = newdata)
+newdata$Ricker <- predict(modelo_Ricker, newdata = newdata)
+
+# 6. Forzar el 0,0
+newdata$BH[newdata$mean_Densidad == 0] <- 0
+newdata$Ricker[newdata$mean_Densidad == 0] <- 0
+
+# 7. Graficar los ajustes
+ggplot(promedios, aes(x = mean_Densidad, y = mean_D15)) +
+  geom_point(size = 3) +
+  geom_text_repel(aes(label = ANO), size = 4, max.overlaps = 20) +
+  geom_line(data = newdata, aes(x = mean_Densidad, y = BH), color = "blue", size = 1.2, linetype = "solid") +
+  geom_line(data = newdata, aes(x = mean_Densidad, y = Ricker), color = "red", size = 1.2, linetype = "dashed") +
+  labs(x = "Densidad promedio anual (Stock reproductor)",
+       y = "D15 promedio anual (Reclutamiento o proxy)",
+       title = "Relación Stock-Recluta en Donax trunculus",
+       subtitle = "Curvas de Beverton & Holt (azul) y Ricker (rojo), forzadas al origen",
+       caption = "Cada punto corresponde a un año") +
+  theme_minimal(base_size = 14)
+
+```
+```{r}
+# Cargar librerías
+library(ggplot2)
+library(dplyr)
+library(ggrepel)
+
+# 1. Usar todos los datos, sin promediar
+# Filtrar NA en D15 y Densidad
+data_clean <- D15_17_24 %>%
+  filter(!is.na(D15), !is.na(Densidad))
+
+# 2. Ajuste de modelos de stock-recluta
+# Beverton & Holt
+modelo_BH <- nls(D15 ~ (a * Densidad) / (b + Densidad),
+                 data = data_clean,
+                 start = list(a = max(data_clean$D15), b = mean(data_clean$Densidad)))
+
+# Ricker
+modelo_Ricker <- nls(D15 ~ a * Densidad * exp(-b * Densidad),
+                     data = data_clean,
+                     start = list(a = max(data_clean$D15)/max(data_clean$Densidad), b = 0.01))
+
+# 3. Parámetros y resumen de los modelos
+cat("----- Beverton & Holt -----\n")
+summary(modelo_BH)
+
+cat("\n----- Ricker -----\n")
+summary(modelo_Ricker)
+
+# 4. Calcular residuales
+data_clean$Residuals_BH <- residuals(modelo_BH)
+data_clean$Residuals_Ricker <- residuals(modelo_Ricker)
+
+# 5. Crear data.frame para predicciones
+# Incluyendo 0 para partir desde el origen
+newdata <- data.frame(Densidad = seq(0, max(data_clean$Densidad), length.out = 100))
+newdata$BH <- predict(modelo_BH, newdata = newdata)
+newdata$Ricker <- predict(modelo_Ricker, newdata = newdata)
+
+# 6. Forzar el 0,0
+newdata$BH[newdata$Densidad == 0] <- 0
+newdata$Ricker[newdata$Densidad == 0] <- 0
+
+# 7. Graficar los ajustes
+ggplot(data_clean, aes(x = Densidad, y = D15)) +
+  geom_point(size = 3) +
+  geom_text_repel(aes(label = ANO), size = 4, max.overlaps = 20) +
+  geom_line(data = newdata, aes(x = Densidad, y = BH), color = "blue", size = 1.2, linetype = "solid") +
+  geom_line(data = newdata, aes(x = Densidad, y = Ricker), color = "red", size = 1.2, linetype = "dashed") +
+  facet_wrap(.~Sampling.point)+
+  labs(x = "Densidad (Stock reproductor)",
+       y = "D15 (Reclutamiento o proxy)",
+       title = "Relación Stock-Recluta en Donax trunculus",
+       subtitle = "Curvas de Beverton & Holt (azul) y Ricker (rojo), forzadas al origen",
+       caption = "Cada punto corresponde a un dato individual por año") +
+  theme_minimal(base_size = 14)
+
+# 8. Opcional: Graficar residuales
+# Beverton & Holt Residuales
+ggplot(data_clean, aes(x = Densidad, y = Residuals_BH)) +
+  geom_point(size = 3) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(x = "Densidad (Stock reproductor)",
+       y = "Residuals (Beverton & Holt)",
+       title = "Residuos del ajuste Beverton & Holt") +
+  theme_minimal(base_size = 14)
+
+# Ricker Residuales
+ggplot(data_clean, aes(x = Densidad, y = Residuals_Ricker)) +
+  geom_point(size = 3) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(x = "Densidad (Stock reproductor)",
+       y = "Residuals (Ricker)",
+       title = "Residuos del ajuste Ricker") +
+  theme_minimal(base_size = 14)
+
+```
 
 
 # OTRAS FORMAS DE CALCULO DEL INDICE DE RECLUTAMIENTO
