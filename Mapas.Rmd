@@ -135,6 +135,38 @@ mas <- ggplot() +
   ylim(36.6, 37.4)
 mas
 ```
+## Mapa ADIVINA proy
+
+```{r warning=FALSE}
+masadi <- ggplot() +
+  geom_sf(data = costa1, fill="white") +
+  geom_sf(data = portug1, fill="white") +
+  geom_sf(data = resepe1, aes(fill=Zona),
+          alpha=0.1) +
+  # geom_sf(data = fisicomar1, alpha=0.1,
+  #         linetype=5) +
+  scale_fill_viridis_d(option="H",
+                       alpha=.5)+
+  coord_sf() +
+  xlab(expression(paste(Longitude^o,~'O'))) +
+  ylab(expression(paste(Latitude^o,~'S')))+
+   ggrepel::geom_label_repel(
+    data = resepe1,
+    aes(label = Zona, geometry = geometry),
+    stat = "sf_coordinates",
+    min.segment.length = ,
+    colour = "black",
+    size = 2,
+    segment.colour = "black",
+    box.padding = 0.7,
+    max.overlaps = 50) +
+  theme_few()+
+  theme(legend.position = "none")+
+  xlim(-7.0,-6)+
+  ylim(36.6, 37.2)
+masadi
+```
+
 
 
 ## Agregar Data Frame con Puntos de Muestreo
@@ -190,7 +222,7 @@ europe_map <- map_data("world",
                                   "portugal"))
 
 # Visualiza el mapa de Europa
-ggplot() +
+eu <- ggplot() +
   geom_polygon(data = europe_map, 
                aes(x = long, 
                    y = lat, 
