@@ -212,6 +212,7 @@ maspu <- ggplot() +
   xlim(-7.6,-6.1)+
   ylim(36.6, 37.4)
 maspu
+
 ```
 
 Mapa test
