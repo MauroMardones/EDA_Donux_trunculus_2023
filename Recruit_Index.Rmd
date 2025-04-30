@@ -325,6 +325,9 @@ Ahora calculo la cantidad de individuos bajo los 15 mm. Si bien hemos visualizad
 
 Primero calculo en n de ind medidos y luego junto con base que tiene medida del area `track_m`, que es una variable para estimar `D15` q es en función del área, de acuerdo a lo comentado por MD.
 
+A traves de la ponderación del `D15`, hago un retrocalculo a traves de los ponderadores `fps`, `fpn`y `fpm` para luego extrapolar al tamaño del área.
+
+
 ```{r}
 D15n <- size_21_25 %>% 
   group_by(ANO, 
@@ -333,39 +336,34 @@ D15n <- size_21_25 %>%
            ID_codificado_muestreo
            ) %>% 
   summarize(
-    total = sum(sizeE < 15, na.rm = TRUE),
+    total_menor_15 = sum(sizeE < 10, na.rm = TRUE),
+    total_mayor_igual_15 = sum(sizeE >= 10, na.rm = TRUE),
     .groups = "drop")
 
 D15n$Sampling.point <- as.double(D15n$Sampling.point)
 
 D15n1 <- right_join(denspobtot2, D15n)
-```
-
-A traves de la ponderación del `D15`, hago un retrocalculo a traves de los ponderadores `fps`, `fpn`y `fpm` para luego extrapolar al tamaño del área.
-
-
-```{r eval=FALSE}
-# formula para el informe de Abril 24
 D15n2 <- D15n1 %>% 
-  filter(!is.na(fpn) &
-           !is.na(fpm) & 
-           !is.na(fps) ) %>% 
-  group_by(ANO, MES, Sampling.point) %>% 
-  mutate(ponderar = ifelse(fpn, fpn, 1) *
-                                   ifelse(fpm, fpm, 1) *
-                                   ifelse(fps, fps, 1)) %>%
-  # Multiplicar por m_track * 0.045
-  mutate(D15 = ponderar * (m_track * 0.045), na.rm = TRUE)
+  filter(!is.na(fpn) & !is.na(fpm) & !is.na(fps)) %>%  
+  mutate(
+    # Factor de ponderación combinado (fpn * fpm * fps)
+    ponderacion = fpn * fpm * fps,
+    # Área barrida (m_track * ancho_boca_rastro)
+    area_barrida = m_track * 0.045,  # Ajusta este valor si es 0.445 en tu caso
+    # Densidad de individuos <15 mm (D15)
+    D15 = (total_menor_15 * ponderacion) / area_barrida,
+    na.rm = TRUE,
+    # Densidad de individuos >=15 mm (D15_mayor)
+    D15_mayor = (total_mayor_igual_15 * ponderacion) / area_barrida,
+    na.rm = TRUE
+  )
 ```
-
 Ploteo columnas por año y Sampling point 2, 4 y 6
 
 ```{r warning=FALSE}
 plotD15 <- ggplot(D15n2 %>% 
                     filter(Sampling.point %in% c(2,4,6)), 
-                  aes(MES,D15,
-                      color=as.factor(Sampling.point),
-                  group=as.factor(Sampling.point)))+
+                  aes(MES,D15))+
   geom_point()+
   geom_smooth(method="loess", 
               se=F)+
@@ -575,24 +573,12 @@ D151720 <- D151720 %>%
 ```
 
 
-```{r warning=FALSE}
-duda <- ggplot(D151720 %>% 
-                 drop_na(D15))+
-  geom_histogram(aes(x=D15),
-                 bins=50)+
-  facet_wrap(.~ANO)+
-    scale_x_continuous(breaks = seq(from = 0, 
-                                  to = 90, 
-                                  by = 5,
-                                  size=2))+
-  theme_few()
-duda
-```
 
 Ahora lo veo como un plot similar al de los años 2021-2024
 
 ```{r warning = FALSE}
-D15_17_20 <- ggplot(D151720 , 
+D15_17_20 <- ggplot(D151720  %>% 
+                    filter(Sampling.point %in% c(2,4,6)), 
                   aes(MES,D15, 
                   color=as.factor(Sampling.point)))+
   geom_point()+
@@ -614,7 +600,6 @@ D15_17_20 <- ggplot(D151720 ,
        x="MES")
 D15_17_20
 ```
-
 
 
 Tabla con los datos del año para el informe;
@@ -640,7 +625,8 @@ names(D15_17_20)
 
 head(D15n2)
 D15_21_24 <- D15n2 %>% 
-  select(c(1, 3, 46, 49, 32, 31, 30)) %>% 
+   ungroup() %>%  
+  select(c(1, 3, 46, 51, 32, 31, 30)) %>% 
   rename(Densidad = dens)
 names(D15_21_24)
 ```
@@ -649,7 +635,8 @@ unir bases
 ```{r}
 D15_17_24 <- rbind(D15_17_20,
                    D15_21_24)
-write_csv(D15_17_24, "D15_17_24.csv")
+#write_csv(D15_17_24, "D15_17_24.csv")
+#save(D15_21_24, D15n2, file = "recruit_data.RData") Data Recruit Paper
 ```
 Ambos graficos (2017-2020 y 2021.2024) para comparar metodologías. Estas no tienen os mismos puntos muestreados
 
@@ -681,59 +668,42 @@ juntos
 
 
 ```{r warning=FALSE}
-plot_D15_17_24_2 <- ggplot(D15_17_24 , 
-                  aes(MES,D15, 
-                  colour=as.factor(Sampling.point)))+
-  geom_point()+
-  geom_smooth(method = "lm",
-              se=F)+
-  facet_wrap(~ANO,
-             ncol=4)+
-  scale_color_viridis_d(name="Sampling Points")+
-  theme_few()+
-  geom_hline(yintercept = 8,
-             col="red",
-             linetype=2)+
-  theme(axis.text.x = element_text(angle = 90, 
-                                   hjust = 1),
-        legend.position = "bottom")+
-  scale_x_continuous(breaks = seq(from = 1, 
-                                  to = 12, 
-                                  by = 1,
-                                  size=2))+
-  ylim(0,50)+
-  labs(y="Indice de Reclutamiemto D15",
-       x="MES")
-plot_D15_17_24_2
-```
-
-```{r warning=FALSE}
 plotD15all <- ggplot(D15_17_24 %>% 
                     filter(Sampling.point %in% c(2,4,6)) %>% 
-                      group_by(ANO,MES) %>% 
-                      summarise(MEAN=mean(D15)), 
-                  aes(MES,MEAN))+
-  geom_point()+
-  geom_smooth(method="loess", 
-              se=F)+
-  facet_wrap(.~ANO, ncol=8)+
-  scale_color_viridis_d(option="H",
-                        name="Sampling point")+
-  scale_x_continuous(breaks = seq(from = 1, 
-                                  to = 12, 
-                                  by = 1,
-                                  size=2))+
-  theme_few()+
-  geom_hline(yintercept = 8,
-             col="red",
-             linetype=2)+
-  theme(axis.text.x = element_text(angle = 90, 
-                                   hjust = 1),
-        legend.position = "bottom")+
-  labs(y="Indice de Reclutamiemto D15",
-       x="MES")+
-  ylim(0,40)
-plotD15all
+                    group_by(ANO, MES) %>% 
+                    summarise(MEAN = mean(D15), na.rm=TRUE,
+                             SD = sd(D15), na.rm =TRUE),  # Calcula la desviación estándar
+                  aes(x = MES, y = MEAN)) +
+  
+  # Puntos y línea suavizada
+  geom_point(color="blue") +
+  geom_smooth(method = "loess", se = FALSE) +
+  
+  # Barras de error para la desviación estándar
+  geom_errorbar(aes(ymin = MEAN - SD, 
+                ymax = MEAN + SD),
+              width = 0.2, 
+              color = "blue") +
+  
+  # Facetas y escalas
+  facet_wrap(. ~ ANO, ncol = 9) +
+   scale_x_continuous(
+    breaks = seq(1, 12, by = 2),  # Secuencia de 1 a 12 en pasos de 2
+    labels = month.abb[seq(1, 12, by = 2)]  # Etiquetas correspondientes
+  ) +
+  scale_color_viridis_d(option = "H", name = "Sampling point") +
+  
+  # Línea de referencia y temas
+  geom_hline(yintercept = 8, col = "red", linetype = 2) +
+  theme_few() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.position = "bottom") +
+  
+  # Etiquetas
+  labs(y = "Recruit index (ind/m2) ± DE",
+       x = "") +
+  ylim(0, 40)
+
 ```
 ahora densidad
 
@@ -742,164 +712,35 @@ ahora densidad
 plotDall <- ggplot(D15_17_24 %>% 
                     filter(Sampling.point %in% c(2,4,6)) %>% 
                       group_by(ANO,MES) %>% 
-                      summarise(MEAND=mean(Densidad)), 
-                  aes(MES,MEAND))+
-  geom_point()+
+                      summarise(MEAND=mean(Densidad), na.rm=TRUE,
+                             SDd = sd(Densidad), na.rm =TRUE),  # Calcula la desviación estándar
+                  aes(x = MES, y = MEAND)) +
+  geom_point(color="black")+
   geom_smooth(method="loess", 
-              se=F)+
-  facet_wrap(.~ANO, ncol=8)+
-  scale_x_continuous(breaks = seq(from = 1, 
-                                  to = 12, 
-                                  by = 1,
-                                  size=2))+
+              se=F,
+              color="black")+
+  facet_wrap(.~ANO, ncol=9)+
+   # Barras de error para la desviación estándar
+  geom_errorbar(aes(ymin = MEAND - SDd, 
+                ymax = MEAND + SDd),
+              width = 0.2, 
+              color = "gray50") +
+  scale_x_continuous(
+    breaks = seq(1, 12, by = 2),  # Secuencia de 1 a 12 en pasos de 2
+    labels = month.abb[seq(1, 12, by = 2)]  # Etiquetas correspondientes
+  ) +
   theme_few()+
   theme(axis.text.x = element_text(angle = 90, 
                                    hjust = 1),
         legend.position = "bottom")+
-  labs(y="Densidad (ind/m2)",
-       x="MES")
-plotDall
-```
+  labs(y="Total Density (ind/m2)",
+       x="")
 
-## Relacion SR
 
-```{r}
-# Cargar librerías
-library(ggplot2)
-library(dplyr)
-library(ggrepel)
 
-# 1. Agrupar y promediar por año
-promedios <- D15_17_24 %>%
-  group_by(ANO) %>%
-  summarise(
-    mean_D15 = mean(D15, na.rm = TRUE),
-    mean_Densidad = mean(Densidad, na.rm = TRUE)
-  ) %>%
-  drop_na()
-
-# 2. Ajuste de modelos de stock-recluta
-# Beverton & Holt
-modelo_BH <- nls(mean_D15 ~ (a * mean_Densidad) / (b + mean_Densidad),
-                 data = promedios,
-                 start = list(a = max(promedios$mean_D15), b = mean(promedios$mean_Densidad)))
-
-# Ricker
-modelo_Ricker <- nls(mean_D15 ~ a * mean_Densidad * exp(-b * mean_Densidad),
-                     data = promedios,
-                     start = list(a = max(promedios$mean_D15)/max(promedios$mean_Densidad), b = 0.01))
-
-# 3. Parámetros y resumen de los modelos
-cat("----- Beverton & Holt -----\n")
-summary(modelo_BH)
-
-cat("\n----- Ricker -----\n")
-summary(modelo_Ricker)
-
-# 4. Calcular residuales
-promedios$Residuals_BH <- residuals(modelo_BH)
-promedios$Residuals_Ricker <- residuals(modelo_Ricker)
-
-# 5. Crear data.frame para predicciones
-# Incluyendo 0 para partir desde el origen
-newdata <- data.frame(mean_Densidad = seq(0, max(promedios$mean_Densidad), length.out = 100))
-newdata$BH <- predict(modelo_BH, newdata = newdata)
-newdata$Ricker <- predict(modelo_Ricker, newdata = newdata)
-
-# 6. Forzar el 0,0
-newdata$BH[newdata$mean_Densidad == 0] <- 0
-newdata$Ricker[newdata$mean_Densidad == 0] <- 0
-
-# 7. Graficar los ajustes
-ggplot(promedios, aes(x = mean_Densidad, y = mean_D15)) +
-  geom_point(size = 3) +
-  geom_text_repel(aes(label = ANO), size = 4, max.overlaps = 20) +
-  geom_line(data = newdata, aes(x = mean_Densidad, y = BH), color = "blue", size = 1.2, linetype = "solid") +
-  geom_line(data = newdata, aes(x = mean_Densidad, y = Ricker), color = "red", size = 1.2, linetype = "dashed") +
-  labs(x = "Densidad promedio anual (Stock reproductor)",
-       y = "D15 promedio anual (Reclutamiento o proxy)",
-       title = "Relación Stock-Recluta en Donax trunculus",
-       subtitle = "Curvas de Beverton & Holt (azul) y Ricker (rojo), forzadas al origen",
-       caption = "Cada punto corresponde a un año") +
-  theme_minimal(base_size = 14)
-
-```
-```{r}
-# Cargar librerías
-library(ggplot2)
-library(dplyr)
-library(ggrepel)
-
-# 1. Usar todos los datos, sin promediar
-# Filtrar NA en D15 y Densidad
-data_clean <- D15_17_24 %>%
-  filter(!is.na(D15), !is.na(Densidad))
-
-# 2. Ajuste de modelos de stock-recluta
-# Beverton & Holt
-modelo_BH <- nls(D15 ~ (a * Densidad) / (b + Densidad),
-                 data = data_clean,
-                 start = list(a = max(data_clean$D15), b = mean(data_clean$Densidad)))
-
-# Ricker
-modelo_Ricker <- nls(D15 ~ a * Densidad * exp(-b * Densidad),
-                     data = data_clean,
-                     start = list(a = max(data_clean$D15)/max(data_clean$Densidad), b = 0.01))
-
-# 3. Parámetros y resumen de los modelos
-cat("----- Beverton & Holt -----\n")
-summary(modelo_BH)
-
-cat("\n----- Ricker -----\n")
-summary(modelo_Ricker)
-
-# 4. Calcular residuales
-data_clean$Residuals_BH <- residuals(modelo_BH)
-data_clean$Residuals_Ricker <- residuals(modelo_Ricker)
-
-# 5. Crear data.frame para predicciones
-# Incluyendo 0 para partir desde el origen
-newdata <- data.frame(Densidad = seq(0, max(data_clean$Densidad), length.out = 100))
-newdata$BH <- predict(modelo_BH, newdata = newdata)
-newdata$Ricker <- predict(modelo_Ricker, newdata = newdata)
-
-# 6. Forzar el 0,0
-newdata$BH[newdata$Densidad == 0] <- 0
-newdata$Ricker[newdata$Densidad == 0] <- 0
-
-# 7. Graficar los ajustes
-ggplot(data_clean, aes(x = Densidad, y = D15)) +
-  geom_point(size = 3) +
-  geom_text_repel(aes(label = ANO), size = 4, max.overlaps = 20) +
-  geom_line(data = newdata, aes(x = Densidad, y = BH), color = "blue", size = 1.2, linetype = "solid") +
-  geom_line(data = newdata, aes(x = Densidad, y = Ricker), color = "red", size = 1.2, linetype = "dashed") +
-  facet_wrap(.~Sampling.point)+
-  labs(x = "Densidad (Stock reproductor)",
-       y = "D15 (Reclutamiento o proxy)",
-       title = "Relación Stock-Recluta en Donax trunculus",
-       subtitle = "Curvas de Beverton & Holt (azul) y Ricker (rojo), forzadas al origen",
-       caption = "Cada punto corresponde a un dato individual por año") +
-  theme_minimal(base_size = 14)
-
-# 8. Opcional: Graficar residuales
-# Beverton & Holt Residuales
-ggplot(data_clean, aes(x = Densidad, y = Residuals_BH)) +
-  geom_point(size = 3) +
-  geom_hline(yintercept = 0, linetype = "dashed") +
-  labs(x = "Densidad (Stock reproductor)",
-       y = "Residuals (Beverton & Holt)",
-       title = "Residuos del ajuste Beverton & Holt") +
-  theme_minimal(base_size = 14)
-
-# Ricker Residuales
-ggplot(data_clean, aes(x = Densidad, y = Residuals_Ricker)) +
-  geom_point(size = 3) +
-  geom_hline(yintercept = 0, linetype = "dashed") +
-  labs(x = "Densidad (Stock reproductor)",
-       y = "Residuals (Ricker)",
-       title = "Residuos del ajuste Ricker") +
-  theme_minimal(base_size = 14)
-
+ggarrange(plotD15all,
+          plotDall,
+          ncol=1)
 ```
 
 
@@ -908,11 +749,15 @@ ggplot(data_clean, aes(x = Densidad, y = Residuals_Ricker)) +
 ## Porcentaje Individuos < 15 mm
 
 Este es una forma mas simple calculando la proporción de ind bajo  los 15 mm, en la zona y tiempo (AÑO y MES). Al ser proporcional, no importa el valor absoluto de individuos. Aca habría que identificar  un nivel de referencia asociado a este porcentaje es necesario para caultelar la sustentabilidad del reclutamiento.
-Cargo data total de las estructuiras de tallas 
+Cargo data total de las estructuiras de tallas.
+
+acá no pude hacer ponderacones a años previos al 2017 dado que no estan los datos necesarioos para replicar "Pondera1" y "Pondera2".
+
+
 
 ```{r}
-tallas13_24 <- readRDS("tallas_13_24.RDS")
-table(tallas13_24$ANO, tallas13_24$MES)
+tallas13_25 <- readRDS("tallas_13_25.RDS")
+table(tallas13_25$ANO, tallas13_25$MES)
 ```
 
 
@@ -922,7 +767,7 @@ Creo la función para estimar el `%`
 ```{r}
 FUN <- function(x)  (sum(x) / length(x)) * 100
 
-D151 <- tallas13_24 %>%
+D151 <- tallas13_25 %>%
   filter(rastro=="POBLACIONAL") %>% 
   group_by(ANO, MES, Sampling.point) %>%
   summarize(d15 = FUN(sizeE<15), rm.na=T,
@@ -931,7 +776,7 @@ D151 <- tallas13_24 %>%
 
 FUN <- function(x) (sum(x < 15, na.rm = TRUE) / length(x)) * 100
 
-D15 <- tallas13_24 %>%
+D15 <- tallas13_25 %>%
   filter(rastro == "POBLACIONAL") %>% 
   group_by(ANO, MES, Sampling.point) %>%
   summarize(
@@ -995,11 +840,11 @@ landpop
 Cálculo el índice
  
 ```{r}
-indice_reclutamiento <- tallas13_24 %>%
+indice_reclutamiento <- tallas13_25 %>%
   filter(sizeE<15,
          rastro=="POBLACIONAL") %>% 
   group_by(ANO, MES, Sampling.point) %>%
-  summarize(PROP = n() / nrow(tallas13_24)*100) %>% 
+  summarize(PROP = n() / nrow(tallas13_25)*100) %>% 
   mutate(PROPLOG =log(PROP))
 ```
  Veo los datos crudos  con la linea como media del cuantil de los datos

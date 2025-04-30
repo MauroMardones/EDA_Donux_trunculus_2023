@@ -1,0 +1,984 @@
+---
+title: "SRR D. trunculus"
+subtitle: "Datos Monitoreo poblacional FEMP_AND_04"
+author: "Mardones, M; Delgado, M"
+date:  "`r format(Sys.time(), '%d %B, %Y')`"
+bibliography: EDA_donux.bib
+csl: apa.csl
+link-citations: yes
+linkcolor: blue
+output: 
+  html_document:
+    fig-caption: yes
+    keep_md: true
+    toc: true
+    toc_deep: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    theme: cosmo
+    fontsize: 0.9em
+    linestretch: 1.7
+    html-math-method: katex
+    self-contained: true
+    code-tools: true
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup1}
+rm(list = ls())
+knitr::opts_chunk$set(echo = FALSE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.align = 'center',
+                      dev = 'jpeg',
+                      dpi = 300, 
+                      fig.align='center')
+#XQuartz is a mess, put this in your onload to default to cairo instead
+options(bitmapType = "cairo") 
+# (https://github.com/tidyverse/ggplot2/issues/2655)
+# Lo mapas se hacen mas rapido
+```
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggridges)
+library(readxl)
+library(here)
+library(lubridate)
+library(readr)
+library(ggthemes)
+library(hrbrthemes)
+library(ggalt)
+library(psych)
+library(ggpubr)
+library(easystats)
+library(ggrepel)
+library(ggpmisc)
+library(purrr)
+library(broom)
+library(flextable)
+library(minpack.lm)
+library(FSA)
+library(nlstools)
+library(plotrix)
+library(tidyverse)
+library(corrplot)
+library(Hmisc)
+```
+
+# Background
+
+
+The wedge clam (*Donax trunculus*), commonly known as coquina, is a valuable benthic invertebrate resource harvested along sandy beaches of the Gulf of Cádiz. This species plays a key ecological role as a filter feeder in coastal ecosystems and supports a small-scale artisanal fishery that is socioeconomically important for local communities. Given its high turnover rate, patchy distribution, and vulnerability to both environmental variability and fishing pressure, the sustainable management of *D. trunculus* requires a robust understanding of its population dynamics.
+
+In recent years, concerns have been raised regarding potential overexploitation and the lack of updated scientific assessments to inform harvest strategies. Traditional stock assessments for invertebrates such as coquina are often challenged by the absence of long-term series of age-structured data, limited spatial coverage, and uncertainties related to recruitment processes. In this context, the integration of biological, spatial, and temporal information becomes essential for evaluating the current stock status and designing effective management measures.
+
+The present study focuses on analyzing the population structure and recruitment dynamics of *D. trunculus* in the Gulf of Cádiz, using data derived from standardized field sampling campaigns. The assessment applies empirical and model-based approaches, including stock–recruitment models (Beverton-Holt and Ricker), to evaluate reproductive potential, recruitment variability, and the potential impacts of fishing effort. Additionally, the performance of sampling operations conducted by different observers is considered to account for potential bias and uncertainty in biomass estimations.
+
+Furthermore, the study seeks to explore potential correlations between recruitment variability and environmental drivers such as sea surface temperature, salinity, and chlorophyll-a concentration, among others. These variables are recognized as influential factors affecting early life stages and habitat suitability for *D. trunculus*. By incorporating environmental conditions into the analysis, this study contributes to a more comprehensive, ecosystem-informed assessment framework.
+
+Ultimately, this analysis aims to support evidence-based decision-making and the implementation of precautionary harvest strategies that ensure the long-term viability of the coquina fishery in this ecologically sensitive and economically vital coastal region.
+
+
+### Data initial exploration
+
+```{r}
+load("recruit_data.RData",
+     verbose = TRUE)  # Cargará 'D15_21_24' y 'D15n2' al entorno actual
+```
+
+We begin by loading the dataset `D15n2`, which contains sampling information relevant to Donax trunculus stock and recruitment monitoring in Doñana. As part of our exploratory analysis, we plot the distributions of two key variables: `Ntotal` (used as a proxy for biomass) and `total` (recruitment, defined as individuals < 15 mm).
+
+```{r}
+h1 <- ggplot(D15n2, aes(x = Ntotal)) +
+  geom_histogram(bins = 40, fill = "darkorange", color = "white", alpha = 0.8) +
+  labs(title = "A", x = "Biomass (kg)", y = "Frequency") +
+  theme_minimal()
+
+h2 <- ggplot(D15n2, aes(x = total_menor_15)) +
+  geom_histogram(bins = 40, fill = "seagreen", color = "white", alpha = 0.8) +
+  labs(title = "B", x = "Recruitment (ind)", y = "Frequency") +
+  theme_minimal()
+
+d <- ggplot(D15_17_24, aes(x = Densidad)) +
+  geom_histogram(bins = 40, fill = "lightblue", color = "white", alpha = 0.8) +
+  labs(title = "C", x = "Densityt (ind)", y = "Frequency") +
+  theme_minimal()
+
+ggarrange(h1, h2, d, ncol = 1)
+```
+
+These histograms allow us to evaluate the variability and potential skewness in biomass and recruitment values before fitting any stock–recruitment relationship (SRR) models.
+
+### Lagged dataset creation: monthly recruitment following biomass
+
+```{r echo=TRUE}
+datos_semestrales <- D15_17_24 %>%
+  mutate(
+    Semestre = ifelse(MES %in% 1:6, "Semestre 1", "Semestre 2"),
+    Año_Semestre = paste(ANO, Semestre, sep = "-")
+  ) %>%
+  group_by(Año_Semestre) %>%
+  summarise(
+    Densidad_Promedio = mean(Densidad, na.rm = TRUE),
+    D15_Promedio = mean(D15, na.rm = TRUE),
+    .groups = 'drop'
+  ) %>%
+  arrange(Año_Semestre) %>%
+  mutate(
+    Densidad_lag = lag(Densidad_Promedio, n = 2),  # Lag de 2 periodos (1 año)
+    Densidad_lag_semestre = lag(Densidad_Promedio, n = 1)  # Lag de 1 semestre
+  ) %>%
+  ungroup()
+
+# Ver resultados
+head(datos_semestrales)
+```
+
+
+To assess a causal relationship between biomass and recruitment, we compute a **monthly lag**, associating recruitment at time \( t+1 \) with biomass at time \( t \), within each year. This preserves the temporal structure without crossing over year boundaries.
+
+
+### Exploratory plots: lagged and unlagged biomass–recruitment relationships
+
+
+```{r}
+datos_grafico <- datos_semestrales %>%
+  select(Año_Semestre, Densidad_Promedio, D15_Promedio) %>%
+  pivot_longer(cols = c(Densidad_Promedio, D15_Promedio),
+               names_to = "Variable", 
+               values_to = "Valor") %>%
+  mutate(Variable = factor(Variable, 
+                          levels = c("Densidad_Promedio", "D15_Promedio"),
+                          labels = c("Densidad Promedio", "D15 Promedio")))
+
+# Creamos el gráfico de barras
+ggplot(datos_grafico, aes(x = Año_Semestre, y = Valor, fill = Variable)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.7) +
+  geom_text(aes(label = round(Valor, 1)), 
+            position = position_dodge(width = 0.8),
+            hjust = -.3, size = 3, angle=90) +
+  scale_fill_manual(values = c("Densidad Promedio" = "lightblue", 
+                              "D15 Promedio" = "seagreen")) +
+  labs(title = "",
+       x = "",
+       y = "",
+       fill = "") +
+  theme_minimal(base_size = 12) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.position = "bottom",
+        panel.grid.major.x = element_blank(),
+        plot.title = element_text(hjust = 0.5, face = "bold")) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1)))
+```
+Correlation plot
+
+```{r}
+cor_data <- datos_semestrales %>% 
+  select(Densidad_Promedio, D15_Promedio, Densidad_lag, Densidad_lag_semestre, logD15) %>% 
+  rename(
+    Density = Densidad_Promedio,
+    D15 = D15_Promedio,
+    Lag_Density = Densidad_lag,
+    Sem_Lag_Density = Densidad_lag_semestre,
+    log_D15 = logD15
+  )
+
+cor_matrix <- rcorr(as.matrix(cor_data), type = "pearson")
+
+col <- colorRampPalette(c("#4477AA", "#77AADD", "#FFFFFF", "#EE9988", "#BB4444"))
+corrplot(cor_matrix$r, 
+         method = "color",
+         type = "upper",
+         order = "original",
+         col = col(200),
+         tl.col = "black",
+         tl.srt = 90,
+         addCoef.col = "black",
+         number.cex = 0.8,
+         p.mat = cor_matrix$P,
+         sig.level = 0.05,
+         diag = FALSE,
+         mar = c(0, 0, 2, 0))
+```
+
+
+```{r}
+# Two plots: with and without lag
+```
+
+```{r}
+# Primero separamos el año y el semestre para mejor visualización
+datos_plot <- datos_semestrales %>%
+  separate(Año_Semestre, into = c("Ano", "Semestre"), sep = "-") %>%
+  mutate(Semestre = factor(Semestre, levels = c("Semestre 1", "Semestre 2")))
+
+ggplot(datos_plot, aes(y = Densidad_Promedio,
+                       x = D15_Promedio)) +
+  geom_point(aes(color = Semestre, shape = Semestre), size = 4, alpha = 0.8) +
+  geom_smooth(aes(color = Semestre), 
+              method = "lm", se = FALSE, linewidth = 1.2) +
+  scale_color_manual(values = c("#1f77b4", "#ff7f0e")) +
+  scale_shape_manual(values = c(16, 17)) +  # Círculos y triángulos
+  
+  # Etiquetas y tema
+  labs(title = "Relación entre Densidad Promedio (lag semestral) y D15",
+       y = "Densidad Promedio del semestre anterior (ind/m²)",
+       x = "D15 Promedio",
+       color = "Semestre",
+       shape = "Semestre") +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        plot.title = element_text(hjust = 0.5, face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  
+  # Etiquetas de año corregidas
+  geom_text_repel(aes(label = Ano), size = 4, max.overlaps = 20) 
+```
+
+These two plots compare the biomass–recruitment relationship with and without temporal lag, highlighting whether the 2021 season deviates from the general pattern. Linear trends are shown for each group.
+
+
+
+```{r}
+ggplot(datos_semestrales, aes(x = Densidad_lag, y = D15_Promedio)) +
+  geom_point() +  # Datos observados
+  stat_smooth(
+    method = "nls",  # Ajuste no lineal
+    formula = y ~ a * x * exp(-b * x),  # Fórmula Ricker
+    method.args = list(
+      start = list(a = 1, b = 0.1)  # Valores iniciales para a y b
+    ),
+    se = FALSE,  # No intervalos de confianza (puede fallar con nls)
+    color = "red",
+    linewidth = 1,
+    span=2
+  ) +
+    geom_text_repel(
+    aes(label = Año_Semestre),  # Asegúrate de que 'Año' esté en tus datos
+    size = 3,
+    box.padding = 0.5,  # Espacio alrededor del texto
+    point.padding = 0.2,
+    max.overlaps = 20,  # Máximo de etiquetas superpuestas permitidas
+    segment.color = "gray50",  # Color de las líneas guía
+    min.segment.length = 0.2  # Longitud mínima del segmento
+  ) +
+  labs(
+    x = "Densidad con retraso (Densidad_lag)",
+    y = "Reclutamiento (D15_Promedio)",
+    title = ""
+  ) +
+  theme_minimal()
+```
+
+# Results
+
+## Nonlinear stock–recruitment model fitting (SRR)
+
+We fit two classical models of stock–recruitment dynamics using **nonlinear least squares (NLS)**:
+
+### Beverton-Holt Recruitment Model
+
+The Beverton-Holt model describes recruitment \( R \) as a function of spawning stock biomass \( SSB \), the unfished recruitment \( R_0 \), and the steepness parameter \( h \):
+
+$$
+R(SSB) = \frac{4 h R_0 \cdot SSB}{(1 - h) R_0 + (5h - 1) \cdot SSB}
+$$
+
+Where:
+- \( R(SSB) \) is the number of recruits at a given spawning biomass,
+- \( R_0 \) is the recruitment in an unfished state,
+- \( h \) is the steepness, defined as the proportion of \( R_0 \) produced when \( SSB = 0.2 \cdot SSB_0 \).
+
+
+
+### Ricker Recruitment Model
+
+The Ricker model also relates recruitment to spawning biomass, incorporating a density-dependent term. Recruitment is given by:
+
+$$
+R(SSB) = a \cdot SSB \cdot \exp(-b \cdot SSB)
+$$
+
+In our implementation, the parameters \( a \) and \( b \) are derived from \( R_0 \), \( h \), and \( SSB_0 \):
+
+$$
+a = \frac{R_0}{SSB_0 \cdot \exp\left(-\frac{\log(5h)}{0.8}\right)} \\
+b = \frac{\log(5h)}{0.8 \cdot SSB_0}
+$$
+
+Where:
+- \( a \) defines the initial slope of the recruitment curve,
+- \( b \) controls the degree of density-dependence,
+- \( SSB_0 \) is the unfished spawning stock biomass.
+
+
+
+```{r}
+library(ggplot2)
+library(viridis)
+library(ggpubr)
+
+# Secuencia de SSB (biomasa desovante)
+SSB <- seq(0, 100, length.out = 1000)
+
+# 1. Beverton-Holt Function (mejorada)
+BH_function <- function(SSB, R0, h, SSB0) {
+  (4 * h * R0 * SSB) / ((1 - h) * SSB0 + (5 * h - 1) * SSB)
+}
+
+# 2. Ricker Function (mejorada)
+Ricker_function <- function(SSB, R0, h, SSB0) {
+  a <- (5*h)^(1.25) / SSB0
+  b <- log(5*h) / (0.8 * SSB0)
+  R0 * SSB * exp(-b * SSB)
+}
+
+# Parámetros comunes
+R0 <- 1000   # Reclutamiento virginal
+SSB0 <- 50   # Biomasa desovante virginal
+h_values <- seq(0.5, 0.9, by = 0.05)  # Valores de steepness
+
+# Generar datos para BH
+BH_data <- lapply(h_values, function(h) {
+  data.frame(
+    SSB = SSB,
+    Recruitment = BH_function(SSB, R0, h, SSB0),
+    Model = "Beverton-Holt",
+    h = factor(paste("h =", h), levels = paste("h =", h_values))
+  )
+}) %>% bind_rows()
+
+# Generar datos para Ricker
+Ricker_data <- lapply(h_values, function(h) {
+  data.frame(
+    SSB = SSB,
+    Recruitment = Ricker_function(SSB, R0, h, SSB0),
+    Model = "Ricker",
+    h = factor(paste("h =", h), levels = paste("h =", h_values))
+  )
+}) %>% bind_rows()
+
+# Combinar datos
+all_data <- rbind(BH_data, Ricker_data)
+
+# Gráfico unificado mejorado
+ggplot(all_data, aes(x = SSB, y = Recruitment, color = h)) +
+  geom_line(size = 1, alpha = 0.8) +
+  facet_wrap(~ Model, scales = "free_y") +
+  scale_color_viridis_d(option = "G") +
+  labs(title = "",
+       x = "SSB",
+       y = "Recruit (R)",
+       color = "Steepness (h)") +
+  theme_bw(base_size = 12) +
+  theme(legend.position = "bottom",
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(face = "bold"),
+        panel.grid.minor = element_blank()) +
+  guides(color = guide_legend(nrow = 1)) +
+  geom_vline(xintercept = SSB0, linetype = "dashed", color = "gray50") +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0, 0.05))
+```
+Fit model
+
+```{r}
+library(tidyverse)
+
+# Asegúrate de tener cargado el dataframe 'datos_semestrales' con las columnas necesarias
+# Filtrar datos válidos
+datos_filtrados <- datos_semestrales %>%
+  filter(!is.na(D15_Promedio), !is.na(Densidad_Promedio), !is.na(Densidad_lag_semestre))
+
+# Función Beverton-Holt
+BH_function <- function(SSB, R0, h) {
+  pred <- (4 * h * R0 * SSB) / ((1 - h) * R0 + (5 * h - 1) * SSB)
+  pred[SSB == 0] <- 0
+  return(pred)
+}
+
+# Función Ricker
+Ricker_function <- function(SSB, R0, h, SSB0) {
+  a <- R0 / (SSB0 * exp(-log(5 * h) / (0.8 * SSB0) * SSB0))
+  b <- log(5 * h) / (0.8 * SSB0)
+  pred <- a * SSB * exp(-b * SSB)
+  pred[SSB == 0] <- 0
+  return(pred)
+}
+# Parámetros base
+R0 <- max(datos_filtrados$D15_Promedio, na.rm = TRUE)
+h <- 0.75  # Valor de steepness
+variables_biomasa <- c("Densidad_Promedio", "Densidad_lag")
+
+# Lista para almacenar resultados
+resultados_modelos <- list()
+
+for (var_biomasa in variables_biomasa) {
+  SSB <- datos_filtrados[[var_biomasa]]
+  SSB0 <- max(SSB, na.rm = TRUE)
+  R <- datos_filtrados$D15_Promedio
+  
+  # Ajuste Beverton-Holt
+  pred_BH <- BH_function(SSB, R0, h)
+  datos_filtrados$pred_BH <- pred_BH
+  
+  # Ajuste Ricker
+  pred_Ricker <- Ricker_function(SSB, R0, h, SSB0)
+  datos_filtrados$pred_Ricker <- pred_Ricker
+  
+  # Almacenar resultados
+  resultados_modelos[[var_biomasa]] <- datos_filtrados %>%
+    select(Año_Semestre, !!var_biomasa, D15_Promedio, pred_BH, pred_Ricker)
+}
+
+for (var_biomasa in variables_biomasa) {
+  datos_plot <- resultados_modelos[[var_biomasa]]
+  ggplot(datos_plot, aes_string(x = var_biomasa, y = "D15_Promedio")) +
+    geom_point(aes(color = Año_Semestre), size = 3) +
+    geom_line(aes(y = pred_BH), color = "blue", size = 1, linetype = "dashed") +
+    geom_line(aes(y = pred_Ricker), color = "red", size = 1) +
+    labs(
+      title = paste("Modelos de Reclutamiento con", var_biomasa),
+      x = var_biomasa,
+      y = "Reclutamiento (D15_Promedio)",
+      color = "Año_Semestre"
+    ) +
+    theme_minimal() +
+    theme(legend.position = "bottom") +
+    scale_color_viridis_d()
+}
+
+
+```
+
+
+We apply these to the **lagged recruitment** data (`total_lag1`).
+
+```{r}
+datos_modelo <- datos_semestrales %>%
+  filter(!is.na(D15_Promedio), !is.na(Densidad_lag_semestre))
+``` 
+
+Ricker
+```{r}
+# Ajuste modelo Ricker
+modelo_Ricker <- nls(D15_Promedio ~ a * Densidad_lag_semestre * exp(-b * Densidad_lag_semestre),
+                     data = datos_modelo,
+                     start = list(a = 5, b = 0.01),
+                     algorithm = "port",
+                     lower = c(a = 0, b = 0))
+
+
+# Coeficientes
+coef_ricker <- coef(modelo_Ricker)
+a_r <- round(coef_ricker["a"], 3)
+b_r <- round(coef_ricker["b"], 5)
+eq_ricker <- paste0("R == ", a_r, " * S * e^{-", b_r, " * S}")
+
+# Predicción
+new_S <- seq(0, max(datos_modelo$Densidad_lag_semestre), length.out = 100)
+pred_Ricker <- predict(modelo_Ricker, newdata = data.frame(Densidad_lag_semestre = new_S))
+
+# Gráfico Ricker
+RK <- ggplot(datos_modelo, aes(x = Densidad_lag_semestre, y = D15_Promedio, color = Año_Semestre)) +
+  geom_point(size = 3) +
+  geom_text_repel(aes(label = Año_Semestre), size = 3.5, max.overlaps = 20) +
+  geom_line(data = data.frame(Densidad_lag_semestre = new_S, D15_Promedio = pred_Ricker),
+            aes(x = Densidad_lag_semestre, y = D15_Promedio),
+            color = "red", linetype = "dashed", size = 1) +
+  annotate("text",
+           x = max(datos_modelo$Densidad_lag_semestre)*0.6,
+           y = max(datos_modelo$D15_Promedio)*0.85,
+           label = eq_ricker, parse = TRUE,
+           size = 5, color = "red") +
+  labs(x = "Densidad lag (semestre anterior)", y = "Densidad juveniles (<15 mm)", color = "Semestre") +
+  theme_minimal(base_size = 14) +
+  scale_color_viridis_d(option = "E")+
+  theme(legend.position = "none")
+
+```
+
+
+B&H
+
+```{r}
+# Definir h y S0
+h <- 0.75
+S0 <- max(datos_modelo$Densidad_lag_semestre, na.rm = TRUE)  # o usar el promedio más alto
+
+modelo_BH_SS <- nls(D15_Promedio ~ (4 * h * R0 * Densidad_lag_semestre) / 
+                      ((1 - h) * S0 + (5 * h - 1) * Densidad_lag_semestre),
+                    data = datos_modelo,
+                    start = list(R0 = mean(datos_modelo$D15_Promedio)))
+
+
+# Coeficiente ajustado
+R0_bh <- coef(modelo_BH_SS)["R0"]
+R0_bh <- round(R0_bh, 2)
+
+# Secuencia para predicción
+new_S <- seq(0, max(datos_modelo$Densidad_lag_semestre), length.out = 100)
+pred_BH_SS <- (4 * h * R0_bh * new_S) / ((1 - h) * S0 + (5 * h - 1) * new_S)
+
+# Ecuación para graficar
+eq_bh <- paste0("R == frac(4 * ", h, " * ", R0_bh, " * S, (1 - ", h, ") * ", round(S0, 2),
+                " + (5 * ", h, " - 1) * S)")
+
+BH <- ggplot(datos_modelo, aes(x = Densidad_lag_semestre, y = D15_Promedio, color = Año_Semestre)) +
+  geom_point(size = 3) +
+  geom_text_repel(aes(label = Año_Semestre), size = 4, max.overlaps = 20) +
+  geom_line(data = data.frame(Densidad_lag_semestre = new_S, D15_Promedio = pred_BH_SS), 
+            aes(x = Densidad_lag_semestre, y = D15_Promedio), color = "blue", size = 1) +
+  annotate("text", 
+           x = max(new_S)*0.6, 
+           y = max(datos_modelo$D15_Promedio)*0.9,
+           label = eq_bh,
+           parse = TRUE, size = 5, color = "blue") +
+  labs(x = "Densidad lag (semestre anterior)", 
+       y = "Densidad de juveniles (< 15 mm)", 
+       color = "Semestre") +
+  theme_minimal(base_size = 14) +
+  scale_color_viridis_d(option = "E")+
+  theme(legend.position = "none")
+
+```
+
+
+This faceted plot illustrates how well each SRR model fits the data across years. The **blue line** represents the Beverton–Holt fit, while the **red dashed line** corresponds to the Ricker model. Points are colored by year and labeled by month to identify seasonal effects.
+
+
+
+
+```{r}
+ggarrange(RK,
+          BH,
+          ncol=2)
+```
+
+
+```{r}
+par(mfrow=c(1,2), mar=c(5,4,2,1))
+plot(residuals(modelo_BH_SS), main = "Residual Beverton-Holt")
+abline(h = 0, col = "red")
+plot(residuals(modelo_Ricker), main = "Residual Ricker")
+abline(h = 0, col = "red")
+
+```
+
+
+```{r}
+# Resumenes de modelos
+res_BH <- glance(modelo_BH_SS)
+res_Ricker <- glance(modelo_Ricker)
+
+# Calcular AICs
+aic_vals <- AIC(modelo_BH_SS, modelo_Ricker) %>%
+  as.data.frame() %>%
+  rename(Model = df, AIC = AIC)
+
+# Pseudo-R²
+BH_pred <- predict(modelo_BH_SS)
+BH_obs <- datos_modelo$D15_Promedio
+BH_r2 <- 1 - sum((BH_obs - BH_pred)^2) / sum((BH_obs - mean(BH_obs))^2)
+
+Ricker_pred <- predict(modelo_Ricker)
+Ricker_obs <- datos_modelo$Densidad_Promedio
+Ricker_r2 <- 1 - sum((Ricker_obs - Ricker_pred)^2) / sum((Ricker_obs - mean(Ricker_obs))^2)
+
+# Armar tabla
+results_tbl <- data.frame(
+  Model = c("Beverton-Holt", "Ricker"),
+  AIC = round(aic_vals$AIC, 2),
+  `Pseudo-R²` = round(c(BH_r2, Ricker_r2), 3),
+  Description = c(
+    "Compensatory model with asymptotic recruitment as SSB increases.",
+    "Overcompensatory model with declining recruitment at high SSB."
+  )
+)
+
+# Crear flextable
+flextable(results_tbl) %>%
+  set_header_labels(
+    Model = "Recruitment Model",
+    AIC = "Akaike Information Criterion (AIC)",
+    `Pseudo-R²` = "Pseudo R-squared",
+    Description = "Model Description"
+  ) %>%
+  autofit() %>%
+  theme_booktabs() %>%
+  align(j = 2:4, align = "center", part = "all") %>%
+  bold(part = "header") %>%
+  fontsize(size = 11, part = "all")
+
+```
+```{r}
+bind_rows(
+  tidy(modelo_BH_SS) %>% mutate(model = "Beverton-Holt"),
+  tidy(modelo_Ricker) %>% mutate(model = "Ricker")
+) %>%
+  kable(digits = 4) %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+
+```
+
+```{r}
+library(flextable)
+
+# Resumen de la tabla con AIC igual en todos los escenarios
+resultados_resumidos <- results_df %>%
+  group_by(modelo, h) %>%
+  summarise(AIC = mean(AIC),  # El AIC es el mismo para todos, pero para resumir
+            RSS = mean(RSS), .groups = "drop") %>% 
+  arrange(AIC)
+
+# Mostrar la tabla con flextable
+flextable(resultados_resumidos) %>%
+  compose(j = "modelo", value = as_paragraph(modelo)) %>%
+  compose(j = "h", value = as_paragraph(format(h, digits = 2))) %>%
+  compose(j = "AIC", value = as_paragraph(format(AIC, digits = 2))) %>%
+  compose(j = "RSS", value = as_paragraph(format(RSS, digits = 2))) %>%
+  theme_vanilla()
+
+
+```
+
+###
+
+```{r}
+# Gráfico del modelo final ajustado
+ggplot(data_mes, aes(x = SSB, y = R)) +
+  geom_point(color = "blue", alpha = 0.6) + # Observados
+  geom_line(aes(y = pred_final), color = "red", size = 1) + # Modelo ajustado
+  labs(title = paste("Ajuste de modelo", modelo_mejor, "con h =", h_mejor),
+       x = "Biomasa desovante (SSB)",
+       y = "Reclutamiento (R)") +
+  theme_minimal()
+
+# Calcular residuos (observados - estimados)
+data_mes$residuals <- data_mes$R - data_mes$pred_final
+
+# Gráfico de residuos vs SSB (biomasa desovante)
+ggplot(data_mes, aes(x = SSB, y = residuals)) +
+  geom_point(color = "blue", alpha = 0.6) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +  # Línea de cero
+  labs(title = paste("Residuos del modelo", modelo_mejor, "con h =", h_mejor),
+       x = "Biomasa desovante (SSB)",
+       y = "Residuos (Observado - Estimado)") +
+  theme_minimal()
+
+# Gráfico de residuos vs valores estimados
+ggplot(data_mes, aes(x = pred_final, y = residuals)) +
+  geom_point(color = "green", alpha = 0.6) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +  # Línea de cero
+  labs(title = "Residuos vs Estimaciones del modelo",
+       x = "Reclutamiento Estimado",
+       y = "Residuos (Observado - Estimado)") +
+  theme_minimal()
+
+```
+
+
+
+## Correlation `a` and `b`
+
+
+```{r}
+# Definir las funciones para calcular 'a' y 'b' para ambos modelos
+
+# Beverton & Holt
+BH_function_params <- function(h, SSB0) {
+  a_BH <- (4 * h * R0) / ((1 - h) * R0 + (5 * h - 1) * SSB0)
+  b_BH <- log(5 * h) / (0.8 * SSB0)
+  return(list(a = a_BH, b = b_BH))
+}
+
+# Ricker
+Ricker_function_params <- function(h, SSB0) {
+  a_Ricker <- R0 / (SSB0 * exp(-log(5 * h) / (0.8 * SSB0) * SSB0))
+  b_Ricker <- log(5 * h) / (0.8 * SSB0)
+  return(list(a = a_Ricker, b = b_Ricker))
+}
+
+# Generar los parámetros para cada modelo y h
+params_BH <- purrr::map_dfr(h_values, ~ BH_function_params(.x, SSB0))
+params_Ricker <- purrr::map_dfr(h_values, ~ Ricker_function_params(.x, SSB0))
+
+# Crear un dataframe con los resultados de ambos modelos
+params_df <- bind_rows(
+  params_BH %>% mutate(modelo = "Beverton & Holt"),
+  params_Ricker %>% mutate(modelo = "Ricker")
+) %>%
+  mutate(h = rep(h_values, 2)) # Añadir valores de h para el eje X
+
+# Graficar la correlación entre 'a' y 'b' para ambos modelos
+ggplot(params_df, aes(x = a, y = b)) +
+  geom_point(size = 3) +
+  facet_wrap(~modelo, 
+             scales = "free_x")+
+  labs(title = "",
+       x = "a Parameter", 
+       y = "b parameter") +
+  theme_minimal(base_size = 14)
+
+```
+
+## Glosary
+
+```{r}
+# Crear una lista con términos, definiciones y valores
+glossary_df <- data.frame(
+  Term = c("Steepness (h)", "Beverton-Holt model", "Ricker model", "SSB", "R0", "a", "b",  "AIC", "RSS"),
+  Definition = c(
+    "A parameter used in stock-recruitment models, representing the steepness of the curve of recruitment relative to spawning stock biomass.",
+    "A classic stock-recruitment model used to describe the relationship between spawning stock biomass (SSB) and recruitment (R), with a parameter h that influences the steepness of the curve.",
+    "A model describing recruitment in relation to spawning stock biomass, where the relationship is represented as an exponential decay.",
+    "Spawning Stock Biomass. A measure of the total weight of the reproductive individuals in the population at a given time.",
+    "The maximum possible recruitment at an infinite spawning stock biomass, often used as a reference point in recruitment models.",
+    "Parameter representing the scaling of the recruitment curve in both the Beverton-Holt and Ricker models.",
+    "Parameter representing the decay rate in the Ricker model, which determines how quickly recruitment decreases as biomass increases.",
+    "Akaike Information Criterion. A measure used to compare different statistical models, penalizing for complexity (number of parameters) while rewarding goodness of fit.",
+    "Residual Sum of Squares. A measure of the difference between the observed data and the values predicted by a model."
+  ),
+  Values_Set_or_Calculated = c(
+    "Varies by model, typically set within a range (e.g., 0.5 to 0.9).",
+    "Defined by the equation: R = (4 * h * R0 * SSB) / ((1 - h) * R0 + (5 * h - 1) * SSB).",
+    "Defined by the equation: R = R0 * SSB * exp(-b * SSB), where b is calculated based on steepness (h).",
+    "Calculated from the data as the total weight of reproductive individuals in the population.",
+    "R0 is often set as the maximum value of observed recruitment, or a biological reference.",
+    "Estimated from the data fitting the model. It varies depending on the steepness (h) and model used.",
+    "Calculated based on steepness (h) for the Ricker model, often using a logarithmic approach.",
+    "Calculated based on the formula: AIC = n * log(RSS / n) + 2k, where n is the number of data points and k is the number of parameters.",
+    "Calculated as the sum of squared differences between observed values and predicted values."
+  )
+)
+
+# Crear una flextable
+glossary_ft <- flextable(glossary_df)
+
+# Ajustes visuales: Cambiar título, darle formato
+glossary_ft <- glossary_ft %>%
+  compose(j = "Term", value = as_paragraph( glossary_df$Term)) %>%
+  set_table_properties(layout = "autofit") %>%
+  autofit() %>%
+  add_header_lines(values = "Glossary of Terms") %>%
+  bold(j = 1, part = "header")
+
+# Mostrar tabla
+glossary_ft
+
+
+```
+
+
+## Construction of the Operating Model
+
+To evaluate the potential bias in the estimation of parameters from the Ricker stock-recruitment model under different steepness scenarios, we developed a simulation-based operating model. This operating model generates synthetic stock-recruitment data using the **Ricker function** with known ("true") parameters and then fits the model back to this simulated data to assess estimation accuracy.
+
+### 1. Stock-Recruitment Function
+
+The **Ricker stock-recruitment relationship** used in the operating model is defined as:
+
+\[
+R_t = a S_t \exp(-b S_t + \varepsilon_t)
+\]
+
+Where:
+
+- \( R_t \): Recruitment at time \( t \)  
+- \( S_t \): Spawning stock biomass at time \( t \)  
+- \( a \): Maximum productivity parameter (recruits per spawner at low biomass)  
+- \( b \): Density-dependent parameter  
+- \( \varepsilon_t \sim \mathcal{N}(0, \sigma^2) \): Lognormal process error to simulate stochastic recruitment
+
+### 2. Parameter Settings and Simulation
+
+We simulated data across a range of **steepness values** \( h \) from 0.30 to 1.00 in increments of 0.05, representing different productivity levels.
+
+For each steepness value:
+
+- True values of parameters \( a \) and \( b \) were derived using the steepness \( h \), virgin biomass \( S_0 \), and virgin recruitment \( R_0 \), following this transformation:
+
+\[
+a = \frac{1}{R_0} \log\left(\frac{h}{1 - h}\right) S_0
+\quad \text{and} \quad
+b = \frac{1}{S_0}
+\]
+
+- Recruitment time series were simulated for **100 years** under each \( h \) scenario, including process error with a lognormal standard deviation \( \sigma = 0.6 \).
+- For each \( h \), we ran **100 simulations**, resulting in a total of 1,400 model runs (14 \( h \) values × 100 simulations each).
+
+### 3. Model Fitting and Bias Estimation
+
+For each simulated dataset:
+
+- The Ricker model was fitted using nonlinear least squares to estimate \( \hat{a} \) and \( \hat{b} \).
+- Relative bias was computed as:
+
+\[
+\text{Relative Bias}_{\theta} = \frac{\hat{\theta} - \theta_{\text{true}}}{\theta_{\text{true}}}
+\]
+
+for both parameters \( a \) and \( b \).
+
+This approach allowed us to assess how well the parameters could be recovered under different productivity regimes, and to quantify systematic biases induced by changes in steepness.
+
+
+```{r}
+
+set.seed(123)  # reproducibilidad
+# Función para convertir steepness (h) a parámetros a y b del modelo Ricker
+get_ricker_params <- function(R0, h, S0) {
+  # A partir de S0 (SSB virgen) y R0 (reclutamiento virgen)
+  a <- log(5 * h) / S0
+  b <- a / R0
+  return(list(a = a, b = b))
+}
+
+# ----------------------------
+# 2. Simulación del modelo operativo
+# ----------------------------
+
+simulate_SR <- function(h, n_years = 30, R0 = 1000, S0 = 5000, sigmaR = 0.4) {
+  # Obtener parámetros verdaderos del modelo Ricker
+  pars <- get_ricker_params(R0, h, S0)
+  a_true <- pars$a
+  b_true <- pars$b
+
+  # Simular SSBs con algo de variabilidad (sin sesgo)
+  SSB <- runif(n_years, min = 0.2 * S0, max = 1.2 * S0)
+
+  # Reclutamiento simulado con error lognormal
+  eps <- rnorm(n_years, mean = 0, sd = sigmaR)
+  R <- a_true * SSB * exp(-b_true * SSB + eps)
+
+  # Ajustar modelo Ricker usando nls
+  try_fit <- try(nls(R ~ a * SSB * exp(-b * SSB),
+                     start = list(a = 1e-4, b = 1e-4)), silent = TRUE)
+
+  if (inherits(try_fit, "try-error")) {
+    return(NULL)
+  } else {
+    est <- coef(try_fit)
+    return(data.frame(h = h,
+                      a_true = a_true, b_true = b_true,
+                      a_hat = est["a"], b_hat = est["b"]))
+  }
+}
+
+# ----------------------------
+# 3. Evaluar distintos escenarios de h
+# ----------------------------
+
+h_vals <- seq(0.3, 1.0, by = 0.05)
+n_reps <- 100  # repeticiones por escenario
+
+results <- do.call(rbind, lapply(h_vals, function(h) {
+  do.call(rbind, replicate(n_reps, simulate_SR(h = h), simplify = FALSE))
+}))
+
+# ----------------------------
+# 4. Análisis del sesgo
+# ----------------------------
+
+library(dplyr)
+results <- results %>%
+  mutate(a_bias = (a_hat - a_true) / a_true,
+         b_bias = (b_hat - b_true) / b_true)
+
+
+```
+
+
+```{r}
+abias <- ggplot(results, aes(x = h, y = a_bias, group=h)) +
+  geom_boxplot(fill = "grey",
+               outliers = FALSE) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  ylab("Relative Bias in a") + xlab("Steepness (h)") +
+  ggtitle("a")+
+  theme_bw()
+
+bbias <- ggplot(results, aes(x = h, y = b_bias, group=h)) +
+  geom_boxplot(fill = "grey",
+               outliers = FALSE) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  ylab("Relative Bias in b") + xlab("Steepness (h)") +
+  ggtitle("b")+
+  theme_bw()
+
+ggarrange(abias,
+          bbias,
+          ncol = 2)
+```
+
+
+```{r}
+# Tabla resumen por h: promedio y desviación estándar del sesgo relativo
+
+# Resumen del sesgo por h
+sesgo_por_h <- results %>%
+  group_by(h) %>%
+  summarise(
+    mean_bias_a = mean(a_bias, na.rm = TRUE),
+    sd_bias_a   = sd(a_bias, na.rm = TRUE),
+    mean_bias_b = mean(b_bias, na.rm = TRUE),
+    sd_bias_b   = sd(b_bias, na.rm = TRUE),
+    n = n()
+  )
+
+# Ver resultados
+print(sesgo_por_h)
+
+# Mostrar como tabla Rmd
+knitr::kable(
+  sesgo_por_h,
+  digits = 3,
+  caption = "Mean and standard deviation of relative bias in parameters a and b across steepness (h) scenarios."
+)
+
+
+```
+This table summarizes the **relative bias** in the estimation of parameters \( a \) and \( b \) from the Ricker stock-recruitment model under different steepness values \( h \). Below is a clear interpretation of each part:
+
+Relative bias is calculated as:
+
+\[
+\text{Relative Bias} = \frac{\hat{\theta} - \theta_{\text{true}}}{\theta_{\text{true}}}
+\]
+
+where:
+- \( \hat{\theta} \) is the estimated parameter from the fitted model.
+- \( \theta_{\text{true}} \) is the true value used in the data simulation.
+
+A relative bias of 0 indicates no bias. Positive values indicate overestimation; negative values indicate underestimation.
+
+
+Column `mean_bias_a`:
+- This shows the average relative bias in estimating the parameter \( a \) (maximum productivity).
+- All values are between approximately 0.08 and 0.17, indicating a slight systematic overestimation.
+- The standard deviation (`sd_bias_a`) is moderate, ranging from 0.28 to 0.36, suggesting consistent estimation of \( a \) across steepness scenarios.
+
+Column `mean_bias_b`:
+- This represents the average relative bias in estimating the parameter \( b \) (density dependence).
+- The bias values for \( b \) vary widely, from large negative to large positive numbers. For example, at \( h = 0.30 \), the mean relative bias is -120.9 percent, indicating extreme underestimation.
+- At higher \( h \) values, the bias sometimes shifts to strong overestimation (e.g., 60.6 percent at \( h = 0.60 \)).
+- The standard deviation for \( b \) is very high (from 200 up to over 1000), indicating large variability and low precision in estimating this parameter.
+
+
+1. Estimation of \( a \) is relatively robust and stable, with consistent but small overestimation across all values of \( h \).
+2. Estimation of \( b \) is highly sensitive to the steepness value and shows strong and erratic bias, particularly at lower \( h \).
+3. Scenarios with low steepness values (e.g., 0.30 to 0.45) exhibit the most unstable behavior, with extremely high bias and variability in \( b \).
+
+This suggests that under low-productivity conditions (low \( h \)), it becomes increasingly difficult to reliably estimate the density-dependent component of the Ricker model.
+
+
+Then, Table X shows the relative bias in the estimation of the Ricker model parameters \( a \) and \( b \) across a gradient of steepness values \( h \). Parameter \( a \) was consistently overestimated across all scenarios, although the magnitude of the bias remained relatively low (mean relative bias between 0.08 and 0.17). In contrast, the parameter \( b \) exhibited large and inconsistent biases, especially under low steepness scenarios (e.g., -121 percent at \( h = 0.30 \)). The high variability observed in the estimates of \( b \) (standard deviations exceeding 1000 in some cases) suggests substantial uncertainty in capturing the strength of density dependence. These findings emphasize the challenges of parameter estimation under low-productivity regimes and highlight the need for caution when interpreting the results of stock-recruitment models under such conditions.
+
+
+## Environmental data
+
+# References

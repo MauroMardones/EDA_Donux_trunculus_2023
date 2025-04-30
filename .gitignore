@@ -1,6 +1,7 @@
 .Rproj.user
 .Rhistory
 .Rdata
+.RData
 .Ruserdata
 *csv
 *jpeg
@@ -14,3 +15,5 @@ tallas_MD.RData
 Datos_Marina_Mayo_2024.R
 code_cascajo.R
 data.R
+*RData
+SRR_Donax.html
