@@ -246,7 +246,7 @@ plotdens2125p <- ggplot(denspobtot2 %>%
                          group_by(ANO, Sampling.point),
                        aes(ANO, dens, group=ANO))+
    scale_x_continuous(breaks = seq(from = 2021, 
-                                  to = 2024, 
+                                  to = 2025, 
                                   by = 1))+
  
   geom_violindot(scale = "width",
@@ -291,6 +291,8 @@ size2025 <- read_excel(here("Data",
                             "Data_size_Coquina_2025.xlsx"),  
                        sheet = "Coquina_Donax") %>% 
   select(-c(1, 2)) 
+
+
 ```
 
 
@@ -317,7 +319,7 @@ size_21_25<- size_21_25 %>%
   )
 unique(size_21_25$rastro)
 
-table(size_21_25$ANO, size_21_25$rastro)
+table(size_21_25$ANO, size_21_25$Sampling.point)
 ```
 ## Calculo D15
 
@@ -336,8 +338,8 @@ D15n <- size_21_25 %>%
            ID_codificado_muestreo
            ) %>% 
   summarize(
-    total_menor_15 = sum(sizeE < 10, na.rm = TRUE),
-    total_mayor_igual_15 = sum(sizeE >= 10, na.rm = TRUE),
+    total_menor_15 = sum(sizeE < 10.8, na.rm = TRUE),
+    total_mayor_igual_15 = sum(sizeE >= 10.8, na.rm = TRUE),
     .groups = "drop")
 
 D15n$Sampling.point <- as.double(D15n$Sampling.point)
@@ -395,7 +397,7 @@ D15_allp <- ggplot(D15n2 ,
                   color=as.factor(Sampling.point)))+
   geom_point()+
   geom_smooth(col=2)+
-  facet_wrap(.~ANO, ncol=2)+
+  facet_wrap(.~ANO, ncol=5)+
   scale_color_viridis_d(name="Sampling Points")+
   theme_few()+
   geom_hline(yintercept = 8,

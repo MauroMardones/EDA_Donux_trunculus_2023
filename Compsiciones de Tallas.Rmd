@@ -746,7 +746,7 @@ Ahora plotear el ultimo mes para el informe
 
 ```{r}
 combeachago23 <- ggplot(sizeall2 %>% 
-                      filter(ANO==2024), 
+                      filter(ANO==2025), 
                aes(x=sizeE, y=Beach, fill=as.character(rastro)))+
   geom_density_ridges(stat = "binline", 
                       bins = 40, 
@@ -769,8 +769,7 @@ another way to viz is a scatter plot
 
 ```{r warning=FALSE, message=FALSE}
 sizemean <-sizeall2 %>% 
-  dplyr::group_by(ANO, 
-                 
+  dplyr::group_by(ANO,
                   rastro) %>%
   dplyr::summarise(avg=mean(sizeE),
                    sd =sd(sizeE)) %>% 

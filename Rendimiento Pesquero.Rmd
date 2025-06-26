@@ -233,6 +233,9 @@ dens2023com <- read_excel(here("Data", "Posterior 2020",
 dens2024com <- read_excel(here("Data", "Posterior 2020", 
                                "Data_sample_FEMP_04_2024.xlsx"),
                        sheet = "DATA_COM")
+dens2025com <- read_excel(here("Data", "Posterior 2020", 
+                               "Data_sample_FEMP_04_2025.xlsx"),
+                       sheet = "DATA_COM")
 ```
 
 
@@ -246,16 +249,19 @@ dens2023comf <- dens2023com %>%
   select(2:19, 24, 29:31, 34, 35, 37, 38, 40:43) 
 dens2024comf <- dens2024com %>% 
   select(2:19, 24, 29:31, 34, 35, 37, 38, 40:43) 
+dens2025comf <- dens2025com %>% 
+  select(2:19, 24, 29:31, 34, 35, 37, 38, 40:43) 
 #compruebo si hay columnas iguales
 nombres_iguales_com <- identical(names(dens2021comf),
-                             names(dens2024comf))
+                             names(dens2025comf))
                                                    
          
 #junto la base
 dens2124comf <- rbind(dens2021comf, 
                       dens2022comf,
                       dens2023comf,
-                      dens2024comf)
+                      dens2024comf,
+                      dens2025comf)
 ```
 
 ## Separate `Date` column
@@ -342,7 +348,7 @@ rend1 <- ggplot(denscomtot,
     geom_smooth(method= "loess")+
     theme_few()+ 
     facet_grid(MES~Beach)+
-    scale_x_continuous(breaks = seq(from = 2021, to = 2024, by = 1))+
+    scale_x_continuous(breaks = seq(from = 2021, to = 2025, by = 1))+
    theme(axis.text.x = element_text(angle = 90,
                                      hjust = 1,
                                     vjust = 0.5,
