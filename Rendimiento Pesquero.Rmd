@@ -801,7 +801,7 @@ rendiresep <- ggplot(rend1723 %>%
                 group=Sampling.point))+
     geom_point(show.legend = T,
                alpha=.7) +
-    geom_smooth(method= "loess",
+    geom_smooth(method= "lm",
                 alpha=.2)+
     theme_few()+ 
     facet_grid(Sampling.point~ANO)+

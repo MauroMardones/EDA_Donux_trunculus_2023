@@ -2,7 +2,7 @@
 title: "Evaluación de Stock de coquina. AED, modelos y supuestos utilizados"
 subtitle: "Análisis Exploratorio de Datos (AED) para el manejo, asesoría y evaluación de stock de D. trunculus"
 author: "Mardones, M; Delgado, M"
-date:  "18 September, 2024"
+date:  "16 July, 2025"
 bibliography: EDA_donux.bib
 csl: apa.csl
 link-citations: yes
