@@ -111,8 +111,9 @@ dens2020com <- read_delim("Data/Anterior a 2020/data_ieo_2020_def.csv",
 ```{r}
 #compruebo si hay columnas iguales
 nombres_iguales_com1 <- identical(names(dens2017com),
-                             names(dens2018com)) && identical(names(dens2019com), 
-                                                               names(dens2020com))
+                             names(dens2018com)) && 
+  identical(names(dens2019com), 
+            names(dens2020com))
 
 #junto la base
 dens1720comf <- rbind(dens2017com, 
@@ -459,7 +460,7 @@ rend1723 <- rbind(denscom1720totf,
                   denscomtotf)
 
 # guardar datos para pedida especifica de MD
-#write.csv(rend1723, "CPUE_1724.csv")
+#write.csv(rend1723, "CPUE_1725.csv")
 
 ```
 
@@ -474,7 +475,7 @@ grurend1723 <- rend1723 %>%
 rendgru <- ggplot(grurend1723 , 
                aes(x = as.double(MES), y = MEAN)) +
     geom_point(show.legend = TRUE, alpha = .7) +
-    geom_smooth(method = "loess", se = FALSE) +  # Cambia "lm" por "loess"
+    geom_smooth(method = "lm", se = FALSE) +  # Cambia "lm" por "loess"
     theme_few() + 
     facet_grid(~ ANO) +
     theme(
@@ -490,55 +491,59 @@ rendgru <- ggplot(grurend1723 ,
     ylim(0, 20)
 
 rendgru
-```
 
-Ahora un plot continuo
+# otro plot con los valore de la regresion
 
-```{r warning=FALSE, message=FALSE}
+lm_results <- grurend1723 %>%
+  group_by(ANO) %>%
+  do({
+    mod <- lm(MEAN ~ as.numeric(MES), data = .)
+    tidy_mod <- tidy(mod)
+    slope <- tidy_mod$estimate[2]
+    pval <- tidy_mod$p.value[2]
+    tibble(slope = slope,
+           pval = pval)
+  })
 
-grurend1723 <- rend1723 %>%
-  mutate(Fecha = make_date(ANO, as.integer(MES), 1)) %>%  # Primer día de cada mes
-  group_by(Fecha) %>%
-  summarise(
-    MEAN = mean(Rend1, na.rm = TRUE),
-    SE = sd(Rend1, na.rm = TRUE) / sqrt(n())  # Error estándar
-  )
+labels_df <- lm_results %>%
+  mutate(label = ifelse(pval < 0.05,
+                        paste0("Pend: ", round(slope, 3),
+                               "\nP<0.05"),
+                        paste0("Pend: ", round(slope, 3),
+                               "\nP=", signif(pval, 2)))) %>%
+  left_join(grurend1723 %>% group_by(ANO) %>% 
+              summarise(x = median(as.numeric(MES), na.rm = TRUE),
+                        y = max(MEAN, na.rm = TRUE) + 1),
+            by = "ANO")
 
-# Graficar utilizando la nueva columna de fecha en el eje X y agregar barras de error
-rendgru <- ggplot(grurend1723, 
-               aes(x = Fecha, y = MEAN)) +
-    geom_point(show.legend = TRUE, alpha = .7) +
-    geom_errorbar(aes(ymin = MEAN - SE, ymax = MEAN + SE), width = 0.2, color = "gray50") +  # Barras de error
-    geom_smooth(method = "lm", se = TRUE, 
-                level = 0.5, 
-                span = 0.3) + 
-    theme_few() + 
-    theme(
-        axis.text.x = element_text(angle = 90, hjust = 1, size = 8),
-        axis.text.y = element_text(size = 12),
-        legend.position = "bottom"
-    ) +
-    guides(fill = guide_legend(reverse = FALSE)) +
-    scale_color_viridis_d(option = "H", name = "Sampling Point") +
-    scale_x_date(date_labels = "%b %Y", date_breaks = "3 months") +
-    geom_hline(aes(yintercept = 7.6, color = "Nivel de Referencia (8 kg/ hr)"), 
-               linetype = "solid", size = 0.5) +
-    geom_hline(aes(yintercept = 3.5, color = "Promedio Serie Histórica"), 
-               linetype = "solid", size = 0.5) +
-    scale_color_manual(name = "",
-                       values = c("Nivel de Referencia (8 kg/ hr)" = "black", 
-                                  "Promedio Serie Histórica" = "red")) +
-    ylab("CPUE (Kg/Hr)") +
-    xlab("") +
-    ylim(0, 15)
+rendgru <- ggplot(grurend1723 , 
+                  aes(x = as.numeric(MES), y = MEAN)) +
+  geom_point(alpha = .7) +
+  geom_smooth(method = "lm", se = T) +
+  theme_few() +
+  facet_grid(~ ANO) +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 8),
+    axis.text.y = element_text(size = 12)
+  ) +
+  scale_x_continuous(breaks = seq(min(as.numeric(grurend1723$MES), na.rm = TRUE),
+                                  max(as.numeric(grurend1723$MES), na.rm = TRUE),
+                                  by = 2)) +
+  geom_hline(yintercept = 7.6, col = "black") +
+  geom_hline(yintercept = 3.5, col = 2) +
+  ylab("CPUE (Kg/Hr)") +
+  xlab("") +
+  ylim(0, 20) +
+  geom_text_repel(data = labels_df,
+                  aes(x = 2.5, y = 15, label = label),
+                  inherit.aes = FALSE,
+                  size = 3.5,
+                  nudge_y = 1)
 
 rendgru
-
-
 ```
 
-OOtro
-
+Tendencia de los últimos 8 años
 ```{r}
 grurend1723 <- rend1723 %>%
   mutate(Fecha = make_date(ANO, as.integer(MES), 1)) %>%
@@ -557,7 +562,7 @@ pendiente <- coef(modelo)["Fecha"]
 p_valor <- resumen_modelo$coefficients["Fecha", "Pr(>|t|)"]
 
 # Graficar utilizando la nueva columna de fecha en el eje X
-rendgru <- ggplot(grurend1723, 
+rendgru2 <- ggplot(grurend1723, 
                aes(x = Fecha, 
                    y = MEAN)) +
     geom_point(show.legend = TRUE,
@@ -610,32 +615,11 @@ rendgru <- ggplot(grurend1723,
              size = 4, 
              color = "blue")
 
-rendgru
+rendgru2
 
 ```
 
 
-
-```{r}
-boxCPUE <- ggplot(rend1723,
-                aes(ANO, Rend1,
-                    group=ANO))+
-  facet_wrap(.~Sampling.point,
-             ncol = 7)+
-  geom_boxplot()+
-   geom_hline(yintercept=7.6, col="black")+
-  geom_hline(yintercept=3.5, col=2)+
-  theme_few()+
-   theme(axis.text.x = element_text(angle = 90,
-                                     hjust = 1,
-                                     vjust = 0.5,
-                                     size = 8),
-          axis.text.y = element_text(size = 8))+
-  
-   ylab("CPUE (Kg/Hr)") +
-    xlab("") 
-boxCPUE
-```
 
 Plots distintos sampling points
 
@@ -699,34 +683,6 @@ rendire <- ggplot(rend1723 %>%
 rendire
 ```
 
-ahora separa paneles
-```{r, fig.align="center", warning=FALSE}
-rendire2 <- ggplot(rend1723 %>% 
-                    filter(Sampling.point %in% c(2,4,6, "M")), 
-               aes(MES,Rend1,
-                group=Sampling.point))+
-    geom_point(show.legend = T,
-               alpha=.7) +
-    geom_smooth(method= "loess",
-                alpha=.2,
-                se=FALSE)+
-    theme_few()+ 
-    facet_grid(Sampling.point~ANO)+
-    #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
-   theme(axis.text.x = element_text(angle = 90,
-                                     hjust = 1,
-                                     vjust = 0.5,
-                                     size = 8),
-          axis.text.y = element_text(size = 8))+
-    guides(fill = guide_legend(reverse=F))+
-    geom_hline(yintercept=7.6, col="black")+
-  geom_hline(yintercept=3.5, col=2)+
-    ylab("CPUE (Kg/Hr)") +
-    xlab("") +
-  ylim(0, 25)+
-     theme(legend.position = "bottom")
-rendire2
-```
 con rendimiento de 3 horas
 
 Plots distintos solo con 2, 4 , 6 y M
@@ -758,36 +714,6 @@ rendire3 <- ggplot(rend1723 %>%
     xlab("") +
   ylim(0, 50)+
      theme(legend.position = "bottom")
-rendire3
-```
-
-```{r, fig.align="center", warning=FALSE}
-rendire3 <- ggplot(rend1723 %>% 
-                    filter(Sampling.point %in% c(2,4,6, "M")), 
-               aes(MES,Rend,
-                group=Sampling.point,
-                color=Sampling.point))+
-    geom_point(show.legend = T,
-               alpha=.7) +
-     geom_line(show.legend = T,
-               alpha=.7) +
-    theme_few()+ 
-    facet_grid(.~ANO)+
-    #scale_y_discrete(breaks = seq(from = 1, to = 13, by = 1))+
-   theme(axis.text.x = element_text(angle = 90,
-                                     hjust = 1,
-                                     vjust = 0.5,
-                                     size = 8),
-          axis.text.y = element_text(size = 8))+
-    guides(fill = guide_legend(reverse=F))+
-    scale_color_viridis_d(option= "H", 
-                          name="Sampling Point")+
-    geom_hline(yintercept=3.8, col="black")+
-  geom_hline(yintercept=3.5, col=2)+
-    ylab("CPUE (Kg/Hr)") +
-    xlab("") +
-  ylim(0, 50)+
-    ggtitle("Rendimiento coquina por año, mes y Punto de Muestreo")
 rendire3
 ```
 Por Sampling  point separados

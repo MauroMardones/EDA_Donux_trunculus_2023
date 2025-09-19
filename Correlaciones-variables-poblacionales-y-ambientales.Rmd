@@ -246,7 +246,6 @@ rl1 <- ggplot(ChlData %>%
 rl1
 ```
 
-
 ## Guardo la data 
 
 Data correspondiente al objeto `meanchl`
@@ -273,4 +272,5 @@ for (i in data.files) {
     data <- rbind(data, read.xlsx(i, sheetIndex = 1))
 }
 ```
+
 

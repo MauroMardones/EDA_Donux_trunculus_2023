@@ -67,8 +67,7 @@ En este código, se establecen dos formas de estimar el indice de reclutamiento 
 
 ## Bases de Densidades
 
-Recordar que las bases de densidades previas al 2021 estan en la misma base que las longitudes. pero he encontrado un archivo que tiene una síntesis.
-
+Recordar que las bases de densidades previas al 2021 estan en la misma base que las longitudes, pero he encontrado un archivo que tiene una síntesis.
 
 Llamo las bases con el formato último, es decir desde el año 2021.
 
@@ -222,50 +221,11 @@ denspobtot2 <- denspobtot %>%
 denspobtot2
 ```
 
-
-saco un grafico de datos de densidad 
-
-```{r}
-plotdens2125 <- ggplot(denspobtot2 %>% 
-                         filter(Categoria== "g") %>% 
-                         group_by(ANO, Sampling.point),
-                       aes(ANO, dens, group=ANO))+
-  scale_x_continuous(breaks = seq(from = 2021, 
-                                  to = 2024, 
-                                  by = 1))+
-  geom_violindot(scale = "width",
-                 dots_color = "red",
-                 dots_size = 8.5)+
-  theme_few()+
-   theme(axis.text.x = element_text(angle = 90, 
-                                   hjust = 1))+
-  labs(x="")
-
-plotdens2125p <- ggplot(denspobtot2 %>% 
-                         filter(Categoria== "p") %>% 
-                         group_by(ANO, Sampling.point),
-                       aes(ANO, dens, group=ANO))+
-   scale_x_continuous(breaks = seq(from = 2021, 
-                                  to = 2025, 
-                                  by = 1))+
- 
-  geom_violindot(scale = "width",
-                 dots_color = "red",
-                 dots_size = 8.5)+
-  theme_few()+
-   theme(axis.text.x = element_text(angle = 90, 
-                                   hjust = 1))+
-  labs(x="")
-#
-ggarrange(plotdens2125p, plotdens2125, ncol=2)
-```
-
-
 Aqui trataré de replicar los rresultados de los Informes de MD en los codes `Pondera1.R` y `Pondera2.R` alojados en este folder. Este hace un cruce con los datos de  tallas. 
 
 ## Base Tallas
 
-```{r}
+```{r warning=FALSE}
 size2021 <- read_excel(here("Data", 
                             "Posterior 2020", 
                             "Data_size_Coquina_2021.xlsx"), 
@@ -291,8 +251,6 @@ size2025 <- read_excel(here("Data",
                             "Data_size_Coquina_2025.xlsx"),  
                        sheet = "Coquina_Donax") %>% 
   select(-c(1, 2)) 
-
-
 ```
 
 
@@ -331,15 +289,15 @@ A traves de la ponderación del `D15`, hago un retrocalculo a traves de los pond
 
 
 ```{r}
-D15n <- size_21_25 %>% 
+D15n <- size_21_25 %>%
   group_by(ANO, 
            MES, 
            Sampling.point, 
            ID_codificado_muestreo
            ) %>% 
   summarize(
-    total_menor_15 = sum(sizeE < 10.8, na.rm = TRUE),
-    total_mayor_igual_15 = sum(sizeE >= 10.8, na.rm = TRUE),
+    total_menor_15 = sum(sizeE <= 15, na.rm = TRUE),
+    total_mayor_igual_15 = sum(sizeE > 15, na.rm = TRUE),
     .groups = "drop")
 
 D15n$Sampling.point <- as.double(D15n$Sampling.point)
@@ -349,7 +307,7 @@ D15n2 <- D15n1 %>%
   filter(!is.na(fpn) & !is.na(fpm) & !is.na(fps)) %>%  
   mutate(
     # Factor de ponderación combinado (fpn * fpm * fps)
-    ponderacion = fpn * fpm * fps,
+    ponderacion = (fpn * fpm * fps),
     # Área barrida (m_track * ancho_boca_rastro)
     area_barrida = m_track * 0.045,  # Ajusta este valor si es 0.445 en tu caso
     # Densidad de individuos <15 mm (D15)
@@ -361,33 +319,6 @@ D15n2 <- D15n1 %>%
   )
 ```
 Ploteo columnas por año y Sampling point 2, 4 y 6
-
-```{r warning=FALSE}
-plotD15 <- ggplot(D15n2 %>% 
-                    filter(Sampling.point %in% c(2,4,6)), 
-                  aes(MES,D15))+
-  geom_point()+
-  geom_smooth(method="loess", 
-              se=F)+
-  facet_wrap(.~ANO, ncol=5)+
-  scale_color_viridis_d(option="H",
-                        name="Sampling point")+
-  scale_x_continuous(breaks = seq(from = 1, 
-                                  to = 12, 
-                                  by = 1,
-                                  size=2))+
-  theme_few()+
-  geom_hline(yintercept = 8,
-             col="red",
-             linetype=2)+
-  theme(axis.text.x = element_text(angle = 90, 
-                                   hjust = 1),
-        legend.position = "bottom")+
-  labs(y="Indice de Reclutamiemto",
-       x="MES")+
-  ylim(0,40)
-plotD15
-```
 
 con todos los puntos
 
@@ -409,122 +340,10 @@ D15_allp <- ggplot(D15n2 ,
                                   to = 12, 
                                   by = 1,
                                   size=2))+
-  ylim(0,50)+
-  labs(y="Indice de Reclutamiemto",
+    labs(y="Indice de Reclutamiemto",
        x="MES")
 D15_allp
 ```
-
-Ahora agrupado por el complejo espacial total
-
-```{r warning=FALSE}
-totalD15 <- ggplot(D15n2 %>% 
-                    group_by(ANO, MES) %>% 
-                    summarise(MEAND15 =mean(D15), na.rm=TRUE), 
-                  aes(MES,MEAND15))+
-  geom_point()+
-  geom_line()+
-  facet_wrap(.~ANO, ncol=4)+
-  scale_color_viridis_d(option="H",
-                        name="Sampling point")+
-  scale_x_continuous(breaks = seq(from = 1, 
-                                  to = 12, 
-                                  by = 1,
-                                  size=2))+
-  theme_few()+
-  geom_hline(yintercept = 8,
-             col="red",
-             linetype=2)+
-  theme(axis.text.x = element_text(angle = 90, 
-                                   hjust = 1))+
-  labs(y="Indice de Reclutamiemto (D15)",
-       x="MES")
-totalD15
-```
-Ahora de Columnnas
-
-```{r warning=FALSE}
-plotD15 <- ggplot(D15n2, 
-                  aes(MES,D15))+
-  geom_col()+
-  #geom_smooth(method="lm")+
-  facet_grid(Sampling.point~ANO)+
-  scale_color_viridis_d(option="H",
-                        name="Sampling point")+
-  scale_x_continuous(breaks = seq(from = 1, 
-                                  to = 12, 
-                                  by = 1,
-                                  size=2))+
-  theme_few()+
-  geom_hline(yintercept = 8,
-             col="red",
-             linetype=2)+
-  theme(axis.text.x = element_text(angle = 90, 
-                                   hjust = 1))+
-  labs(y="Indice de Reclutamiemto",
-       x="MES")+
-  ylim(0,50)
-  #coord_polar(theta = "y")
-plotD15
-```
-
-
-Ahora de Columnnas para el 2, 4 y 6
-
-```{r warning=FALSE}
-plotD15fil <- ggplot(D15n2 %>% 
-                       filter(Sampling.point %in% c(2,4,6)), 
-                  aes(MES,D15))+
-  geom_col()+
-  #geom_smooth(method="lm")+
-  facet_grid(Sampling.point~ANO)+
-  scale_color_viridis_d(option="H",
-                        name="Sampling point")+
-  scale_x_continuous(breaks = seq(from = 1, 
-                                  to = 12, 
-                                  by = 1,
-                                  size=2))+
-  theme_few()+
-  geom_hline(yintercept = 8,
-             col="red",
-             linetype=2)+
-  theme(axis.text.x = element_text(angle = 90, 
-                                   hjust = 1))+
-  labs(y="Indice de Reclutamiemto",
-       x="MES")+
-  ylim(0,50)
-  #coord_polar(theta = "y")
-plotD15fil
-```
-
-Ahora solo los datos de los puntos 2,4 y 6 
-
-```{r warning=FALSE}
-totalD15fil <- ggplot(D15n2 %>%
-                     filter(Sampling.point %in% c(2,4,6)) %>% 
-                    group_by(ANO, MES) %>% 
-                    summarise(MEAND15 =mean(D15), na.rm=TRUE), 
-                  aes(MES,MEAND15))+
-  geom_point()+
-  geom_line()+
-  facet_wrap(.~ANO, ncol=2)+
-  scale_color_viridis_d(option="H",
-                        name="Sampling point")+
-  scale_x_continuous(breaks = seq(from = 1, 
-                                  to = 12, 
-                                  by = 1,
-                                  size=2))+
-  theme_few()+
-  geom_hline(yintercept = 8,
-             col="red",
-             linetype=2)+
-  theme(axis.text.x = element_text(angle = 90, 
-                                   hjust = 1))+
-  labs(y="Indice de Reclutamiemto",
-       x="MES")
-totalD15fil
-```
-
 
 Obtengo el valor para el informe de acuerdo al mes. Para ello genero una tabla de acuerdo al formato del informe
 
@@ -540,6 +359,7 @@ D15n4 <- D15n3 %>%
               values_from = D15PRO,
               values_fill = 0)
 
+
 kbl(D15n4) %>% 
   kable_styling(bootstrap_options = c("striped", 
                                       "hover", 
@@ -549,20 +369,19 @@ kbl(D15n4) %>%
 ```
 
 ```{r}
-write.csv(D15n3, "reclut_marina.csv")
+# write.csv(D15n3, "reclut_marina.csv")
 ```
 
-Esto debemos tratarlo como grupo dado que de acuerdo a la replica de cálculos los valores son mayores que los registrados en los ITAs de los años 2021 y 2023 [@Delgado2021; @Delgado2023].
-
-Existe un archivo que tiene datos de `D15` previos al 2020 y son valores menores.
+Esto debemos tratarlo como grupo dado que de acuerdo a la replica de cálculos los valores son mayores que los registrados en los ITAs de los años 2021 y 2023 [@Delgado2021; @Delgado2023]. Existe un archivo que tiene datos de `D15` previos al 2020 y son valores menores.
 
 ## Datos previo al 2020
 
-```{r}
+```{r messae=FALSE, warning=FALSE}}
 D151720  <- read_excel(here("Data", 
                              "Anterior a 2020",
                             "densidad_reclutamiento_2017_2018_2019_2020.xlsx"))
 ```
+
 
 
 ```{r}
@@ -574,17 +393,14 @@ D151720 <- D151720 %>%
   )
 ```
 
-
-
 Ahora lo veo como un plot similar al de los años 2021-2024
 
 ```{r warning = FALSE}
-D15_17_20 <- ggplot(D151720  %>% 
-                    filter(Sampling.point %in% c(2,4,6)), 
+D15_17_20 <- ggplot(D151720, 
                   aes(MES,D15, 
                   color=as.factor(Sampling.point)))+
   geom_point()+
-  geom_smooth(col=2)+
+  geom_smooth(col=2, se=F)+
   facet_wrap(.~ANO, ncol=4)+
   scale_color_viridis_d(name="Sampling Points")+
   theme_few()+
@@ -597,25 +413,12 @@ D15_17_20 <- ggplot(D151720  %>%
                                   to = 12, 
                                   by = 1,
                                   size=2))+
-  ylim(0,50)+
   labs(y="Indice de Reclutamiemto",
        x="MES")
 D15_17_20
 ```
 
-
-Tabla con los datos del año para el informe;
-
-```{r eval=FALSE}
-kbl(D15n2$Sampling.point.x, D15n2$num_individuos_m2, 
-    booktabs = T,format = "latex",
-    caption = "D15 Mes de Diciembre 2023") %>%
-    kable_styling(latex_options = c("striped",
-                                  "condensed","scale_down"),
-                full_width = FALSE,font_size=8)
-
-```
-çuno bases desde el 2017
+uno bases desde el 2017 al ultimo dato registrado
 
 ```{r}
 head(D151720)
@@ -626,101 +429,34 @@ names(D15_17_20)
 
 
 head(D15n2)
-D15_21_24 <- D15n2 %>% 
+D15_21_25 <- D15n2 %>% 
    ungroup() %>%  
   select(c(1, 3, 46, 51, 32, 31, 30)) %>% 
   rename(Densidad = dens)
-names(D15_21_24)
+names(D15_21_25)
 ```
 unir bases
 
 ```{r}
-D15_17_24 <- rbind(D15_17_20,
-                   D15_21_24)
+D15_17_25 <- rbind(D15_17_20,
+                   D15_21_25)
 #write_csv(D15_17_24, "D15_17_24.csv")
 #save(D15_21_24, D15n2, file = "recruit_data.RData") Data Recruit Paper
 ```
-Ambos graficos (2017-2020 y 2021.2024) para comparar metodologías. Estas no tienen os mismos puntos muestreados
 
-
-```{r warning=FALSE}
-plot_D15_17_24 <- ggplot(D15_17_24 , 
-                  aes(MES,D15, 
-                  group=as.factor(Sampling.point)))+
-  geom_point()+
-  geom_smooth(col=2)+
-  facet_grid(Sampling.point~ANO)+
-  scale_color_viridis_d(name="Sampling Points")+
-  theme_few()+
-  geom_hline(yintercept = 8,
-             col="red",
-             linetype=2)+
-  theme(axis.text.x = element_text(angle = 90, 
-                                   hjust = 1))+
-  scale_x_continuous(breaks = seq(from = 1, 
-                                  to = 12, 
-                                  by = 1,
-                                  size=2))+
-  ylim(0,50)+
-  labs(y="Indice de Reclutamiemto",
-       x="MES")
-plot_D15_17_24
-```
-juntos
-
+Plot de Densidad y d15 para ver si tienen relación
 
 ```{r warning=FALSE}
-plotD15all <- ggplot(D15_17_24 %>% 
-                    filter(Sampling.point %in% c(2,4,6)) %>% 
-                    group_by(ANO, MES) %>% 
-                    summarise(MEAN = mean(D15), na.rm=TRUE,
-                             SD = sd(D15), na.rm =TRUE),  # Calcula la desviación estándar
-                  aes(x = MES, y = MEAN)) +
-  
-  # Puntos y línea suavizada
-  geom_point(color="blue") +
-  geom_smooth(method = "loess", se = FALSE) +
-  
-  # Barras de error para la desviación estándar
-  geom_errorbar(aes(ymin = MEAN - SD, 
-                ymax = MEAN + SD),
-              width = 0.2, 
-              color = "blue") +
-  
-  # Facetas y escalas
-  facet_wrap(. ~ ANO, ncol = 9) +
-   scale_x_continuous(
-    breaks = seq(1, 12, by = 2),  # Secuencia de 1 a 12 en pasos de 2
-    labels = month.abb[seq(1, 12, by = 2)]  # Etiquetas correspondientes
-  ) +
-  scale_color_viridis_d(option = "H", name = "Sampling point") +
-  
-  # Línea de referencia y temas
-  geom_hline(yintercept = 8, col = "red", linetype = 2) +
-  theme_few() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1),
-        legend.position = "bottom") +
-  
-  # Etiquetas
-  labs(y = "Recruit index (ind/m2) ± DE",
-       x = "") +
-  ylim(0, 40)
-
-```
-ahora densidad
-
-
-```{r warning=FALSE}
-plotDall <- ggplot(D15_17_24 %>% 
+plotDall <- ggplot(D15_17_25 %>% 
                     filter(Sampling.point %in% c(2,4,6)) %>% 
                       group_by(ANO,MES) %>% 
                       summarise(MEAND=mean(Densidad), na.rm=TRUE,
                              SDd = sd(Densidad), na.rm =TRUE),  # Calcula la desviación estándar
                   aes(x = MES, y = MEAND)) +
-  geom_point(color="black")+
+  geom_point(color="blue")+
   geom_smooth(method="loess", 
               se=F,
-              color="black")+
+              color="blue")+
   facet_wrap(.~ANO, ncol=9)+
    # Barras de error para la desviación estándar
   geom_errorbar(aes(ymin = MEAND - SDd, 
@@ -738,6 +474,33 @@ plotDall <- ggplot(D15_17_24 %>%
   labs(y="Total Density (ind/m2)",
        x="")
 
+plotD15all <- ggplot(D15_17_25 %>% 
+                    filter(Sampling.point %in% c(2,4,6)) %>% 
+                      group_by(ANO,MES) %>% 
+                      summarise(MEAND15=mean(D15), na.rm=TRUE,
+                             SDd = sd(D15), na.rm =TRUE),  # Calcula la desviación estándar
+                  aes(x = MES, y = MEAND15)) +
+  geom_point(color="black")+
+  geom_smooth(method="loess", 
+              se=F,
+              color="black")+
+  facet_wrap(.~ANO, ncol=9)+
+   # Barras de error para la desviación estándar
+  geom_errorbar(aes(ymin = MEAND15 - SDd, 
+                ymax = MEAND15 + SDd),
+              width = 0.5, 
+              color = "gray50") +
+  scale_x_continuous(
+    breaks = seq(1, 12, by = 2),  # Secuencia de 1 a 12 en pasos de 2
+    labels = month.abb[seq(1, 12, by = 2)]  # Etiquetas correspondientes
+  ) +
+  theme_few()+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1),
+        legend.position = "bottom")+
+  labs(y="Total Density (ind/m2)",
+       x="")+
+  ylim(0,100)
 
 
 ggarrange(plotD15all,
@@ -759,7 +522,7 @@ acá no pude hacer ponderacones a años previos al 2017 dado que no estan los da
 
 ```{r}
 tallas13_25 <- readRDS("tallas_13_25.RDS")
-table(tallas13_25$ANO, tallas13_25$MES)
+table(D15_17_25$ANO, D15_17_25$MES)
 ```
 
 
@@ -808,33 +571,39 @@ D15plot <- ggplot(D15 %>%
   ylab("Punto de Muestreo")
 D15plot
 ```
+para sacar el indice  para analisis de viento, agrupo los sampling point 2, 4 y 6
+
+```{r warning=FALSE}
+datos <- D15 %>%
+  filter(Sampling.point %in% c(2, 4, 6)) %>% 
+  drop_na() %>% 
+    mutate(
+    MES = factor(MES, levels = month.name),
+    mes_num = as.numeric(MES)
+  ) %>% 
+  group_by(ANO, mes_num, Sampling.point) %>% 
+  summarise(meand15 = mean(d15))
+#saveRDS(datos, "index_recruit_2013_2025.RDS")
 
 
-```{r}
-landpop <- ggplot(D15 %>% 
-                    drop_na(d15, Sampling.point)) +
-  geom_lollipop(aes(y=d15, 
-                  x=MES), 
-              size=0.5)+
-  scale_colour_viridis_d(option = "C",
-                       name= "Punto")+
-  geom_hline(yintercept = 8,
-             col="red",
-             linetype=2)+
-  theme_few() +
+# Gráfico
+ggplot(datos %>% 
+         drop_na(), aes(x = mes_num, y = meand15)) +
+  geom_point(color = "#2C3E50", alpha = 0.7, size = 2) +
+  geom_smooth(method = "lm",
+              se =T)+
+  labs(
+    title = "",
+    x = "",
+    y = "d15"
+  ) +
+  theme_bw(base_size = 9) +
   theme(
-    legend.position = "none",
-    panel.border = element_blank(),
-    panel.spacing = unit(0.1, "lines"),
-    strip.text.x = element_text(size = 6),
-    axis.text.x = element_text(size = 5,
-                               angle = 90, 
-                               hjust = 1),
-    axis.text.y = element_text(size = 5)) +
-  xlab("") +
-  ylab("D15") +
-  facet_grid(ANO~Sampling.point)
-landpop
+    axis.text.x = element_text(angle = 90, vjust = 0.5),
+    panel.grid.minor = element_blank()
+  ) +
+  facet_wrap(~ANO, nrow = 1)
+
 ```
 
 ## Recruit Index size Based (from sea urchin, Chile)
@@ -856,7 +625,7 @@ indseg <- ggplot(indice_reclutamiento %>%
                    drop_na(), 
        aes(PROP)) +
   geom_histogram(bins = 10) +
-  facet_grid(Sampling.point~ANO) +
+  #facet_grid(Sampling.point~ANO) +
   theme_few()+
     theme(axis.text.x = element_text(angle = 90, hjust = 1))+
    labs(x = "", 

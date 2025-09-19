@@ -770,13 +770,15 @@ another way to viz is a scatter plot
 ```{r warning=FALSE, message=FALSE}
 sizemean <-sizeall2 %>% 
   dplyr::group_by(ANO,
-                  rastro) %>%
+                  rastro,
+                  Sampling.point
+                  ) %>%
   dplyr::summarise(avg=mean(sizeE),
                    sd =sd(sizeE)) %>% 
   filter(rastro!="COMERCiAL")
 #kableExtra::kable(coutlength, format = "html")
 
-write.csv(sizemean, "Tallas_Media_Gruped_13_24.csv" )
+#write.csv(sizemean, "Tallas_Media_Gruped_13_24.csv" )
 ```
 
 Promedio por tipo de rastro.
@@ -843,7 +845,7 @@ tendencia por puntos importantes
 
 ```{r, fig.align="center", warning=FALSE}
 pmeaimp <- ggplot(sizemean %>% 
-                filter(Sampling.point %in% c(2,4,6, "M")) %>% 
+                filter(Sampling.point %in% c(2,4,6)) %>% 
                  drop_na(avg, Sampling.point), 
                aes(as.factor(ANO), avg,
                color=rastro,
