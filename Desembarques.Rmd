@@ -58,6 +58,7 @@ library(rnaturalearth)
 library(sf)
 library(psych)
 library(ggpubr)
+library(purrr)
 ```
 
 # DESEMBARQUES OFICIALES
@@ -304,5 +305,63 @@ totalanualfil<-   ggplot(landcorr %>%
 ```{r}
 ggarrange(totalanual , totalanualfil,
           ncol = 1)
+```
+
+
+
+## Leer datos de Chirla y Coquina
+
+```{r}
+archivo <- "Data/Desembarques/DESEM_CHI_COQ_2000_2025.xlsx"
+hojas <- paste0("RESULTADOS (HOJA ", 1:5, ")")
+datos <- map_df(hojas, ~ read_excel(archivo, sheet = .x), .id = "origen")
+```
+
+
+```{r}
+datosuratlantico <- datos %>%
+  filter(region == "SURATLÁNTICA") 
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# Filtramos solo Chirla y Coquina
+datos_filtrados <- datosuratlantico %>%
+  filter(nombreEspecie %in% c("CHIRLA", "COQUINA"))
+
+# --- Gráfico por Mes (toneladas) ---
+g_mes <- datos_filtrados %>%
+  group_by(nombreEspecie, fechaVentaMes, zonaProduccion) %>%
+  summarise(totalToneladas = sum(totalKilos, na.rm = TRUE) / 1000, .groups = "drop") %>%
+  ggplot(aes(x = fechaVentaMes, y = totalToneladas, fill = zonaProduccion)) +
+  geom_bar(stat = "identity", position = "stack") +
+  facet_wrap(~ nombreEspecie, scales = "free_y") +
+  labs(title = "Desembarques mensuales de Chirla y Coquina",
+       x = "Mes", y = "Total (toneladas)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+# --- Gráfico por Año (toneladas) ---
+g_anio <- datos_filtrados %>%
+  group_by(nombreEspecie, fechaVentaAnio, zonaProduccion) %>%
+  summarise(totalToneladas = sum(totalKilos, na.rm = TRUE) / 1000,
+            .groups = "drop") %>%
+  ggplot(aes(x = fechaVentaAnio, 
+             y = totalToneladas, fill = zonaProduccion)) +
+  geom_bar(stat = "identity", position = "stack") +
+  facet_wrap(~ nombreEspecie, scales = "free_y") +
+  scale_fill_viridis_b() +
+  labs(title = "Desembarques anuales de Chirla y Coquina",
+       x = "Año", y = "Total (toneladas)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+# Mostrar gráficos
+print(g_mes)
+print(g_anio)
+
+
 ```
 
