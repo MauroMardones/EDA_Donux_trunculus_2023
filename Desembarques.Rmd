@@ -352,7 +352,6 @@ g_anio <- datos_filtrados %>%
              y = totalToneladas, fill = zonaProduccion)) +
   geom_bar(stat = "identity", position = "stack") +
   facet_wrap(~ nombreEspecie, scales = "free_y") +
-  scale_fill_viridis_b() +
   labs(title = "Desembarques anuales de Chirla y Coquina",
        x = "Año", y = "Total (toneladas)") +
   theme_minimal() +
@@ -362,6 +361,107 @@ g_anio <- datos_filtrados %>%
 print(g_mes)
 print(g_anio)
 
+```
+
+
+
+# Breakpoints
+
+
+The analysis of structural breakpoints is based on fitting a regression model in which the relationship between the response variable and its predictors may change at unknown points in time. In its simplest form, the model can be expressed as
+
+
+$$ y_t = x_t^\top \beta + u_t, \quad t = 1, \dots, T $$
+where (y_t) represents the dependent variable, in this case the total kilograms landed each year, (x_t) is the explanatory variable (the year), (\beta) is a vector of regression parameters, and (u_t) is the error term. The assumption of a constant parameter vector (\beta) throughout the entire series may not hold if there are structural changes in the fishery, for example due to management interventions, shifts in resource abundance, or environmental impacts. To account for this, the model allows for a structural break at an unknown year (m). In such a case the regression parameters are different before and after the breakpoint:
+
+$$
+y_t =
+\begin{cases}
+x_t^\top \beta_1 + u_t, & t = 1, \dots, m \
+x_t^\top \beta_2 + u_t, & t = m+1, \dots, T
+\end{cases}
+$$
+
+Thus, the series is divided into two regimes, each characterized by its own set of regression parameters (\beta_1) and (\beta_2). The breakpoint (m) is estimated by minimizing the sum of squared residuals (SSR) across the two regimes, that is,
+
+$$
+\hat{m} = \arg \min_m \Bigg[ \sum_{t=1}^m (y_t - x_t^\top \hat{\beta}*1(m))^2
++ \sum*{t=m+1}^T (y_t - x_t^\top \hat{\beta}_2(m))^2 \Bigg].
+$$
+
+This criterion ensures that the chosen breakpoint corresponds to the year where the total explanatory power of the segmented regression is maximized. In practice, the procedure can be extended to detect multiple breakpoints, partitioning the series into several distinct regimes with different statistical properties.
+
+Applied to the case of clam fisheries in Spain, where the time series of official landings often exhibits abrupt shifts caused by regulatory closures, license reductions, or ecological changes in stock abundance, the breakpoint analysis provides a rigorous statistical tool to identify the exact years when structural changes in landings occurred. By doing so, the method transforms a noisy time series into interpretable periods that can be directly related to historical events in fishery management or ecosystem variability.
+
+The breakpoint analysis was conducted using the R package **strucchange** [@zeileis2002], which implements methods for testing and dating structural changes in linear regression models. 
+
+
+```{r}
+
+# Filtrar solo las dos especies
+df_species <- datosuratlantico %>%
+  filter(nombreEspecie %in% c("COQUINA", "CHIRLA")) %>%
+  mutate(
+    fechaVenta = dmy(fechaVenta),
+    Year = year(fechaVenta)
+  ) %>%
+  group_by(Year, nombreEspecie, provincia) %>%
+  summarise(totalKilos = sum(totalKilos, na.rm = TRUE), .groups = "drop")
+
+
+df_long <- df_species %>%
+  arrange(provincia, nombreEspecie, Year)
+
+df_long %>%
+  group_by(provincia, nombreEspecie) %>%
+  summarise(n_years = n(), .groups = "drop") %>%
+  arrange(n_years)
 
 ```
+```{r eval=FALSE}
+# Filtrar especies de interés y agregar por año y provincia
+df_long <- datosuratlantico %>%
+  filter(nombreEspecie %in% c("COQUINA", "CHIRLA")) %>%
+  mutate(fechaVenta = lubridate::dmy(fechaVenta),
+         Year = lubridate::year(fechaVenta)) %>%
+  group_by(nombreEspecie, Year) %>%
+  summarise(totalKilos = sum(totalKilos, na.rm = TRUE), .groups = "drop") %>%
+  arrange(nombreEspecie, Year)
+
+library(dplyr)
+library(strucchange)
+library(purrr)
+
+results <- df_long %>%
+  group_by(nombreEspecie) %>%
+  group_map(~{
+    n <- nrow(.x)
+    if(n > 3){
+      bp <- breakpoints(totalKilos ~ Year, data = .x, h = 3)
+      data.frame(
+        Year = .x$Year[bp$breakpoints],
+        nombreEspecie = .y$nombreEspecie
+      )
+    } else {
+      NULL
+    }
+  }, .keep = TRUE) %>% 
+  bind_rows()
+
+
+# Graficar
+ggplot(df_long, aes(x = Year, y = totalKilos)) +
+  geom_col() +
+  geom_vline(data = results, aes(xintercept = Year, 
+                                 color = nombreEspecie),
+              size = 1) +
+  facet_grid(nombreEspecie ~ ., scales = "free_y") +
+  theme_bw() +
+  labs(y = "Total Kilos vendidos", x = "Año",
+       title = "Breakpoints en ventas de Chirla y Coquina por provincia") +
+  scale_color_manual(values = c("COQUINA" = "#E69F00",
+                                "CHIRLA" = "#56B4E9"))
+
+```
+
 

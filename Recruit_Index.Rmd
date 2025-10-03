@@ -136,18 +136,18 @@ Filtro las bases
 ```{r}
 # poblacional
 dens2021pobf <- dens2021pob %>% 
-  select(2:18, 23, 27:29, 32, 35:39, 44, 45)
+  dplyr::select(2:18, 23, 27:29, 32, 35:39, 44, 45)
 dens2022pobf <- dens2022pob %>% 
-  select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
+  dplyr::select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
   rename(ID_codificado_punto=ID)
 dens2023pobf <- dens2023pob %>% 
-  select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
+  dplyr::select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
   rename(ID_codificado_punto=ID)
 dens2024pobf <- dens2024pob %>% 
-  select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
+  dplyr::select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
   rename(ID_codificado_punto=ID)
 dens2025pobf <- dens2025pob %>% 
-  select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
+  dplyr::select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
   rename(ID_codificado_punto=ID)
 
 
@@ -230,27 +230,27 @@ size2021 <- read_excel(here("Data",
                             "Posterior 2020", 
                             "Data_size_Coquina_2021.xlsx"), 
                        sheet = "Coquina_donax") %>% 
-  select(-c(1, 10, 11))  
+  dplyr::select(-c(1, 10, 11))  
 size2022 <- read_excel(here("Data",
                             "Posterior 2020", 
                             "Data_size_Coquina_2022.xlsx"),  
                        sheet = "Coquina_donax") %>% 
-  select(-c(1, 2))  
+  dplyr::select(-c(1, 2))  
 size2023 <- read_excel(here("Data", 
                             "Posterior 2020",
                             "Data_size_Coquina_2023.xlsx"),  
                        sheet = "Coquina_Donax") %>% 
-  select(-c(1, 2)) 
+  dplyr::select(-c(1, 2)) 
 size2024 <- read_excel(here("Data", 
                             "Posterior 2020",
                             "Data_size_Coquina_2024.xlsx"),  
                        sheet = "Coquina_Donax") %>% 
-  select(-c(1, 2)) 
+  dplyr::select(-c(1, 2)) 
 size2025 <- read_excel(here("Data", 
                             "Posterior 2020",
                             "Data_size_Coquina_2025.xlsx"),  
                        sheet = "Coquina_Donax") %>% 
-  select(-c(1, 2)) 
+  dplyr::select(-c(1, 2)) 
 ```
 
 
@@ -307,9 +307,9 @@ D15n2 <- D15n1 %>%
   filter(!is.na(fpn) & !is.na(fpm) & !is.na(fps)) %>%  
   mutate(
     # Factor de ponderación combinado (fpn * fpm * fps)
-    ponderacion = (fpn * fpm * fps),
+    ponderacion = ( fpm * fps), # se podría añadir fpn si se quiere ponderar por n de individuos medidos, pero no lo haremos esta vez
     # Área barrida (m_track * ancho_boca_rastro)
-    area_barrida = m_track * 0.045,  # Ajusta este valor si es 0.445 en tu caso
+    area_barrida = m_track * 0.045,  
     # Densidad de individuos <15 mm (D15)
     D15 = (total_menor_15 * ponderacion) / area_barrida,
     na.rm = TRUE,
@@ -317,6 +317,7 @@ D15n2 <- D15n1 %>%
     D15_mayor = (total_mayor_igual_15 * ponderacion) / area_barrida,
     na.rm = TRUE
   )
+
 ```
 Ploteo columnas por año y Sampling point 2, 4 y 6
 
@@ -423,7 +424,7 @@ uno bases desde el 2017 al ultimo dato registrado
 ```{r}
 head(D151720)
 D15_17_20 <- D151720 %>% 
-  select(c(7 , 2, 5, 6, 11, 12, 13)) %>% 
+  dplyr::select(c(7 , 2, 5, 6, 11, 12, 13)) %>% 
   rename(Date = month...7)
 names(D15_17_20)
 
@@ -431,7 +432,7 @@ names(D15_17_20)
 head(D15n2)
 D15_21_25 <- D15n2 %>% 
    ungroup() %>%  
-  select(c(1, 3, 46, 51, 32, 31, 30)) %>% 
+  dplyr::select(c(1, 3, 46, 51, 32, 31, 30)) %>% 
   rename(Densidad = dens)
 names(D15_21_25)
 ```
