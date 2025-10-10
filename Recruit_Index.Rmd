@@ -317,7 +317,6 @@ D15n2 <- D15n1 %>%
     D15_mayor = (total_mayor_igual_15 * ponderacion) / area_barrida,
     na.rm = TRUE
   )
-
 ```
 Ploteo columnas por año y Sampling point 2, 4 y 6
 
@@ -394,31 +393,6 @@ D151720 <- D151720 %>%
   )
 ```
 
-Ahora lo veo como un plot similar al de los años 2021-2024
-
-```{r warning = FALSE}
-D15_17_20 <- ggplot(D151720, 
-                  aes(MES,D15, 
-                  color=as.factor(Sampling.point)))+
-  geom_point()+
-  geom_smooth(col=2, se=F)+
-  facet_wrap(.~ANO, ncol=4)+
-  scale_color_viridis_d(name="Sampling Points")+
-  theme_few()+
-  geom_hline(yintercept = 8,
-             col="red",
-             linetype=2)+
-  theme(axis.text.x = element_text(angle = 90, 
-                                   hjust = 1))+
-    scale_x_continuous(breaks = seq(from = 1, 
-                                  to = 12, 
-                                  by = 1,
-                                  size=2))+
-  labs(y="Indice de Reclutamiemto",
-       x="MES")
-D15_17_20
-```
-
 uno bases desde el 2017 al ultimo dato registrado
 
 ```{r}
@@ -444,6 +418,56 @@ D15_17_25 <- rbind(D15_17_20,
 #write_csv(D15_17_24, "D15_17_24.csv")
 #save(D15_21_24, D15n2, file = "recruit_data.RData") Data Recruit Paper
 ```
+Plot
+
+```{r}
+D15_17_20 <- ggplot(D15_17_25 %>%
+        mutate(MES = case_when(
+           MES == 1 ~ "January",
+           MES == 2 ~ "February",
+           MES == 3 ~ "March",
+           MES == 4 ~ "April",
+           MES == 5 ~ "May",
+           MES == 6 ~ "June",
+           MES == 7 ~ "July",
+           MES == 8 ~ "August",
+           MES == 9 ~ "September",
+           MES == 10 ~ "October",
+           MES == 11 ~ "November",
+           MES == 12 ~ "December")) %>% 
+         mutate(MES = factor(MES, levels = c("January", 
+                                              "February", 
+                                              "March",
+                                              "April",
+                                              "May",
+                                              "June",
+                                              "July",
+                                              "August",
+                                              "September",
+                                              "October",
+                                              "November", 
+                                              "December"))) %>%
+                      filter(Sampling.point %in% c(2,4,6)), 
+                  aes(MES,D15, 
+                  color=as.factor(Sampling.point)))+
+  geom_point()+
+  geom_smooth(col=2, se=F)+
+  geom_rect(
+  aes(xmin = 8, xmax = 6,, ymin = -Inf, ymax = Inf),  # del 1 mayo al 30 junio
+  fill = "grey", alpha = 0.01, inherit.aes = FALSE) +
+  facet_wrap(.~ANO, ncol=9)+
+  scale_color_viridis_d(name="Sampling Points")+
+  theme_few()+
+  geom_hline(yintercept = 8,
+             col="red",
+             linetype=2)+
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1),
+        legend.position = "bottom")+
+  labs(y="Indice de Reclutamiemto (D15)",
+       x="")
+D15_17_20
+```
 
 Plot de Densidad y d15 para ver si tienen relación
 
@@ -458,6 +482,9 @@ plotDall <- ggplot(D15_17_25 %>%
   geom_smooth(method="loess", 
               se=F,
               color="blue")+
+ geom_rect(
+  aes(xmin = 8, xmax = 6,, ymin = -Inf, ymax = Inf),  # del 1 mayo al 30 junio
+  fill = "grey", alpha = 0.05, inherit.aes = FALSE) +
   facet_wrap(.~ANO, ncol=9)+
    # Barras de error para la desviación estándar
   geom_errorbar(aes(ymin = MEAND - SDd, 
@@ -481,10 +508,14 @@ plotD15all <- ggplot(D15_17_25 %>%
                       summarise(MEAND15=mean(D15), na.rm=TRUE,
                              SDd = sd(D15), na.rm =TRUE),  # Calcula la desviación estándar
                   aes(x = MES, y = MEAND15)) +
+  
   geom_point(color="black")+
   geom_smooth(method="loess", 
               se=F,
               color="black")+
+ geom_rect(
+  aes(xmin = 8, xmax = 6,, ymin = -Inf, ymax = Inf),  # del 1 mayo al 30 junio
+  fill = "grey", alpha = 0.05, inherit.aes = FALSE) +
   facet_wrap(.~ANO, ncol=9)+
    # Barras de error para la desviación estándar
   geom_errorbar(aes(ymin = MEAND15 - SDd, 
@@ -499,7 +530,7 @@ plotD15all <- ggplot(D15_17_25 %>%
   theme(axis.text.x = element_text(angle = 90, 
                                    hjust = 1),
         legend.position = "bottom")+
-  labs(y="Total Density (ind/m2)",
+  labs(y="D15 (ind/m2)",
        x="")+
   ylim(0,100)
 
@@ -552,26 +583,7 @@ D15 <- tallas13_25 %>%
   )
 
 ```
-representación con barPlot
 
-```{r}
-D15plot <- ggplot(D15 %>% 
-                    drop_na(d15, Sampling.point),
-                  aes(d15, Sampling.point,
-                  fill=Sampling.point))+
-  geom_col(position = "dodge")+
-  scale_fill_viridis_d(option = "A",
-                       name= "Punto")+
-  facet_wrap(.~ANO)+
-  geom_vline(xintercept = 8,
-             col="red",
-             linetype=2)+
-  coord_flip()+
-  theme_few()+
-  xlim(0,60)+
-  ylab("Punto de Muestreo")
-D15plot
-```
 para sacar el indice  para analisis de viento, agrupo los sampling point 2, 4 y 6
 
 ```{r warning=FALSE}
@@ -582,29 +594,51 @@ datos <- D15 %>%
     MES = factor(MES, levels = month.name),
     mes_num = as.numeric(MES)
   ) %>% 
-  group_by(ANO, mes_num, Sampling.point) %>% 
+  group_by(ANO, mes_num) %>% 
   summarise(meand15 = mean(d15))
 #saveRDS(datos, "index_recruit_2013_2025.RDS")
 
 
 # Gráfico
-ggplot(datos %>% 
-         drop_na(), aes(x = mes_num, y = meand15)) +
+ggplot(datos %>%
+         rename(MES = mes_num) %>%
+         mutate(MES = case_when(
+           MES == 1 ~ "January",
+           MES == 2 ~ "February",
+           MES == 3 ~ "March",
+           MES == 4 ~ "April",
+           MES == 5 ~ "May",
+           MES == 6 ~ "June",
+           MES == 7 ~ "July",
+           MES == 8 ~ "August",
+           MES == 9 ~ "September",
+           MES == 10 ~ "October",
+           MES == 11 ~ "November",
+           MES == 12 ~ "December")) %>% 
+         mutate(MES = factor(MES, levels = c("January", 
+                                              "February", 
+                                              "March",
+                                              "April",
+                                              "May",
+                                              "June",
+                                              "July",
+                                              "August",
+                                              "September",
+                                              "October",
+                                              "November", 
+                                              "December"))) %>%
+         drop_na(), 
+       aes(x = MES, y = meand15)) +
   geom_point(color = "#2C3E50", alpha = 0.7, size = 2) +
-  geom_smooth(method = "lm",
-              se =T)+
-  labs(
-    title = "",
-    x = "",
-    y = "d15"
-  ) +
+  geom_smooth(method = "loess", se = T) +
+  geom_rect(aes(xmin = 6, xmax = 8, ymin = -Inf, ymax = Inf),  
+            fill = "red", alpha = 0.02, inherit.aes = FALSE) +
+  labs(title = "", x = "", y = "d15") +
   theme_bw(base_size = 9) +
-  theme(
-    axis.text.x = element_text(angle = 90, vjust = 0.5),
-    panel.grid.minor = element_blank()
-  ) +
-  facet_wrap(~ANO, nrow = 1)
-
+  theme(axis.text.x = element_text(angle = 90, hjust = 0.5),
+        panel.grid.minor = element_blank()) +
+  facet_wrap(~ANO, nrow = 1) +
+  ylim(0, 100)
 ```
 
 ## Recruit Index size Based (from sea urchin, Chile)
@@ -649,32 +683,38 @@ indice_reclutamiento$PROPLOG2 <- ((indice_reclutamiento$PROPLOG- min_x) / (max_x
 
 
 ```{r}
-indseg3 <- ggplot(indice_reclutamiento %>% 
-                filter(Sampling.point %in% c(2, 4, 6)) %>% 
-                  drop_na(), 
-       aes(x = factor(MES), 
-           y = PROPLOG2,
-           fill=PROPLOG2 > 0)) +
-  geom_bar(stat = "identity",
-           alpha=0.85)  +
-  scale_fill_manual(values = c("black", "red"),
-                    labels = c("Negativo", "Positivo"),
-                    name="IR") +
-  #facet_wrap(.~ANO, ncol=10) +
-  facet_grid(Sampling.point~ANO) +
-  geom_hline(yintercept = 0, color = "black")+
-  #scale_x_discrete(breaks = seq(from = 1996, to = 2022, by = 4))+
-  theme_few()+
-   theme(axis.text.x = element_text(angle = 90,
-                                     hjust = 1,
-                                     vjust= 0.5,
-                                     size = 8),
-          axis.text.y = element_text(size = 8),
-        legend.position = "bottom")+
-  labs(x = "", 
-        y = "IR")+
-  ylim(-1,1)
+indseg3 <- ggplot(
+  indice_reclutamiento %>%
+    filter(Sampling.point %in% c(2, 4, 6)) %>%
+    drop_na() %>%
+    mutate(MES = factor(MES, levels = rev(month.name))),  # 🔹 invierte el orden de los meses
+  aes(x = MES, y = PROPLOG2, fill = PROPLOG2 > 0)
+) +
+  # ---- banda sombreada ----
+  geom_rect(
+  aes(xmin = 8, xmax = 6,, ymin = -Inf, ymax = Inf),  # del 1 mayo al 30 junio
+  fill = "grey", alpha = 0.05, inherit.aes = FALSE) +
+  # ---- barras ----
+  geom_bar(stat = "identity", alpha = 0.85) +
+  scale_fill_manual(
+    values = c("black", "red"),
+    labels = c("Negativo", "Positivo"),
+    name = "IR"
+  ) +
+  facet_grid(Sampling.point ~ ANO) +
+  geom_hline(yintercept = 0, color = "black") +
+  theme_few() +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 8),
+    axis.text.y = element_text(size = 8),
+    legend.position = "bottom"
+  ) +
+  labs(x = "", y = "IR") +
+  ylim(-1, 1) +
+  coord_flip()
+
 indseg3
+
 
 ```
 
@@ -693,15 +733,15 @@ Datos previos al 2020 solo tienen `D15`, `Densidad`y `Rendimiento`.
 ```{r}
 
 dens1720 <- D151720 %>% 
-  select(c(2, 12, 13, 5))
+  dplyr::select(c(2, 12, 13, 5))
 
 dens2123 <- denspobtot2 %>% 
-  select(c(3, 30, 31, 46)) %>% 
+  dplyr::select(c(3, 30, 31, 46)) %>% 
   rename("Densidad"="dens") %>% 
   as.data.frame()
 
 dens2124 <- dens2123 %>% 
-  select(-c("Beach", "DIA"))
+  dplyr::select(-c("Beach", "DIA"))
 
 
 dens1724 <- rbind(dens1720,
@@ -755,12 +795,12 @@ plot_dens_agru <- ggplot(dens1724 %>%
              linetype=2)+
   theme(axis.text.x = element_text(angle = 90, 
                                    hjust = 1))+
-    scale_x_continuous(breaks = seq(from = 1, 
-                                  to = 12, 
+    scale_x_continuous(breaks = seq(from = 2018, 
+                                  to = 2025, 
                                   by = 1,
                                   size=2))+
    labs(y="Densidad (ind/mt2)",
-       x="MES")+
+       x="")+
   ylim(0, 75)
 plot_dens_agru
 ```
@@ -801,7 +841,7 @@ bio <- ggplot(denspobtot2 %>%
   geom_smooth(method = "lm")+
   #facet_wrap(.~Sampling.point)+
   theme_few()+
-  xlim(2020, 2023)+
+  xlim(2020, 2025)+
   labs(y="Biomasas (kg)")
 bio                       
 ```

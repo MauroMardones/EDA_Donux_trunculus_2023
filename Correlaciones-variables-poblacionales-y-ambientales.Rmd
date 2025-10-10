@@ -67,7 +67,13 @@ Identificar correlaciones entre variables relativas a los indicadores. La idea s
 
 Lee data 
 ```{r}
-ChlData <- read_csv("~/IEO/DATA/Ambientales_Data/Clorophila_Data.csv")
+ChlData <- read_excel("~/IEO/FEMP_04/Ambientales_Data/Clorofila_data/Medidas Clorofila a_playa.xlsx", 
+    sheet = "RESULTADOS_CLOROFILA", skip = 3) %>%
+  mutate(Fecha = as.Date(as.numeric(Fecha), origin = "1899-12-30")) %>% 
+  janitor::clean_names()
+
+# Verificar
+glimpse(ChlData)
 ```
 
 ## Manipular estructura de datos 
@@ -76,15 +82,14 @@ ChlData <- read_csv("~/IEO/DATA/Ambientales_Data/Clorophila_Data.csv")
 Defino y separo las fechas entre Año, Mes y Día
 
 ```{r}
-# transformo a POSIT.x
-ChlData$Fecha<-mdy(ChlData$Fecha)
-# Asigno  columnas a fechas separadas.
-ChlData<- ChlData %>%
+ChlData$fecha <- ymd(ChlData$fecha)  # porque tus fechas son YYYY-MM-DD
+ChlData2 <- ChlData %>%
   mutate(
-    DIA = day(Fecha),
-    MES = month(Fecha),
-    ANO = year(Fecha)
+    DIA = day(fecha),
+    MES = month(fecha),
+    ANO = year(fecha)
   )
+
 ```
 
 
@@ -100,49 +105,30 @@ multi_dotplot <- function(filename, Xvar, Yvar){
     coord_flip() +
     labs(x = "Order of Data")}
 #Select continuous variables to plot
-Chldata2 <- ChlData %>%
-  mutate(order = seq(1:nrow(ChlData)))
-p1 <- multi_dotplot(Chldata2, order, Intensidad)
-p2 <- multi_dotplot(Chldata2, order, Chldata2$`ug/l Extracto`)
+Chldata3 <- ChlData %>%
+  mutate(order = seq(1:nrow(ChlData2)))
+p1 <- multi_dotplot(Chldata3, order, intensidad)
+p2 <- multi_dotplot(Chldata3, order, Chldata3$ug_l_sea_water)
 #Plot as a grid
 ggarrange(p1, p2, nrow = 1)
 ```
 
 ```{r}
 # ver NA
-colSums(is.na(ChlData))
+colSums(is.na(ChlData2))
 ```
 
-Sacar datos `cero`
 
-Identifico en columnas separadas los sitios y las replicas
 
-```{r}
-ChlData<- ChlData %>% 
-  separate(Muestra, into = c("ID", "Sampling.point"), sep = "_") %>% 
-  mutate(Site = as.numeric(sub("[A-Za-z]", "", Sampling.point)),
-         Modo = ifelse(grepl("[A-Za-z]", Sampling.point), 
-                        sub("[0-9]+", "", Sampling.point), 
-                        NA)) %>% 
-  filter(Intensidad>5,
-         ChlData$`ug/l Extracto`>5) %>% 
-  rename(CONCETR = `ug/l Sea water`) %>% 
-  mutate(TRIM = cut(MES, breaks = c(0, 3, 6, 9, 12), labels = FALSE))
-
-```
-
-## Visualizar las variables
 
 Primero el comportamiento. de la variabe y luego su tendencia por sitios y por tiempo.
 
 ```{r}
-histo1 <- ggplot(ChlData %>% 
-                   drop_na(), aes(CONCETR))+
+histo1 <- ggplot(ChlData2, aes(ug_l_sea_water))+
   geom_histogram(stat = "bin",
                  binwidth = 0.1,
                  fill="white",
                  color=1)+
-  facet_wrap(ANO~., ncol=5)+
   theme_few()+
   coord_flip()
 histo1
@@ -152,73 +138,125 @@ histo1
 Manipulo los datos y estimo una media y desviacion por variable
 
 ```{r}
-meanchl <- ChlData %>% 
+meanchl <- ChlData2 %>% 
   group_by(ANO,
            MES,
-           TRIM,
-           Site) %>% 
-  summarise(MEANCON = mean(CONCETR), na.rm = TRUE,
-            VARCON = sd(CONCETR),
-            INTENSIDAD= mean(Intensidad))
+           punto_muestreo) %>% 
+  summarise(MEANCON = mean(ug_l_sea_water), na.rm = TRUE,
+            VARCON = sd(ug_l_sea_water),
+            INTENSIDAD= mean(intensidad))
 ```
 
 ```{r, fig.align="center", warning=FALSE}
-meach <- ggplot(meanchl %>% 
-                  drop_na(), 
-               aes(ANO, MEANCON))+
-    geom_col(position = "dodge",
-               alpha=.7) +
-    geom_smooth(method= "loess",
-                se=FALSE)+
-    theme_few()+ 
-   # scale_x_continuous(breaks = seq(from = 2018, to = 2023, by = 1))+
-  scale_x_continuous(breaks = seq(from = 2018, 
-                                  to = 2023, 
-                                  by = 1))+
-  scale_y_continuous(breaks = seq(from = 0, 
-                                  to = 5, 
-                                  by = 2.5))+
-    facet_grid(Site~TRIM)+
-    theme(axis.text.x = element_text(angle = 90,
-                                     hjust = 1,
-                                     vjust= 0.5,
-                                     size = 8),
-          axis.text.y = element_text(size = 8),
-          legend.position = "none")+
-    ylab("Concentration (ug/ml)") +
-    xlab("")+
-  ggtitle("Media de concentración Chla por Sitio de Muestreo y Trimestre")+
-  ylim(0,5)
+meach <- ggplot(meanchl %>%
+        mutate(MES = case_when(
+           MES == 1 ~ "January",
+           MES == 2 ~ "February",
+           MES == 3 ~ "March",
+           MES == 4 ~ "April",
+           MES == 5 ~ "May",
+           MES == 6 ~ "June",
+           MES == 7 ~ "July",
+           MES == 8 ~ "August",
+           MES == 9 ~ "September",
+           MES == 10 ~ "October",
+           MES == 11 ~ "November",
+           MES == 12 ~ "December")) %>% 
+         mutate(MES = factor(MES, levels = c("January", 
+                                              "February", 
+                                              "March",
+                                              "April",
+                                              "May",
+                                              "June",
+                                              "July",
+                                              "August",
+                                              "September",
+                                              "October",
+                                              "November", 
+                                              "December"))) %>%
+          drop_na(), 
+                aes(x = factor(MES), y = MEANCON)) +
+  geom_rect(aes(xmin = 7, xmax = 5, ymin = -Inf, ymax = Inf),  # del 1 mayo al 30 junio
+  fill = "grey", alpha = 0.01, inherit.aes = FALSE) +
+  geom_boxplot(alpha = 0.7, outlier.color = "red") +
+  theme_few() +
+  facet_grid(. ~ ANO) +
+  theme(axis.text.x = element_text(angle = 90,
+                                   hjust = 1,
+                                   vjust = 0.5,
+                                   size = 8),
+        axis.text.y = element_text(size = 8),
+        legend.position = "none") +
+  ylab("Concentration (ug/ml)") +
+  xlab("") +
+  ggtitle("") +
+  ylim(0, 5)
+
 meach
+
+```
+agrupado por punto
+
+```{r}
+meanchl3 <- ChlData2 %>% 
+  group_by(ANO,
+           MES) %>% 
+  summarise(MEANCON = mean(ug_l_sea_water), na.rm = TRUE,
+            VARCON = sd(ug_l_sea_water),
+            INTENSIDAD= mean(intensidad))
 ```
 
 ```{r, fig.align="center", warning=FALSE}
-varch <- ggplot(meanchl %>% 
-                  drop_na(), 
-               aes(ANO, VARCON))+
-    geom_point(alpha=.7) +
-    geom_smooth(method= "loess",
-                col="red")+
-    theme_few()+ 
-   # scale_x_continuous(breaks = seq(from = 2018, to = 2023, by = 1))+
-  scale_x_continuous(breaks = seq(from = 2018, 
-                                  to = 2023, 
-                                  by = 1))+
-  scale_y_continuous(breaks = seq(from = 0, 
-                                  to = 2.5, 
-                                  by = 0.5))+
-    facet_grid(Site~TRIM)+
-    theme(axis.text.x = element_text(angle = 90,
-                                     hjust = 1,
-                                     vjust= 0.5,
-                                     size = 8),
-          axis.text.y = element_text(size = 8),
-          legend.position = "none")+
-    ylab("Desviación Standar (ug/ml)") +
-    xlab("")+
-  ylim(0,2.6)+
-  ggtitle("Desviación Standar Chla por Sitio de Muestreo y Trimestre")
-varch
+meach <- ggplot(meanchl3 %>%
+        mutate(MES = case_when(
+           MES == 1 ~ "January",
+           MES == 2 ~ "February",
+           MES == 3 ~ "March",
+           MES == 4 ~ "April",
+           MES == 5 ~ "May",
+           MES == 6 ~ "June",
+           MES == 7 ~ "July",
+           MES == 8 ~ "August",
+           MES == 9 ~ "September",
+           MES == 10 ~ "October",
+           MES == 11 ~ "November",
+           MES == 12 ~ "December")) %>% 
+         mutate(MES = factor(MES, levels = c("January", 
+                                              "February", 
+                                              "March",
+                                              "April",
+                                              "May",
+                                              "June",
+                                              "July",
+                                              "August",
+                                              "September",
+                                              "October",
+                                              "November", 
+                                              "December"))) %>%
+          drop_na(), 
+       aes(x = MES, y = MEANCON)) +
+  geom_rect(aes(xmin = 5 - 0.5, xmax = 6 + 0.5, ymin = -Inf, ymax = Inf),  # sombreado del 1 mayo al 30 junio
+            fill = "grey", alpha = 0.1, inherit.aes = FALSE) +
+  geom_point(alpha = 0.7, col = "black", fill="green", size=2, shape=21) +
+  geom_smooth(aes(x = as.numeric(MES)), method = "loess", se = FALSE, color = "black") +
+  scale_x_discrete(drop = FALSE) +   # mantiene todos los meses aunque no haya datos
+  theme_few() +
+  facet_grid(. ~ ANO) +
+  theme(axis.text.x = element_text(angle = 90,
+                                   hjust = 1,
+                                   vjust = 0.5,
+                                   size = 8),
+        axis.text.y = element_text(size = 8),
+        legend.position = "none") +
+  ylab("Concentration (ug/ml)") +
+  xlab("") +
+  ggtitle("") +
+  ylim(0, 5)
+
+meach
+
+
+
 ```
 
 Relacion entre Concentracion e intensidad

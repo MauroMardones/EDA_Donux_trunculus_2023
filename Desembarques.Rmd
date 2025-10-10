@@ -327,9 +327,26 @@ datosuratlantico <- datos %>%
 library(dplyr)
 library(ggplot2)
 
-# Filtramos solo Chirla y Coquina
+# Filtramos solo Chirla y Coquina y las AND del golfo dde Cadiz basado en este
+# 
+# unique(datosuratlantico$zonaProduccion)
+#  [1] "AND102" "L9"     "AND104" NA       "AND11"  "AND04"  "AND05"  "AND09"  "AND10"  "AND101"
+# [11] "AND105" "AND106" "AND107" "AND103" "AND108" "L8"     "AND08"  "AND01"  "AND111" "AND13" 
+# [21] "L6"     "AND109" "AND112" "L7C2"   "AND206" "L7c"    "AND06"  "AND208" "AND207" "AND07" 
+# [31] "ESD1"   "AND19"  "AND303" "AND02"  "AND12"  "AND113" "AND209" "AND03"  "AND18"  "AND205"
+# [41] "AND15"  "AND26"  "AND210"
+
 datos_filtrados <- datosuratlantico %>%
-  filter(nombreEspecie %in% c("CHIRLA", "COQUINA"))
+  filter(nombreEspecie %in% c("CHIRLA", "COQUINA")) %>% 
+  filter(zonaProduccion %in% c("AND102", "AND104", "AND11", "AND04", 
+                               "AND05", "AND09", "AND10", "AND101",
+                               "AND105", "AND106", "AND107", "AND103",
+                               "AND108", "AND08", "AND01", "AND111",
+                               "AND13", "AND109", "AND112", "AND06",
+                               "AND208", "AND207", "AND07", "AND19",
+                               "AND303", "AND02", "AND12", "AND113",
+                               "AND209", "AND03", "AND18", "AND205",
+                               "AND15",  "AND210")) 
 
 # --- Gráfico por Mes (toneladas) ---
 g_mes <- datos_filtrados %>%
