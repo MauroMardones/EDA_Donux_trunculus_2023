@@ -637,32 +637,38 @@ sizeall2 <- readRDS("tallas_13_25.RDS")
 some plots
 
 ```{r warning=F, message=FALSE}
-nall <- ggplot(sizeall2 %>% 
-                 drop_na(sizeE, 
-                         MES), 
-               aes(x=sizeE, 
+sizeall3 <- sizeall2 %>%
+  mutate(MES = factor(MES, 
+                      levels = rev(levels(MES))))  # invierte el orden
+
+
+nall <- ggplot(sizeall3 %>% 
+                 drop_na(sizeE, MES), 
+               aes(x = sizeE, 
                    y = MES,
-                  fill= as.factor(rastro)))+
-   geom_density_ridges(stat = "binline", 
+                   fill = as.factor(rastro))) +
+  # Franja gris entre mayo y julio
+  geom_rect(aes(xmin = -Inf, xmax = Inf, 
+                ymin = 6.5, ymax = 8.5),
+            fill = "grey", 
+            alpha = 0.05,
+            inherit.aes = FALSE) +
+  geom_density_ridges(stat = "binline", 
                       bins = 40, 
                       scale = 1.5,
-                      alpha=0.7)+
-   # geom_density_ridges2(stat = "bin",
-   #                     position = "points_sina",
-   #                    scale = 1.5,
-   #                    alpha=0.7)+
-  facet_wrap(.~ANO, ncol=7) +
-  geom_vline(xintercept = 10.8, color = "red")+
-  scale_fill_viridis_d(option="B",
-                       name="Gear")+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-  theme_few()+
-  theme(legend.position = "bottom")+
-  xlab("Longitud (mm.)")+
-  ylab("")+
-  xlim(0,40)
-#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
+                      alpha = 0.7) +
+  facet_wrap(. ~ ANO, ncol = 7) +
+  geom_vline(xintercept = 10.8, color = "red") +
+  scale_fill_viridis_d(option = "B", name = "Gear") +
+  theme_few() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.position = "bottom") +
+  xlab("Longitud (mm.)") +
+  ylab("") +
+  xlim(0, 40)
+
 nall
+
 ```
 
 
@@ -675,7 +681,7 @@ pobeach <- ggplot(sizeall2 %>%
                    y = as.factor(MES),
                   fill= as.factor(Sampling.point)))+
   geom_density_ridges(stat = "binline", 
-                      bins = 10, 
+                      bins = 20, 
                       scale = 1.2,
                       alpha=0.7)+
   facet_wrap(.~ANO, ncol=7) +
@@ -701,7 +707,7 @@ combeach <- ggplot(sizeall2 %>%
                    y = as.factor(MES),
                   fill= as.factor(Beach)))+
   geom_density_ridges(stat = "binline", 
-                      bins = 40, 
+                      bins = 20, 
                       scale = 1.2,
                       alpha=0.7)+
   facet_wrap(.~ANO, ncol=7) +
@@ -716,29 +722,6 @@ combeach <- ggplot(sizeall2 %>%
   xlim(0,40)
 #scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
 combeach
-```
-
-Ahora plotear el ultimo mes para el informe
-
-```{r}
-combeachago23 <- ggplot(sizeall2 %>% 
-                      filter(ANO==2025), 
-               aes(x=sizeE, y=Beach, fill=as.character(rastro)))+
-  geom_density_ridges(stat = "binline", 
-                      bins = 40, 
-                      scale = 1.2,
-                      alpha=0.8)+
-  scale_fill_manual(values = c("red", "blue"))+
-  facet_wrap(.~MES, ncol=5) +
-  geom_vline(xintercept = 10.8, color = "red")+
-  theme_few()+
-  theme(legend.position = "bottom")+
-  xlab("Longitud (cm.)")+
-  ylab("")+
-  xlim(0,40)+
-  labs(title= "Survey 2024")
-#scale_x_discrete((limits = rev(levels(talla2021$ANO_ARR))))+
-combeachago23
 ```
 
 another way to viz is a scatter plot
@@ -821,7 +804,7 @@ pmeaimp <- ggplot(sizemean %>%
 pmeaimp
 ```
 
-comercial por mes y año
+poblacional por mes y año
 
 
 ```{r, fig.align="center", warning=FALSE}
@@ -892,6 +875,92 @@ pmepob <- ggplot(sizemean %>%
 ggarrange(pmecom,
           pmepob,
           ncol=1)
+```
+
+
+```{r, fig.align="center", warning=FALSE}
+# Calcular medias por año para cada tipo de rastro
+medias_poblacional <- sizemean %>% 
+  filter(Sampling.point %in% c(2, 4, 6, "M"),
+         rastro != "COMERCIAL") %>% 
+  drop_na(avg, Sampling.point) %>%
+  group_by(ANO) %>%
+  summarise(media_ano = round(mean(avg, na.rm = TRUE), 2))
+
+medias_comercial <- sizemean %>% 
+  filter(Sampling.point %in% c(2, 4, 6, "M"),
+         rastro != "POBLACIONAL") %>% 
+  drop_na(avg, Sampling.point) %>%
+  group_by(ANO) %>%
+  summarise(media_ano = round(mean(avg, na.rm = TRUE), 2))
+
+# Gráfico POBLACIONAL con media por año
+pmecom <- ggplot(sizemean %>% 
+                   filter(Sampling.point %in% c(2, 4, 6, "M"),
+                          rastro != "COMERCIAL") %>% 
+                   drop_na(avg, Sampling.point), 
+                 aes(as.numeric(MES), avg)) +
+  geom_point(aes(x = as.factor(MES)),
+             show.legend = TRUE,
+             alpha = 0.7) + 
+  geom_smooth(method = "lm") +
+  geom_rect(
+    aes(xmin = 4.5, xmax = 7.5, ymin = -Inf, ymax = Inf),
+    fill = "red", alpha = 0.01, inherit.aes = FALSE
+  ) +
+  geom_text(data = medias_poblacional,
+            aes(x = 6, y = 10, label = paste0(media_ano, " mm")),
+            inherit.aes = FALSE,
+            size = 3.5) +
+  theme_few() + 
+  facet_grid( ~ ANO) +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1, 
+                                   vjust = 0.5, 
+                                   size = 7), 
+        axis.text.y = element_text(size = 8), 
+        legend.position = "bottom") +
+  guides(fill = guide_legend(reverse = FALSE)) +
+  geom_hline(yintercept = 25, col = "black") +
+  ylab("Tallas Medias (mm)") + 
+  xlab("") + 
+  ylim(5, 35) + 
+  ggtitle("POBLACIONAL")
+
+# Gráfico COMERCIAL con media por año
+pmepob <- ggplot(sizemean %>% 
+                   filter(Sampling.point %in% c(2, 4, 6, "M"),
+                          rastro != "POBLACIONAL") %>% 
+                   drop_na(avg, Sampling.point), 
+                 aes(as.numeric(MES), avg)) +
+  geom_point(aes(x = as.factor(MES)),
+             show.legend = TRUE,
+             alpha = 0.7) + 
+  geom_rect(
+    aes(xmin = 4.5, xmax = 7.5, ymin = -Inf, ymax = Inf),
+    fill = "red", alpha = 0.01, inherit.aes = FALSE
+  ) +
+  geom_smooth(method = "lm", col = "red") +
+  geom_text(data = medias_comercial,
+            aes(x = 6, y = 10, label = paste0(media_ano, " mm")),
+            inherit.aes = FALSE,
+            size = 3.5) +
+  theme_few() + 
+  facet_grid( ~ ANO) +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1, 
+                                   vjust = 0.5, 
+                                   size = 7), 
+        axis.text.y = element_text(size = 8), 
+        legend.position = "bottom") +
+  guides(fill = guide_legend(reverse = FALSE)) +
+  geom_hline(yintercept = 25, col = "black") +
+  ylab("Tallas Medias (mm)") + 
+  xlab("") + 
+  ylim(5, 35) + 
+  ggtitle("COMERCIAL")
+
+ggarrange(pmecom, pmepob, ncol = 1)
 
 ```
 
@@ -908,7 +977,7 @@ ppla <- ggplot(sizemean %>%
                alpha=.7) +
   geom_jitter()+
     theme_few()+ 
-  #facet_wrap(.~ANO, ncol=3)+
+  facet_wrap(.~ANO, ncol=3)+
     scale_y_continuous(breaks = seq(from = 2013, to = 2023, by = 1))+
     theme(axis.text.x = element_text(angle = 90,
                                      hjust = 1,
