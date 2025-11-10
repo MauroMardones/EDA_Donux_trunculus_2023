@@ -56,6 +56,9 @@ library(ggalt)
 library(rnaturalearth)
 library(sf)
 library(psych)
+# Paquetes necesarios
+library(marmap)
+library(ggrepel)
 ```
 
 # MAPAS
@@ -74,17 +77,17 @@ spain <- ne_countries(country = "spain",
 portug<- ne_countries(country = "portugal",  
                       scale="medium", 
                       returnclass = 'sf')
-costandalucia <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_10_Playa.shp')
-baty <- st_read('~/IEO/DATA/Shapefiles_Andalucia/batimetria_rediam20x20_15m_id.shp')
-zonapro <- st_read('~/IEO/DATA/Shapefiles_Andalucia/zzpp_resolucion_2023_25830.shp')
-zonape <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_09_ZonaIdoneaPesca.shp')
-resepe <- st_read('~/IEO/DATA/Shapefiles_Andalucia/Res_Pesca_Des_Gualquivir.shp')
-fisicomar <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_01_FisiograficoMarino.shp')
-playas <- st_read('~/IEO/DATA/Shapefiles_Andalucia/playas.shp')
-lito <- st_read('~/IEO/DATA/Shapefiles_Andalucia/05_02_Litologia.shp')
-hidro <- st_read('~/IEO/DATA/Shapefiles_Andalucia/red_hidrografica.shp')
-cuencas <- st_read('~/IEO/DATA/Shapefiles_Andalucia/cuencas.shp')
-costa <- st_read('~/IEO/DATA/Shapefiles_Andalucia/costa_proyectada.shp')
+costandalucia <- st_read('~/IEO/FEMP_04/Shapefiles_Andalucia/05_10_Playa.shp')
+baty <- st_read('~/IEO/FEMP_04/Shapefiles_Andalucia/batimetria_rediam20x20_15m_id.shp')
+zonapro <- st_read('~/IEO/FEMP_04/Shapefiles_Andalucia/zzpp_resolucion_2023_25830.shp')
+zonape <- st_read('~/IEO/FEMP_04/Shapefiles_Andalucia/05_09_ZonaIdoneaPesca.shp')
+resepe <- st_read('~/IEO/FEMP_04/Shapefiles_Andalucia/Res_Pesca_Des_Gualquivir.shp')
+fisicomar <- st_read('~/IEO/FEMP_04/Shapefiles_Andalucia/05_01_FisiograficoMarino.shp')
+playas <- st_read('~/IEO/FEMP_04/Shapefiles_Andalucia/playas.shp')
+lito <- st_read('~/IEO/FEMP_04/Shapefiles_Andalucia/05_02_Litologia.shp')
+hidro <- st_read('~/IEO/FEMP_04/Shapefiles_Andalucia/red_hidrografica.shp')
+cuencas <- st_read('~/IEO/FEMP_04/Shapefiles_Andalucia/cuencas.shp')
+costa <- st_read('~/IEO/FEMP_04/Shapefiles_Andalucia/costa_proyectada.shp')
 ```
 
 ## Transforma data
@@ -166,7 +169,22 @@ masadi <- ggplot() +
   ylim(36.6, 37.2)
 masadi
 ```
+```{r}
 
+
+# Descargar batimetría (resolución 1 minuto aprox.)
+bathy <- marmap::getNOAA.bathy(lon1 = -7.6, lon2 = -6.1, 
+                               lat1 = 36.6, lat2 = 37.4, 
+                               resolution = 1)
+
+# Convertir a data.frame para ggplot
+bathy_df <- marmap::fortify.bathy(bathy)
+```
+
+
+
+
+maspu
 
 
 ## Agregar Data Frame con Puntos de Muestreo
@@ -185,33 +203,52 @@ coord <- Coordenadas %>%
 Mapa con puntos
 
 ```{r warning=FALSE}
+breaks_vals <- seq(-1000, 0, by = 10)  # todos los breaks cada 10 m
+
 maspu <- ggplot() +
-  geom_sf(data = costa1, fill="white") +
-  #geom_sf(data = resepe1, aes(col="blue",
-   #                            fill=NA)) +
-  geom_sf(data = zonapro1, aes(col="red",
-                               fill=NA)) +
-  geom_sf(data = coord)+
-  scale_fill_viridis_d(option="H",
-                       alpha=.5)+
-  coord_sf() +
-  xlab(expression(paste(Longitude^o,~'O'))) +
-  ylab(expression(paste(Latitude^o,~'S')))+
+  # Batimetría en tonos celestes
+  geom_contour_filled(
+    data = bathy_df, 
+    aes(x = x, y = y, z = z),
+    breaks = breaks_vals
+  ) +
+  scale_fill_manual(
+    values = colorRampPalette(c("#00264d", "#005b96", "#66b2ff", "#cce6ff"))(length(breaks_vals)-1),
+    name = "Profundidad (m)"
+  ) +
+  # Líneas de contorno segmentadas
+  geom_contour(
+    data = bathy_df,
+    aes(x = x, y = y, z = z),
+    breaks = breaks_vals,
+    colour = "black",
+    linetype = "dotted",
+    size = 0.3
+  ) +
+  # Capas vectoriales
+  geom_sf(data = costa1, fill = "white") +
+  geom_sf(data = zonapro1, fill = NA, color = "red") +  # línea roja, interior transparente
+  geom_sf(data = coord) +
+  # Etiquetas de puntos
   ggrepel::geom_label_repel(
     data = coord,
     aes(label = Punto, geometry = geometry),
     stat = "sf_coordinates",
-    min.segment.length = ,
     colour = "black",
     size = 3,
     segment.colour = "black",
     box.padding = 0.9,
-    max.overlaps = 40) +
-  theme_few()+
-  theme(legend.position = "none")+
-  xlim(-7.6,-6.1)+
-  ylim(36.6, 37.4)
+    max.overlaps = 40
+  ) +
+  coord_sf(xlim = c(-7.6, -6.1), ylim = c(36.6, 37.4)) +
+  xlab(expression(paste(Longitude^o,~'O'))) +
+  ylab(expression(paste(Latitude^o,~'N'))) +
+  theme_few() +
+  theme(legend.position = "none")
+
 maspu
+
+
 
 ```
 

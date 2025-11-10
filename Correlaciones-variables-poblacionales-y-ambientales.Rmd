@@ -57,6 +57,8 @@ library(ggalt)
 library(see)
 library(egg)
 library(ggpmisc)
+library(terra)
+library(ncdf4)
 ```
 
 # CORRELACIONES
@@ -254,9 +256,6 @@ meach <- ggplot(meanchl3 %>%
   ylim(0, 5)
 
 meach
-
-
-
 ```
 
 Relacion entre Concentracion e intensidad
@@ -311,4 +310,61 @@ for (i in data.files) {
 }
 ```
 
+
+
+## Data Temp
+
+
+```{r}
+# Abrir el archivo
+nc <- nc_open("~/IEO/FEMP_04/Ambientales_Data/SST_ERA5/29a7f9d3886cf06dc79bacbdfda33c76.nc")
+
+# Ver qué variables tiene
+names(nc$var)
+
+```
+
+```{r}
+sst_data <- ncvar_get(nc, "sst")
+summary(sst_data)
+dim(sst_data)
+
+
+```
+
+```{r}
+start_date <- as.Date("2000-01-01")
+n_time <- dim(sst_data)[3]
+dates <- seq.Date(start_date, by = "month", length.out = n_time)
+
+
+# promedio global por capa temporal y pasar a °C
+sst_mean <- apply(sst_data, 3, mean, na.rm = TRUE) - 273.15
+
+start_date <- as.Date("2000-01-01")
+n_time <- dim(sst_data)[3]
+dates <- seq.Date(start_date, by = "month", length.out = n_time)
+
+df <- data.frame(date = dates, sst = sst_mean) %>%
+  mutate(year = year(date),
+         month = month(date)) %>%
+  group_by(year, month) %>%
+  summarise(sst_month = mean(sst, na.rm = TRUE), .groups = "drop")
+
+SST_Cadiz <- ggplot(df %>% 
+         filter(year>2016), aes(x = month, y = sst_month, color = factor(year), group = year)) +
+  geom_line() +
+  geom_point() +
+  geom_rect(
+    aes(xmin = 5, xmax = 7, ymin = -Inf, ymax = Inf),
+    fill = "grey", alpha = 0.01, inherit.aes = FALSE
+  ) +
+  scale_x_continuous(breaks = 1:12, labels = month.abb) +
+  scale_color_viridis_d(option="H") +
+  labs(x = "Mes", y = "SST promedio (°C)", color = "") +
+  theme_bw()
+SST_Cadiz
+
+
+```
 

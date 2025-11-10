@@ -559,7 +559,7 @@ size_21_25<- size_21_25 %>%
   )
 unique(size_21_25$rastro)
 
-table(size_21_25$ANO, size_21_25$rastro)
+table(size_21_25$ANO, size_21_25$MES)
 ```
 
 ## Unir los datos desde el 2013 al 2023
@@ -658,7 +658,7 @@ nall <- ggplot(sizeall3 %>%
                       scale = 1.5,
                       alpha = 0.7) +
   facet_wrap(. ~ ANO, ncol = 7) +
-  geom_vline(xintercept = 10.8, color = "red") +
+  geom_vline(xintercept = 25, color = "red") +
   scale_fill_viridis_d(option = "B", name = "Gear") +
   theme_few() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1),
@@ -675,13 +675,16 @@ nall
 just Poblacional sample
 
 ```{r}
-pobeach <- ggplot(sizeall2 %>% 
+pobeach <- ggplot(sizeall2 %>%
+                    drop_na(sizeE, MES) %>%
+                    mutate(MES = factor(MES, 
+                      levels = rev(levels(MES)))) %>%
                       filter(rastro!="COMERCIAL"), 
                aes(x=sizeE, 
                    y = as.factor(MES),
                   fill= as.factor(Sampling.point)))+
   geom_density_ridges(stat = "binline", 
-                      bins = 20, 
+                      bins = 40, 
                       scale = 1.2,
                       alpha=0.7)+
   facet_wrap(.~ANO, ncol=7) +
@@ -871,7 +874,6 @@ pmepob <- ggplot(sizemean %>%
   ylim(5, 35) + 
   ggtitle("COMERCIAL")
 
-
 ggarrange(pmecom,
           pmepob,
           ncol=1)
@@ -965,35 +967,6 @@ ggarrange(pmecom, pmepob, ncol = 1)
 ```
 
 
-
-```{r, fig.align="center", warning=FALSE}
-ppla <- ggplot(sizemean %>%
-                 filter(rastro!="COMERCIAL") %>% 
-                 arrange(Sampling.point) %>%
-                 drop_na(avg, Sampling.point), 
-               aes(as.character(Sampling.point), avg,
-               color=Sampling.point))+
-    geom_boxplot(show.legend = T,
-               alpha=.7) +
-  geom_jitter()+
-    theme_few()+ 
-  facet_wrap(.~ANO, ncol=3)+
-    scale_y_continuous(breaks = seq(from = 2013, to = 2023, by = 1))+
-    theme(axis.text.x = element_text(angle = 90,
-                                     hjust = 1,
-                                     vjust= 0.5,
-                                     size = 8),
-          axis.text.y = element_text(size = 8),
-          legend.position = "bottom")+
-    guides(fill = guide_legend(reverse=F))+
-    scale_color_viridis_d(option="H",
-                          name="")+
-    ylab("Tallas Medias (mm)") +
-    xlab("") +
-  ylim(5,35)+
-    ggtitle("Tallas medias coquina por playa")
-ppla
-```
 
 
 ## Modelos 
