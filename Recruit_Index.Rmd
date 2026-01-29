@@ -98,6 +98,10 @@ dens2025pob <- read_excel(here("Data",
                                "Posterior 2020", 
                                "Data_sample_FEMP_04_2025.xlsx"),
                        sheet = "Data_POBL")
+dens2026pob <- read_excel(here("Data",
+                               "Posterior 2020", 
+                               "Data_sample_FEMP_04_2026.xlsx"),
+                       sheet = "Data_POBL")
 ```
 
 Visualizo los datos y su estructura. Para replicar los procesos de
@@ -161,6 +165,9 @@ dens2024pobf <- dens2024pob %>%
 dens2025pobf <- dens2025pob %>% 
   dplyr::select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
   rename(ID_codificado_punto=ID)
+dens2026pobf <- dens2026pob %>% 
+  dplyr::select(2:18, 23, 27:29, 32, 35:39, 43, 44) %>% 
+  rename(ID_codificado_punto=ID)
 
 
 #compruebo si hay columnas iguales
@@ -168,22 +175,23 @@ nombres_iguales_pob <- identical(names(dens2021pobf),
                              names(dens2023pobf)) && identical(names(dens2021pobf), 
                                                                names(dens2022pobf))
 #junto la base
-denspob2125f <- rbind(dens2021pobf, 
+denspob2126f <- rbind(dens2021pobf, 
                       dens2022pobf, 
                       dens2023pobf,
                       dens2024pobf,
-                      dens2025pobf)
+                      dens2025pobf,
+                      dens2026pobf)
 ```
 
 Separate `Date` column
 
 ```{r}
-denspob2125f <- denspob2125f %>%
+denspob2126f <- denspob2125f %>%
   mutate(ANO = year(Date),
          MES = month(Date),
          DIA = day(Date))
 
-table(denspob2125f$ANO, denspob2125f$MES)
+table(denspob2126f$ANO, denspob2126f$MES)
 ```
 
 De todas formas, hay una columna que difiere de ambos bases filtradas
@@ -214,7 +222,7 @@ pproceder a los calculos para calcular las variables poblacionales de
 interes, en este caso Densidad, Abundancia y Biomasa;
 
 ```{r}
-denspobtot <- denspob2125f %>% 
+denspobtot <- denspob2126f %>% 
   mutate(fps = SW /SWsub,
          CSW = CSWsub * fps,
          fpm = CSW / CSWsub,
@@ -267,6 +275,11 @@ size2025 <- read_excel(here("Data",
                             "Data_size_Coquina_2025.xlsx"),  
                        sheet = "Coquina_Donax") %>% 
   dplyr::select(-c(1, 2)) 
+size2026 <- read_excel(here("Data", 
+                            "Posterior 2020",
+                            "Data_size_Coquina_2026.xlsx"),  
+                       sheet = "Coquina_Donax") %>%
+  dplyr::select(-c(1, 2))
 ```
 
 Este aspecto se trabaja de forma de ponderación ad-hoc descrita en la
@@ -275,25 +288,26 @@ Figure \@ref(fig:edaplot1)
 Now, we handling data 2021-2023. Same columns data 2017-2020
 
 ```{r}
-size_21_25 <- rbind(size2021,
+size_21_26 <- rbind(size2021,
                     size2022,
                     size2023,
                     size2024,
-                    size2025)
+                    size2025,
+                    size2026)
 ```
 
 Separate `Date` column
 
 ```{r}
-size_21_25<- size_21_25 %>%
+size_21_26<- size_21_26 %>%
   mutate(
     DIA = day(Date),
     MES = month(Date),
     ANO = year(Date)
   )
-unique(size_21_25$rastro)
+unique(size_21_26$rastro)
 
-table(size_21_25$ANO, size_21_25$MES)
+table(size_21_26$ANO, size_21_26$MES)
 ```
 
 ## Calculo D15
@@ -312,7 +326,7 @@ los ponderadores `fps`, `fpn`y `fpm` para luego extrapolar al tamaño del
 área.
 
 ```{r}
-D15n <- size_21_25 %>%
+D15n <- size_21_26 %>%
   group_by(ANO, 
            MES, 
            Sampling.point, 
@@ -352,7 +366,7 @@ D15_allp <- ggplot(D15n2 ,
                   color=as.factor(Sampling.point)))+
   geom_point()+
   geom_smooth(col=2)+
-  facet_wrap(.~ANO, ncol=5)+
+  facet_wrap(.~ANO, ncol=6)+
   scale_color_viridis_d(name="Sampling Points")+
   theme_few()+
   geom_hline(yintercept = 8,
